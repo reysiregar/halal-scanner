@@ -1,0 +1,2145 @@
+{
+  "ingredient_count": 428,
+  "ingredients": [
+    {
+      "item_name": "Pork and its derivatives",
+      "status": "Haram",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Lard",
+      "status": "Haram",
+      "category": "Fats & Oils"
+    },
+    {
+      "item_name": "Alcoholic Beverages (Khamr)",
+      "status": "Haram",
+      "category": "Beverages"
+    },
+    {
+      "item_name": "Blood",
+      "status": "Haram",
+      "category": "Animal Products"
+    },
+    {
+      "item_name": "Meat from an animal not slaughtered correctly (Maytah/Carrion)",
+      "status": "Haram",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Gelatin (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "Gelatin (Pork source)",
+      "status": "Haram",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "Gelatin (Fish source)",
+      "status": "Halal",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "Gelatin (Halal Beef source)",
+      "status": "Halal",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "Whey (unspecified rennet source)",
+      "status": "Mushbooh",
+      "category": "Dairy Products"
+    },
+    {
+      "item_name": "Whey (with microbial or plant rennet)",
+      "status": "Halal",
+      "category": "Dairy Products"
+    },
+    {
+      "item_name": "Rennet (animal, unspecified)",
+      "status": "Mushbooh",
+      "category": "Enzymes"
+    },
+    {
+      "item_name": "Rennet (microbial or plant source)",
+      "status": "Halal",
+      "category": "Enzymes"
+    },
+    {
+      "item_name": "Glycerin / Glycerol (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Humectant / Sweetener"
+    },
+    {
+      "item_name": "Glycerin / Glycerol (plant source)",
+      "status": "Halal",
+      "category": "Humectant / Sweetener"
+    },
+    {
+      "item_name": "Glycerin / Glycerol (pork source)",
+      "status": "Haram",
+      "category": "Humectant / Sweetener"
+    },
+    {
+      "item_name": "L-cysteine (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Dough Conditioner"
+    },
+    {
+      "item_name": "L-cysteine (from human hair)",
+      "status": "Haram",
+      "category": "Dough Conditioner"
+    },
+    {
+      "item_name": "L-cysteine (synthetic/microbial)",
+      "status": "Halal",
+      "category": "Dough Conditioner"
+    },
+    {
+      "item_name": "Vanilla Extract (containing alcohol)",
+      "status": "Haram",
+      "category": "Flavoring"
+    },
+    {
+      "item_name": "Vanilla Flavor (artificial, non-alcoholic)",
+      "status": "Halal",
+      "category": "Flavoring"
+    },
+    {
+      "item_name": "Natural Flavors (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Flavoring"
+    },
+    {
+      "item_name": "Artificial Flavors (unspecified solvent)",
+      "status": "Mushbooh",
+      "category": "Flavoring"
+    },
+    {
+      "item_name": "Yeast Extract (from brewer's yeast byproduct)",
+      "status": "Mushbooh",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "Yeast Extract (from primary fermentation, e.g. molasses)",
+      "status": "Halal",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "Beef (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Chicken (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Lamb (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Halal Certified Beef",
+      "status": "Halal",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Halal Certified Chicken",
+      "status": "Halal",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Halal Certified Lamb",
+      "status": "Halal",
+      "category": "Meat & Animal Products"
+    },
+    {
+      "item_name": "Fish (with scales)",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Shrimp / Prawns",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Crab",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Lobster",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Clams / Mussels / Oysters",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Squid / Cuttlefish",
+      "status": "Halal",
+      "category": "Seafood"
+    },
+    {
+      "item_name": "Water",
+      "status": "Halal",
+      "category": "Beverages"
+    },
+    {
+      "item_name": "Milk (from cow, goat, camel)",
+      "status": "Halal",
+      "category": "Dairy Products"
+    },
+    {
+      "item_name": "Eggs",
+      "status": "Halal",
+      "category": "Animal Products"
+    },
+    {
+      "item_name": "Honey",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "Sugar (from cane or beet)",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "Palm Sugar (Gula Merah / Gula Aren)",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "Salt (Sodium Chloride)",
+      "status": "Halal",
+      "category": "Seasoning"
+    },
+    {
+      "item_name": "Vegetable Oils (Palm, Soy, Sunflower, etc.)",
+      "status": "Halal",
+      "category": "Fats & Oils"
+    },
+    {
+      "item_name": "Coconut Oil",
+      "status": "Halal",
+      "category": "Fats & Oils"
+    },
+    {
+      "item_name": "Vinegar",
+      "status": "Halal",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Tallow (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Fats & Oils"
+    },
+    {
+      "item_name": "Shellac (E904)",
+      "status": "Halal",
+      "category": "Glazing Agent"
+    },
+    {
+      "item_name": "Castoreum",
+      "status": "Haram",
+      "category": "Flavoring"
+    },
+    {
+      "item_name": "Soy Sauce (Kecap Asin)",
+      "status": "Halal",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Sweet Soy Sauce (Kecap Manis)",
+      "status": "Halal",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Fish Sauce",
+      "status": "Mushbooh",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Oyster Sauce",
+      "status": "Halal",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Shrimp Paste (Terasi / Belacan)",
+      "status": "Mushbooh",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "Sambal Oelek",
+      "status": "Halal",
+      "category": "Condiment"
+    },
+    {
+      "item_name": "E100 - Curcumin",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E101 - Riboflavin (Vitamin B2)",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E102 - Tartrazine",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E104 - Quinoline Yellow",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E110 - Sunset Yellow FCF",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E120 - Cochineal / Carmine",
+      "status": "Haram",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E122 - Azorubine, Carmoisine",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E123 - Amaranth",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E124 - Ponceau 4R",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E127 - Erythrosine",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E129 - Allura Red AC",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E131 - Patent Blue V",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E132 - Indigotine, Indigo carmine",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E133 - Brilliant Blue FCF",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E140 - Chlorophylls",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E141 - Copper complexes of chlorophyll",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E142 - Green S",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E150a - Plain Caramel",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E150b - Caustic Sulphite Caramel",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E150c - Ammonia Caramel",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E150d - Sulphite Ammonia Caramel",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E151 - Brilliant Black BN, Black PN",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E153 - Vegetable Carbon",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E155 - Brown HT",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160a - Carotenes (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160a(i) - Beta-carotene (synthetic)",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160b - Annatto, Bixin, Norbixin",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160c - Paprika extract",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160d - Lycopene (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160d(i) - Lycopene (synthetic)",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E160e - Beta-apo-8'-carotenal (C 30)",
+      "status": "Mushbooh",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E161b - Lutein",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E161g - Canthaxanthin",
+      "status": "Mushbooh",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E162 - Beetroot Red (Betanin)",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E163 - Anthocyanins",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E170 - Calcium Carbonate",
+      "status": "Halal",
+      "category": "Colorant / Acidity Regulator"
+    },
+    {
+      "item_name": "E171 - Titanium Dioxide",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E172 - Iron Oxides and Hydroxides",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E175 - Gold",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E180 - Lithol Rubine BK",
+      "status": "Halal",
+      "category": "Colorant"
+    },
+    {
+      "item_name": "E200 - Sorbic Acid",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E202 - Potassium Sorbate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E210 - Benzoic Acid",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E211 - Sodium Benzoate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E213 - Calcium Benzoate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E220 - Sulphur Dioxide",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E223 - Sodium Metabisulphite",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E234 - Nisin",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E250 - Sodium Nitrite",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E251 - Sodium Nitrate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E252 - Potassium Nitrate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E260 - Acetic Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E270 - Lactic Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E280 - Propionic Acid",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E282 - Calcium Propionate",
+      "status": "Halal",
+      "category": "Preservative"
+    },
+    {
+      "item_name": "E290 - Carbon Dioxide",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E296 - Malic Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E300 - Ascorbic Acid (Vitamin C)",
+      "status": "Halal",
+      "category": "Antioxidant"
+    },
+    {
+      "item_name": "E301 - Sodium Ascorbate",
+      "status": "Halal",
+      "category": "Antioxidant"
+    },
+    {
+      "item_name": "E306 - Tocopherols (Vitamin E)",
+      "status": "Mushbooh",
+      "category": "Antioxidant"
+    },
+    {
+      "item_name": "E322 - Lecithin (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E322 - Soy Lecithin",
+      "status": "Halal",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E322 - Sunflower Lecithin",
+      "status": "Halal",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E325 - Sodium Lactate",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E326 - Potassium Lactate",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E327 - Calcium Lactate",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E330 - Citric Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E331 - Sodium Citrates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E332 - Potassium Citrates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E333 - Calcium Citrates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E334 - Tartaric Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E338 - Phosphoric Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E339 - Sodium Phosphates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E341 - Calcium Phosphates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E400 - Alginic Acid",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E401 - Sodium Alginate",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E406 - Agar",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E407 - Carrageenan",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E410 - Locust Bean Gum",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E412 - Guar Gum",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E413 - Tragacanth",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E414 - Gum Arabic (Acacia Gum)",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E415 - Xanthan Gum",
+      "status": "Halal",
+      "category": "Thickener"
+    },
+    {
+      "item_name": "E420 - Sorbitol",
+      "status": "Halal",
+      "category": "Sweetener / Humectant"
+    },
+    {
+      "item_name": "E421 - Mannitol",
+      "status": "Halal",
+      "category": "Sweetener / Humectant"
+    },
+    {
+      "item_name": "E422 - Glycerol (Glycerin, unspecified source)",
+      "status": "Mushbooh",
+      "category": "Humectant / Sweetener"
+    },
+    {
+      "item_name": "E422 - Glycerol (Glycerin, plant source)",
+      "status": "Halal",
+      "category": "Humectant / Sweetener"
+    },
+    {
+      "item_name": "E432 - Polysorbate 20",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E433 - Polysorbate 80",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E434 - Polysorbate 40",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E435 - Polysorbate 60",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E436 - Polysorbate 65",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E440 - Pectins",
+      "status": "Halal",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "E441 - Gelatine (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Gelling Agent"
+    },
+    {
+      "item_name": "E450 - Diphosphates",
+      "status": "Halal",
+      "category": "Emulsifier / Stabilizer"
+    },
+    {
+      "item_name": "E460 - Cellulose",
+      "status": "Halal",
+      "category": "Thickener / Emulsifier"
+    },
+    {
+      "item_name": "E470 - Salts of fatty acids (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier / Stabilizer"
+    },
+    {
+      "item_name": "E471 - Mono- and diglycerides of fatty acids (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E471 - Mono- and diglycerides of fatty acids (plant source)",
+      "status": "Halal",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E472a - Acetic acid esters of mono- and diglycerides (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E472b - Lactic acid esters of mono- and diglycerides (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E472c - Citric acid esters of mono- and diglycerides (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E472e - Diacetyl tartaric acid esters of mono- and diglycerides (DATEM)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E473 - Sucrose esters of fatty acids",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E475 - Polyglycerol esters of fatty acids",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E476 - Polyglycerol polyricinoleate (PGPR)",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E477 - Propylene glycol esters of fatty acids",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E481 - Sodium stearoyl-2-lactylate",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E482 - Calcium stearoyl-2-lactylate",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E491 - Sorbitan monostearate",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E492 - Sorbitan tristearate",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E494 - Sorbitan monooleate",
+      "status": "Mushbooh",
+      "category": "Emulsifier"
+    },
+    {
+      "item_name": "E500 - Sodium Carbonates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E501 - Potassium Carbonates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E503 - Ammonium Carbonates",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E507 - Hydrochloric Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator"
+    },
+    {
+      "item_name": "E551 - Silicon Dioxide",
+      "status": "Halal",
+      "category": "Anti-caking Agent"
+    },
+    {
+      "item_name": "E620 - Glutamic Acid",
+      "status": "Halal",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "E621 - Monosodium Glutamate (MSG)",
+      "status": "Halal",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "E627 - Disodium Guanylate",
+      "status": "Mushbooh",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "E631 - Disodium Inosinate",
+      "status": "Mushbooh",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "E635 - Disodium 5'-ribonucleotides",
+      "status": "Mushbooh",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "Disodium Guanylate / Inosinate (vegetable source)",
+      "status": "Halal",
+      "category": "Flavor Enhancer"
+    },
+    {
+      "item_name": "E901 - Beeswax",
+      "status": "Halal",
+      "category": "Glazing Agent"
+    },
+    {
+      "item_name": "E903 - Carnauba Wax",
+      "status": "Halal",
+      "category": "Glazing Agent"
+    },
+    {
+      "item_name": "E920 - L-cysteine (unspecified source)",
+      "status": "Mushbooh",
+      "category": "Dough Conditioner"
+    },
+    {
+      "item_name": "E950 - Acesulfame K",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E951 - Aspartame",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E952 - Cyclamic Acid",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E954 - Saccharin",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E955 - Sucralose",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E965 - Maltitol",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E966 - Lactitol",
+      "status": "Mushbooh",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E967 - Xylitol",
+      "status": "Halal",
+      "category": "Sweetener"
+    },
+    {
+      "item_name": "E1103 - Invertase",
+      "status": "Halal",
+      "category": "Enzymes"
+    },
+    {
+      "item_name": "E1518 - Glyceryl triacetate",
+      "status": "Mushbooh",
+      "category": "Humectant"
+    },
+    {
+      "item_name": "E1520 - Propylene Glycol",
+      "status": "Halal",
+      "category": "Humectant"
+    },
+    {
+      "item_name": "Apple",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Apricot",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Avocado",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Banana",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Blackberry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Blueberry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Cantaloupe",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Cherry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Coconut",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Cranberry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Date Fruit",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Dragonfruit (Pitaya)",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Durian",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Fig",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Grape",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Grapefruit",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Guava",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Honeydew Melon",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Jackfruit",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Jujube",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Kiwifruit",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Kumquat",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Lemon",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Lime",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Longan",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Lychee",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Mango",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Mangosteen",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Nectarine",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Olive",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Orange",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Papaya",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Passion Fruit",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Peach",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Pear",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Persimmon",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Pineapple",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Plum",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Pomegranate",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Pomelo",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Rambutan",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Raspberry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Salak (Snake Fruit)",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Soursop",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Starfruit (Carambola)",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Strawberry",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Tangerine",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Watermelon",
+      "status": "Halal",
+      "category": "Fruit"
+    },
+    {
+      "item_name": "Artichoke",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Arugula",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Asparagus",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Bean Sprouts",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Beetroot",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Bell Pepper",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Bitter Melon",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Bok Choy",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Broccoli",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Brussels Sprouts",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Butternut Squash",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Cabbage",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Carrot",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Cassava",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Cauliflower",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Celery",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Chayote",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Chickpea",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Chili Pepper (generic)",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Bird's Eye Chili (Cabe Rawit)",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Corn",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Cucumber",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Daikon Radish",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Edamame",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Eggplant (Aubergine)",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Fennel",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Galangal",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Garlic",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Ginger",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Green Beans",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Jicama",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Kale",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Kangkung (Water Spinach)",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Leek",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Lettuce",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Mushroom",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Mustard Greens",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Okra",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Onion",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Parsnip",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Peas",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Potato",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Pumpkin",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Radish",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Rhubarb",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Scallion (Spring Onion)",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Shallot",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Spinach",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Sweet Potato",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Swiss Chard",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Taro",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Tomato",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Turnip",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Water Chestnut",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Winter Melon",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Yam",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Zucchini",
+      "status": "Halal",
+      "category": "Vegetable"
+    },
+    {
+      "item_name": "Allspice",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Anise",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Basil",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Bay Leaf",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Salam Leaf (Indonesian Bay Leaf)",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Black Pepper",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Candlenut (Kemiri)",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Cardamom",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Cayenne Pepper",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Celery Seed",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Chili Powder",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Cilantro (Coriander Leaves)",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Cinnamon",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Cloves",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Coriander Seed",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Cumin",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Curry Leaves",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Dill",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Fennel Seed",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Fenugreek",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Kaffir Lime Leaves",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Lemongrass",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Pandan Leaf",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Mace",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Marjoram",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Mint",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Mustard Seed",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Nutmeg",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Oregano",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Paprika",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Parsley",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Poppy Seed",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Rosemary",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Saffron",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Sage",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Star Anise",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Tamarind (Asam Jawa)",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Tarragon",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Thyme",
+      "status": "Halal",
+      "category": "Herb"
+    },
+    {
+      "item_name": "Turmeric",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "White Pepper",
+      "status": "Halal",
+      "category": "Spice"
+    },
+    {
+      "item_name": "Corn Starch",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Potato Starch",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Tapioca Starch / Flour",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Rice Flour",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Wheat Flour",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Arrowroot Starch",
+      "status": "Halal",
+      "category": "Flour & Starch"
+    },
+    {
+      "item_name": "Soy Protein Isolate",
+      "status": "Halal",
+      "category": "Plant-Based Derivative"
+    },
+    {
+      "item_name": "Pea Protein",
+      "status": "Halal",
+      "category": "Plant-Based Derivative"
+    },
+    {
+      "item_name": "Textured Vegetable Protein (TVP)",
+      "status": "Halal",
+      "category": "Plant-Based Derivative"
+    },
+    {
+      "item_name": "Raisins",
+      "status": "Halal",
+      "category": "Fruit (Processed)"
+    },
+    {
+      "item_name": "Dried Apricots",
+      "status": "Halal",
+      "category": "Fruit (Processed)"
+    },
+    {
+      "item_name": "Sun-dried Tomatoes",
+      "status": "Halal",
+      "category": "Vegetable (Processed)"
+    },
+    {
+      "item_name": "Apple Juice Concentrate",
+      "status": "Halal",
+      "category": "Fruit (Processed)"
+    },
+    {
+      "item_name": "Orange Juice Concentrate",
+      "status": "Halal",
+      "category": "Fruit (Processed)"
+    },
+    {
+      "item_name": "Tomato Paste",
+      "status": "Halal",
+      "category": "Vegetable (Processed)"
+    },
+    {
+      "item_name": "Milk",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Milk Powder",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Butter",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Yogurt",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Cheese",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Cream",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Flour",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Rice",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Oats",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Salt",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Sugar",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Egg",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Oil",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Soy",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Wheat",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Barley",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Yeast",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Cocoa",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Chocolate",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Vanilla",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Coffee",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Tea",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Pepper",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Chili",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Melon",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Peanut",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Almond",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Cashew",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Walnut",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Hazelnut",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Pistachio",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Sesame",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Sunflower Seed",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Pumpkin Seed",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Clove",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Tamarind",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Mustard",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Lentil",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Bean",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Pea",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Beet",
+      "status": "Halal",
+      "category": "Base Ingredient"
+    },
+    {
+      "item_name": "Sodium Benzoate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Potassium Sorbate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Citric Acid",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Sodium Citrate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Calcium Propionate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Sodium Nitrite",
+      "status": "Doubtful",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Ascorbic Acid",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Sodium Bicarbonate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Lecithin",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Polysorbate 60",
+      "status": "Doubtful",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Polysorbate 80",
+      "status": "Doubtful",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Mono and Diglycerides",
+      "status": "Doubtful",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Sodium Caseinate",
+      "status": "Doubtful",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Ammonium Sulfate",
+      "status": "Halal",
+      "category": "Food Additive"
+    },
+    {
+      "item_name": "Ginseng",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Ashwagandha",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Gotu Kola",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Tongkat Ali",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Ginkgo Biloba",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Elderberry",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Echinacea",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Moringa",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Licorice Root",
+      "status": "Halal",
+      "category": "Herbal"
+    },
+    {
+      "item_name": "Condensed Milk",
+      "status": "Halal",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Evaporated Milk",
+      "status": "Halal",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Whey Protein",
+      "status": "Doubtful",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Casein",
+      "status": "Doubtful",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Lactose",
+      "status": "Halal",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Skimmed Milk",
+      "status": "Halal",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Whole Milk",
+      "status": "Halal",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Cheddar Cheese",
+      "status": "Doubtful",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Mozzarella",
+      "status": "Doubtful",
+      "category": "Processed Dairy"
+    },
+    {
+      "item_name": "Parmesan",
+      "status": "Doubtful",
+      "category": "Processed Dairy"
+    }
+  ]
+}

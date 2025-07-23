@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halal Scanner - AI powered Halal Ingredients Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="min-h-screen">
+    <!-- Header/Navigation -->
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-quran text-2xl"></i>
+                    <h1 class="text-2xl font-bold">Halal Scanner</h1>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#" class="hover:text-gray-200 font-medium">Home</a>
+                    <a href="#how-it-works" class="hover:text-gray-200 font-medium">How It Works</a>
+                    <a href="#about" class="hover:text-gray-200 font-medium">About</a>
+                    <a href="#testimonials" class="hover:text-gray-200 font-medium">Testimoni</a>
+                    <a href="#faq" class="hover:text-gray-200 font-medium">FAQ</a>
+                </nav>
+                <div id="mobileMenu" class="md:hidden">
+                    <nav>
+                        <a href="#">Home</a>
+                        <a href="#how-it-works">How It Works</a>
+                        <a href="#about">About</a>
+                        <a href="#testimonials">Testimoni</a>
+                        <a href="#faq">FAQ</a>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="userDashboardBtn" class="bg-white text-indigo-600 px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition hidden">
+                        <i class="fas fa-user md:mr-2"></i><span class="hidden md:inline">Dashboard</span>
+                    </button>
+                    <button id="adminDashboardBtn" class="bg-red-600 text-white px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition hidden">
+                        <i class="fas fa-shield-alt md:mr-2"></i><span class="hidden md:inline">Admin</span>
+                    </button>
+                    <button id="signInBtn" class="bg-white text-indigo-600 px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                        <i class="fas fa-sign-in-alt md:mr-2"></i><span class="hidden md:inline">Sign In</span>
+                    </button>
+                    <button id="mobileMenuBtn" class="md:hidden" aria-label="Toggle mobile menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-16">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">AI Halal Ingredients Scanner</h1>
+                <p class="text-xl mb-8">Instantly identify haram ingredients in food products using AI & advanced OCR technology.</p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <button id="startLiveScan" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition flex items-center justify-center">
+                        <i class="fas fa-camera mr-2"></i> Live Scan
+                    </button>
+                    <button id="uploadImageBtn" class="bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-indigo-800 transition flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i> Upload Image
+                    </button>
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <div class="relative w-full max-w-md">
+                    <div class="bg-white rounded-2xl p-4 shadow-2xl transform rotate-2">
+                        <div class="bg-gray-100 rounded-lg p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="text-sm font-medium text-gray-700">Ingredients Analysis</div>
+                                <div class="text-xs text-gray-500">Halal Scanner</div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between bg-white p-2 rounded">
+                                    <span class="text-sm">Gelatin</span>
+                                    <span class="haram-badge text-white text-xs px-2 py-1 rounded-full">Haram</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white p-2 rounded">
+                                    <span class="text-sm">Vegetable Oil</span>
+                                    <span class="halal-badge text-white text-xs px-2 py-1 rounded-full">Halal</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white p-2 rounded">
+                                    <span class="text-sm">E471</span>
+                                    <span class="mashbooh-badge text-white text-xs px-2 py-1 rounded-full">Mashbooh</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white p-2 rounded">
+                                    <span class="text-sm">Natural Flavors</span>
+                                    <span class="unknown-badge text-white text-xs px-2 py-1 rounded-full">Unknown</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-xs text-gray-600">
+                                <i class="fas fa-info-circle mr-1"></i> Results are for guidance only. Consult a scholar for definitive rulings.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-4 -right-4 bg-yellow-400 text-gray-800 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        AI-Powered
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-16 bg-white section-hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">How AI Halal Scanner Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                    <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-camera text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">1. Scan or Upload</h3>
+                    <p class="text-gray-600 text-center">Take a photo of the product's ingredient list or upload an existing image from your device.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                    <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-brain text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">2. AI & OCR Analysis</h3>
+                    <p class="text-gray-600 text-center">Our advanced AI & OCR extracts text and analyzes each ingredient for halal compliance with contextual understanding.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+                    <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-check-circle text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">3. Get Results</h3>
+                    <p class="text-gray-600 text-center">Receive instant, clear results with explanations about each ingredient's halal status.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scanner Section (Hidden by default) -->
+    <section id="scannerSection" class="hidden py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800">Live Ingredient Scanner</h2>
+                <button id="closeScanner" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="relative camera-preview bg-black">
+                        <video id="cameraFeed" autoplay playsinline class="w-full h-auto"></video>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="border-2 border-green-400 rounded-lg h-3/4 w-3/4 relative overflow-hidden">
+                                <div class="scan-animation absolute top-0 left-0 right-0 h-1 bg-green-400"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button id="captureBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center">
+                            <i class="fas fa-camera mr-2"></i> Capture
+                        </button>
+                        <button id="switchCamera" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition flex items-center">
+                            <i class="fas fa-sync-alt mr-2"></i> Switch
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div id="resultsContainer">
+                        <div class="text-center py-8">
+                            <i class="fas fa-quran text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-500">Scan a product to analyze ingredients</h3>
+                            <p class="text-gray-400 mt-2">Point your camera at the ingredient list and tap capture</p>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingIndicator" class="hidden text-center py-8">
+                        <div class="inline-block loading-spinner border-4 border-indigo-500 border-t-transparent rounded-full w-12 h-12 mb-4"></div>
+                        <h3 class="text-xl font-medium text-gray-700">Analyzing Ingredients...</h3>
+                        <p class="text-gray-500 mt-2">Our AI & OCR is processing the image and checking for haram substances</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Uploaded Image Analysis Section (Hidden by default) -->
+    <section id="uploadAnalysisSection" class="hidden py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800">Image Analysis</h2>
+                <button id="closeUploadAnalysis" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                        <img id="uploadedImagePreview" src="" alt="Uploaded ingredient list" class="w-full h-auto rounded-lg hidden">
+                        <div id="uploadPlaceholder" class="text-center py-8">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-500">Upload an image of ingredients</h3>
+                            <p class="text-gray-400 mt-2">Drag & drop or click to select an image file</p>
+                            <button id="uploadImageBtn2" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                                Select Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div id="uploadResultsContainer">
+                        <div class="text-center py-8">
+                            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-500">No image analyzed yet</h3>
+                            <p class="text-gray-400 mt-2">Upload an image to see the halal analysis results</p>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadLoadingIndicator" class="hidden text-center py-8">
+                        <div class="inline-block loading-spinner border-4 border-indigo-500 border-t-transparent rounded-full w-12 h-12 mb-4"></div>
+                        <h3 class="text-xl font-medium text-gray-700">Processing Image...</h3>
+                        <p class="text-gray-500 mt-2">Extracting and analyzing ingredients from your image</p>
+                    </div>
+                    
+                    <!-- Manual Input for Testing -->
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-medium mb-3">Test Analysis (Manual Input)</h4>
+                        <p class="text-sm text-gray-600 mb-3">Enter ingredients separated by commas to test the analysis:</p>
+                        <textarea id="manualIngredients" placeholder="e.g., Sugar, Gelatin, E471, Natural Flavors, Water, Salt" class="w-full p-3 border border-gray-300 rounded-lg text-sm" rows="3"></textarea>
+                        <button id="testAnalysisBtn" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
+                            <i class="fas fa-flask mr-1"></i> Test Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="about" class="py-16 bg-indigo-50 section-hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Advanced AI Halal Scanning Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-green-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-language text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Multilingual Support</h3>
+                            <p class="text-gray-600">Analyze ingredients in multiple languages including English, Arabic, French, and more.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-atom text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">E-Number Detection</h3>
+                            <p class="text-gray-600">Automatically identify and explain E-numbers (food additives) and their halal status.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-book text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Ingredient Database</h3>
+                            <p class="text-gray-600">Comprehensive database of 10,000+ ingredients with detailed halal/haram classifications.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-lightbulb text-yellow-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Contextual Analysis</h3>
+                            <p class="text-gray-600">AI & OCR understands context (e.g., "alcohol" in vanilla extract vs. as a preservative).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-red-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-history text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Scan History</h3>
+                            <p class="text-gray-600">Save your scan history and revisit previous analyses (when signed in).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition ingredient-card">
+                    <div class="flex items-start">
+                        <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                            <i class="fas fa-mobile-alt text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Mobile Optimized</h3>
+                            <p class="text-gray-600">Works perfectly on smartphones for scanning products while shopping.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-16 bg-white section-hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">What Our Users Say</h2>
+            <div class="flex items-center justify-between mb-6">
+                <button id="testimonialPrev" class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl mr-2"><i class="fas fa-chevron-left"></i></button>
+                <div id="testimonialsCarousel" class="flex flex-row gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory w-full"></div>
+                <button id="testimonialNext" class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl ml-2"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-16 bg-gray-50 section-hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Frequently Asked Questions</h2>
+            <div id="faqSection" class="max-w-3xl mx-auto space-y-4">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                        <span>How accurate is Halal Scanner?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="mt-3 text-gray-600 hidden">
+                        Halal Scanner uses advanced OCR and a comprehensive database to provide highly accurate results. However, we always recommend consulting with a qualified Islamic scholar for definitive rulings, especially for complex cases. Our system learns and improves continuously based on user feedback and updates to halal certification standards.
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                        <span>What languages does it support?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="mt-3 text-gray-600 hidden">
+                        Currently, AI Halal Scanner supports English, Arabic, French, German, Turkish, and Indonesian. We're continuously working to add more languages. The app can recognize ingredient lists in these languages and provide analysis in your preferred language.
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                        <span>How do you handle doubtful (mashbooh) ingredients?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="mt-3 text-gray-600 hidden">
+                        For ingredients classified as mashbooh (doubtful), we provide detailed explanations about why they might be questionable and list alternative names they might appear under. We also indicate when further research or consultation with a scholar might be needed. Users can submit feedback if they have additional information about specific ingredients.
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                        <span>Is my data and scan history stored?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="mt-3 text-gray-600 hidden">
+                        For guest users, scan results are only stored temporarily in your browser and are not saved to our servers. If you create an account, you can choose to save your scan history for future reference. We never share your personal data with third parties. All images are processed securely and deleted after analysis.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section (Replaced with Review Form) -->
+    <section class="gradient-bg text-white py-16 section-hidden">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+            <div class="md:w-1/2 mb-8 md:mb-0">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Share Your Experience</h2>
+                <p class="text-lg md:text-xl max-w-md">Leave a star rating and a testimony. Your review will be displayed on our Testimonials page!</p>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <form id="reviewForm" class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md flex flex-col gap-4">
+                    <div class="w-full flex flex-col items-start">
+                        <label class="block text-base font-bold mb-1 text-gray-700">Your Rating</label>
+                        <div id="starRating" class="flex flex-row-reverse text-2xl cursor-pointer mb-1 gap-1">
+                            <span data-value="5" class="star star-outline">&#9733;</span>
+                            <span data-value="4" class="star star-outline">&#9733;</span>
+                            <span data-value="3" class="star star-outline">&#9733;</span>
+                            <span data-value="2" class="star star-outline">&#9733;</span>
+                            <span data-value="1" class="star star-outline">&#9733;</span>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingInput" required>
+                    </div>
+                    <div class="w-full">
+                        <label for="reviewerName" class="block text-base font-bold mb-1 text-gray-700">Your Name</label>
+                        <input id="reviewerName" name="name" type="text" class="w-full p-2 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Enter your name" required />
+                    </div>
+                    <div class="w-full">
+                        <label for="testimony" class="block text-base font-bold mb-1 text-gray-700">Your Testimony</label>
+                        <textarea id="testimony" name="testimony" rows="3" class="w-full p-2 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Share your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-700 text-white py-2 rounded-lg font-bold hover:bg-indigo-800 transition text-base shadow-sm">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-quran mr-2"></i> Halal Scanner
+                    </h3>
+                    <p class="text-gray-400">Empowering Muslims worldwide with OCR-powered halal ingredient verification.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="md:col-span-1 flex flex-col items-start md:items-center md:justify-center">
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white">How It Works</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-white">Testimoni</a></li>
+                        <li><a href="#faq" class="text-gray-400 hover:text-white">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="md:col-span-2 flex flex-col">
+                    <h4 class="font-semibold text-lg mb-4 text-left">Contact Us</h4>
+                    <ul class="space-y-2 text-left">
+                        <li class="flex items-center text-gray-400"><i class="fas fa-envelope mr-2"></i> levinashavila@gmail.com</li>
+                        <li class="flex items-center text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i> Bekasi, Jawa Barat, Indonesia</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col items-center">
+                <p class="text-gray-400 mb-4 md:mb-0 text-center">© 2025 Halal Scanner. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-2xl w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Important Disclaimer</h3>
+                <button id="closeDisclaimer" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="prose text-gray-700 mb-6">
+                <p>Halal Scanner provides information and guidance about food ingredients based on our extensive database and OCR analysis. However, we cannot guarantee 100% accuracy for several reasons:</p>
+                <ul class="list-disc pl-5 mt-2">
+                    <li>Manufacturers may change formulations without notice</li>
+                    <li>Ingredient sources may vary by region or production batch</li>
+                    <li>Islamic scholars may differ in their interpretations</li>
+                    <li>Some ingredients require specific knowledge of their production process</li>
+                </ul>
+                <p class="mt-4">For definitive rulings, especially in matters of personal religious observance, we strongly recommend consulting with qualified Islamic scholars or halal certification bodies in your area.</p>
+                <p class="mt-4 font-semibold">By using Halal Scanner, you acknowledge that the results are for informational purposes only and should not be considered as a fatwa or definitive religious ruling.</p>
+            </div>
+            <div class="flex justify-end">
+                <button id="acceptDisclaimer" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Sign In</h3>
+                <button id="closeSignIn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="signInForm">
+                <div class="mb-4">
+                    <label for="signInEmail" class="block text-gray-700 mb-2">Email Address</label>
+                    <input type="email" id="signInEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required minlength="3" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                </div>
+                <div class="mb-6">
+                    <label for="signInPassword" class="block text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="signInPassword" class="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required minlength="6">
+                        <button type="button" id="toggleSignInPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye" id="signInPasswordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">Sign In</button>
+            </form>
+            <p class="text-center text-gray-600 mt-6">
+                Don't have an account? <a href="#" id="showSignUp" class="text-indigo-600 hover:underline">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Create Account</h3>
+                <button id="closeSignUp" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="signUpForm">
+                <div class="mb-4">
+                    <label for="signUpName" class="block text-gray-700 mb-2">Full Name</label>
+                    <input type="text" id="signUpName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required minlength="2" pattern="[A-Za-z\s]+">
+                </div>
+                <div class="mb-4">
+                    <label for="signUpEmail" class="block text-gray-700 mb-2">Email Address</label>
+                    <input type="email" id="signUpEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required minlength="3" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                </div>
+                <div class="mb-6">
+                    <label for="signUpPassword" class="block text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="signUpPassword" class="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required minlength="6">
+                        <button type="button" id="toggleSignUpPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye" id="signUpPasswordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">Sign Up</button>
+            </form>
+            <p class="text-center text-gray-600 mt-6">
+                Already have an account? <a href="#" id="showSignIn" class="text-indigo-600 hover:underline">Sign In</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Report Inaccuracy Modal -->
+    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Report Inaccuracy</h3>
+                <button id="closeReportModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="reportForm">
+                <div class="mb-4">
+                    <label for="reportItemName" class="block text-gray-700 mb-2">Item Name</label>
+                    <input type="text" id="reportItemName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="reportReason" class="block text-gray-700 mb-2">Reason for Report</label>
+                    <textarea id="reportReason" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="Please describe the inaccuracy you found..." required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Dashboard Modal -->
+    <div id="userDashboardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">User Dashboard</h3>
+                    <button id="closeUserDashboard" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button class="tab-button active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600" data-tab="saved-results">
+                        <i class="fas fa-save mr-2"></i>Saved Results
+                    </button>
+                    <button class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="reports">
+                        <i class="fas fa-flag mr-2"></i>My Reports
+                    </button>
+                </div>
+                
+                <!-- Saved Results Tab -->
+                <div id="saved-results-tab" class="tab-content">
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold mb-2">Saved Scan Results</h4>
+                        <p class="text-gray-600 text-sm">Your saved scan results will appear here.</p>
+                    </div>
+                    <div id="savedResultsList" class="space-y-4">
+                        <!-- Saved results will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="tab-content hidden">
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold mb-2">My Inaccuracy Reports</h4>
+                        <p class="text-gray-600 text-sm">Track the status of your submitted reports.</p>
+                    </div>
+                    <div id="userReportsList" class="space-y-4">
+                        <!-- User reports will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="adminDashboardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Admin Dashboard</h3>
+                    <button id="closeAdminDashboard" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button class="admin-tab-button active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600" data-tab="admin-saved-results">
+                        <i class="fas fa-save mr-2"></i>All Saved Results
+                    </button>
+                    <button class="admin-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="admin-reports">
+                        <i class="fas fa-flag mr-2"></i>Inaccuracy Reports
+                    </button>
+                </div>
+                <!-- All Saved Results Tab -->
+                <div id="admin-saved-results-tab" class="admin-tab-content">
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold mb-2">My Saved Results</h4>
+                        <p class="text-gray-600 text-sm">View and manage your saved scan results.</p>
+                    </div>
+                    <div id="adminSavedResultsList" class="space-y-4">
+                        <!-- Admin's saved results will be loaded here -->
+                    </div>
+                </div>
+                <!-- Inaccuracy Reports Tab -->
+                <div id="admin-reports-tab" class="admin-tab-content hidden">
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-4">Inaccuracy Reports</h4>
+                        </div>
+                        <div id="adminReportsList" class="space-y-4">
+                            <!-- Admin reports will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Note Modal -->
+    <div id="adminNoteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Add Admin Note</h3>
+                <button id="closeAdminNoteModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="adminNoteForm">
+                <div class="mb-4">
+                    <label for="adminNoteText" class="block text-gray-700 mb-2">Admin Note</label>
+                    <textarea id="adminNoteText" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="Enter your note here..." required></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAdminNote" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+                        Save Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+            <div class="mb-4">
+                <span id="customConfirmMessage" class="block text-lg text-gray-800"></span>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="customConfirmCancel" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
+                <button id="customConfirmOk" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.1/dist/tesseract.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

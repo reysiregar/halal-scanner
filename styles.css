@@ -1,0 +1,319 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+html {
+    scroll-behavior: smooth;
+}
+
+.section-hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.section-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
+    transition: background-color 0.3s;
+}
+
+body.mobile-menu-open {
+    overflow: hidden;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%);
+}
+
+/* Animated Hamburger Icon */
+#mobileMenuBtn {
+    display: none; /* Hidden by default */
+    width: 24px;
+    height: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+    z-index: 50; /* Ensure it's above the mobile menu overlay */
+}
+
+#mobileMenuBtn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    border-radius: 1px;
+    transition: all 0.3s ease-in-out;
+}
+
+#mobileMenuBtn.open span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+
+#mobileMenuBtn.open span:nth-child(2) {
+    opacity: 0;
+}
+
+#mobileMenuBtn.open span:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+/* Modern Mobile Menu */
+@media (max-width: 768px) {
+    #mobileMenuBtn {
+        display: flex; /* Only display as flex on mobile */
+        flex-direction: column;
+        justify-content: space-between;
+    }
+}
+#mobileMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 40;
+}
+
+#mobileMenu.open {
+    transform: translateX(0);
+}
+
+#mobileMenu nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+#mobileMenu a {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#mobileMenu.open a {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered animation for menu items */
+#mobileMenu.open a:nth-child(1) { transition-delay: 0.2s; }
+#mobileMenu.open a:nth-child(2) { transition-delay: 0.25s; }
+#mobileMenu.open a:nth-child(3) { transition-delay: 0.3s; }
+#mobileMenu.open a:nth-child(4) { transition-delay: 0.35s; }
+#mobileMenu.open a:nth-child(5) { transition-delay: 0.4s; }
+
+.ingredient-card {
+    transition: all 0.3s ease;
+}
+
+.ingredient-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.halal-badge { background-color: #10b981; }
+.haram-badge { background-color: #ef4444; }
+.mashbooh-badge { background-color: #f59e0b; }
+.unknown-badge { background-color: #64748b; }
+
+.camera-preview {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.scan-animation { animation: scan 2s infinite; }
+@keyframes scan {
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+}
+
+.loading-spinner { animation: spin 1s linear infinite; }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Focus states for accessibility */
+button:focus, input:focus, a:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* Loading states */
+.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Error states */
+.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+} 
+
+section[id] {
+    scroll-margin-top: 5rem;
+} 
+
+/* Dashboard and Modal Styles */
+.tab-button { transition: all 0.3s ease; }
+.tab-button:hover { color: #4f46e5; }
+.tab-button.active {
+    border-bottom: 2px solid #4f46e5;
+    color: #4f46e5;
+}
+.tab-content { transition: opacity 0.3s ease; }
+
+/* Status Badge Colors */
+.status-pending { background-color: #fef3c7; color: #92400e; }
+.status-solved { background-color: #d1fae5; color: #065f46; }
+.status-rejected { background-color: #fee2e2; color: #991b1b; }
+
+/* Admin Dashboard Styles */
+.admin-report-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+}
+.admin-report-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+/* User Dashboard Styles */
+.user-report-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: white;
+}
+.saved-result-card {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.btn-primary:hover { background-color: #4338ca; }
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.btn-secondary:hover { background-color: #4b5563; }
+
+.btn-danger {
+    background-color: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.btn-danger:hover { background-color: #dc2626; }
+
+.btn-success {
+    background-color: #10b981;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.btn-success:hover { background-color: #059669; }
+
+/* Form Styles */
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    transition: border-color 0.2s ease;
+}
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Responsive Design */
+@media (min-width: 769px) {
+    #mobileMenuBtn {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
+    .tab-button {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .admin-report-card, .user-report-card, .saved-result-card {
+        padding: 0.75rem;
+    }
+} 
+
+.star-outline {
+  -webkit-text-stroke: 1px #ffd500;
+  text-shadow: 0 0 1px #ffd500;
+}
