@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // Load haram ingredients database (new structure)
 let haramIngredientsArr = [];
 try {
-    const haramData = fs.readFileSync(path.join(__dirname, '../haram_ingredients.json'), 'utf8');
+    const haramData = fs.readFileSync(path.join(__dirname, '../ingredients.json'), 'utf8');
     const parsed = JSON.parse(haramData);
     haramIngredientsArr = parsed.ingredients || [];
 } catch (error) {
@@ -30,7 +30,8 @@ try {
 // Enhanced normalization: remove common words, plurals, and extra spaces
 function strongNormalize(str) {
     return str
-        .replace(/\([^)]*\)/g, '') // remove parenthesis and their content
+        // Remove parentheses symbols but keep the content inside
+        .replace(/[()]/g, '')
         .replace(/\d+[.,]?\d*\s*%/g, '') // remove percentages like 14,5% or 14.5%
         .replace(/\d+[.,]?\d*\s*g\b/gi, '') // remove grams like 20g, 5g
         .replace(/\d+[%]?/g, '') // remove numbers and percentages
@@ -209,7 +210,7 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
         console.error(err.message);
         throw err;
     }
-    console.log('Connected to the halalscanner.db database.');
+    console.log('✅ Connected to database.');
 
     // Create users table with is_admin column
     const usersSql = `
@@ -315,7 +316,7 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
             if (!ocrText || typeof ocrText !== 'string') {
                 return res.status(400).json({ error: 'OCR text is required' });
             }
-            const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., “contains milk”, “gluten-free”, etc.). Text: ${ocrText}`;
+            const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., “contains milk”, “gluten-free”, "and", "or", "with", "from", "of", "the", "a", "an", etc.). If an ingredient contains parentheses, include the content but remove the parentheses symbols from the output. Remove all symbols except dash. Text: ${ocrText}`;
             const response = await cohere.generate({
                 model: 'command',
                 prompt: prompt,
@@ -323,7 +324,28 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
                 temperature: 0.2,
                 stop_sequences: ['\n']
             });
-            const cleaned = response.generations[0].text.trim();
+            let cleaned = response.generations[0].text.trim();
+            // Improved post-process: remove parentheses symbols but keep their content, remove non-ingredient words, and extraneous symbols except dash
+            cleaned = cleaned
+                // Remove parentheses symbols but keep the content inside
+                .replace(/[()]/g, '')
+                // Remove non-ingredient words/phrases at start, end, or after slashes
+                .replace(/(^|[\s,/\\-])((and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that|and\/or|and-or|or\/and|andor|orand))[\s,/\\-]+/gi, '$1')
+                // Remove non-ingredient words/phrases at the end
+                .replace(/([\s,/\\-])((and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that|and\/or|and-or|or\/and|andor|orand))$/gi, '')
+                // Remove any remaining non-ingredient words (standalone)
+                .replace(/\b(and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that|and\/or|and-or|or\/and|andor|orand)\b/gi, '')
+                // Remove extraneous symbols except dash, comma, space
+                .replace(/[^a-zA-Z0-9,\-\s]/g, '')
+                // Remove repeated dashes, commas, or spaces
+                .replace(/\s{2,}/g, ' ')
+                .replace(/,+/g, ',')
+                .replace(/\-+/g, '-')
+                // Remove leading/trailing dashes, commas, spaces from each ingredient
+                .split(',')
+                .map(i => i.trim().replace(/^[-\s]+|[-\s]+$/g, ''))
+                .filter(i => i.length > 0)
+                .join(', ');
             res.json({ success: true, ingredients: cleaned });
         } catch (error) {
             console.error('Cohere extraction error:', error);
@@ -626,7 +648,7 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
     });
 
     app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+        console.log(`✅ Server is running: port ${PORT}`);
     });
 });
 

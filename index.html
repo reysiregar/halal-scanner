@@ -335,38 +335,38 @@
             <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Frequently Asked Questions</h2>
             <div id="faqSection" class="max-w-3xl mx-auto space-y-4">
                 <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
                         <span>How accurate is Halal Scanner?</span>
                         <i class="fas fa-chevron-down transition-transform"></i>
                     </button>
-                    <div class="mt-3 text-gray-600 hidden">
+                    <div class="faq-answer mt-3 text-gray-600 max-h-0 overflow-hidden transition-all duration-400" style="display:none;">
                         Halal Scanner uses advanced OCR and a comprehensive database to provide highly accurate results. However, we always recommend consulting with a qualified Islamic scholar for definitive rulings, especially for complex cases. Our system learns and improves continuously based on user feedback and updates to halal certification standards.
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
                         <span>What languages does it support?</span>
                         <i class="fas fa-chevron-down transition-transform"></i>
                     </button>
-                    <div class="mt-3 text-gray-600 hidden">
+                    <div class="faq-answer mt-3 text-gray-600 max-h-0 overflow-hidden transition-all duration-400" style="display:none;">
                         Currently, AI Halal Scanner supports English, Arabic, French, German, Turkish, and Indonesian. We're continuously working to add more languages. The app can recognize ingredient lists in these languages and provide analysis in your preferred language.
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
                         <span>How do you handle doubtful (mashbooh) ingredients?</span>
                         <i class="fas fa-chevron-down transition-transform"></i>
                     </button>
-                    <div class="mt-3 text-gray-600 hidden">
+                    <div class="faq-answer mt-3 text-gray-600 max-h-0 overflow-hidden transition-all duration-400" style="display:none;">
                         For ingredients classified as mashbooh (doubtful), we provide detailed explanations about why they might be questionable and list alternative names they might appear under. We also indicate when further research or consultation with a scholar might be needed. Users can submit feedback if they have additional information about specific ingredients.
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <button class="flex justify-between items-center w-full text-left font-semibold text-lg">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
                         <span>Is my data and scan history stored?</span>
                         <i class="fas fa-chevron-down transition-transform"></i>
                     </button>
-                    <div class="mt-3 text-gray-600 hidden">
+                    <div class="faq-answer mt-3 text-gray-600 max-h-0 overflow-hidden transition-all duration-400" style="display:none;">
                         For guest users, scan results are only stored temporarily in your browser and are not saved to our servers. If you create an account, you can choose to save your scan history for future reference. We never share your personal data with third parties. All images are processed securely and deleted after analysis.
                     </div>
                 </div>
@@ -374,6 +374,63 @@
         </div>
     </section>
 
+    <script>
+    // FAQ Accordion: Only one open, smooth transition, no flicker
+    document.addEventListener('DOMContentLoaded', function() {
+      const faqQuestions = document.querySelectorAll('.faq-question');
+      faqQuestions.forEach(btn => {
+        const answer = btn.nextElementSibling;
+        // Ensure all answers are hidden by default
+        answer.style.display = 'none';
+        answer.style.maxHeight = '0px';
+        answer.style.overflow = 'hidden';
+        btn.addEventListener('click', function() {
+          const icon = btn.querySelector('i');
+          const isOpen = answer.classList.contains('faq-open');
+          // Close all answers except the one being clicked
+          document.querySelectorAll('.faq-answer.faq-open').forEach(openAns => {
+            if (openAns !== answer) {
+              openAns.style.maxHeight = openAns.scrollHeight + 'px'; // ensure correct height before closing
+              // Force reflow for transition
+              void openAns.offsetWidth;
+              openAns.style.maxHeight = '0px';
+              openAns.classList.remove('faq-open');
+              const openIcon = openAns.previousElementSibling.querySelector('i');
+              if (openIcon) openIcon.classList.remove('rotate-180');
+              // Hide after transition
+              openAns.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'max-height') {
+                  openAns.style.display = 'none';
+                  openAns.removeEventListener('transitionend', handler);
+                }
+              });
+            }
+          });
+          if (!isOpen) {
+            answer.classList.add('faq-open');
+            answer.style.display = 'block';
+            // Force reflow for transition
+            void answer.offsetWidth;
+            answer.style.maxHeight = answer.scrollHeight + 'px';
+            icon.classList.add('rotate-180');
+          } else {
+            answer.style.maxHeight = answer.scrollHeight + 'px'; // set to current height for transition
+            // Force reflow for transition
+            void answer.offsetWidth;
+            answer.style.maxHeight = '0px';
+            answer.classList.remove('faq-open');
+            icon.classList.remove('rotate-180');
+            answer.addEventListener('transitionend', function handler(e) {
+              if (e.propertyName === 'max-height') {
+                answer.style.display = 'none';
+                answer.removeEventListener('transitionend', handler);
+              }
+            });
+          }
+        });
+      });
+    });
+    </script>
     <!-- CTA Section (Replaced with Review Form) -->
     <section class="gradient-bg text-white py-16 section-hidden">
         <div class="container mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
