@@ -30,7 +30,8 @@ try {
 // Enhanced normalization: remove common words, plurals, and extra spaces
 function strongNormalize(str) {
     return str
-        .replace(/\([^)]*\)/g, '') // remove parenthesis and their content
+        // Remove parentheses symbols but keep the content inside
+        .replace(/[()]/g, '')
         .replace(/\d+[.,]?\d*\s*%/g, '') // remove percentages like 14,5% or 14.5%
         .replace(/\d+[.,]?\d*\s*g\b/gi, '') // remove grams like 20g, 5g
         .replace(/\d+[%]?/g, '') // remove numbers and percentages
@@ -315,7 +316,7 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
             if (!ocrText || typeof ocrText !== 'string') {
                 return res.status(400).json({ error: 'OCR text is required' });
             }
-            const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., “contains milk”, “gluten-free”, "and", "or", "with", "from", "of", "the", "a", "an", etc.), ignore anything in parentheses, and remove all symbols except dash. Text: ${ocrText}`;
+            const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., “contains milk”, “gluten-free”, "and", "or", "with", "from", "of", "the", "a", "an", etc.). If an ingredient contains parentheses, include the content but remove the parentheses symbols from the output. Remove all symbols except dash. Text: ${ocrText}`;
             const response = await cohere.generate({
                 model: 'command',
                 prompt: prompt,
@@ -324,11 +325,9 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
                 stop_sequences: ['\n']
             });
             let cleaned = response.generations[0].text.trim();
-            // Improved post-process: remove all parentheses (matched/unmatched), non-ingredient words (even at start/end/with slashes), and extraneous symbols except dash
+            // Improved post-process: remove parentheses symbols but keep their content, remove non-ingredient words, and extraneous symbols except dash
             cleaned = cleaned
-                // Remove anything in parentheses (including nested)
-                .replace(/\([^)]*\)/g, '')
-                // Remove any remaining unmatched parentheses
+                // Remove parentheses symbols but keep the content inside
                 .replace(/[()]/g, '')
                 // Remove non-ingredient words/phrases at start, end, or after slashes
                 .replace(/(^|[\s,/\\-])((and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that|and\/or|and-or|or\/and|andor|orand))[\s,/\\-]+/gi, '$1')
