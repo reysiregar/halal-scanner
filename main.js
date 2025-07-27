@@ -607,6 +607,8 @@ function extractIngredientList(text) {
             .replace(/\(.*?\)/g, '') // remove parenthesis content
             .replace(/\s+,/g, ',')
             .replace(/,+/g, ',')
+            .replace(/\b(and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that)\b/gi, '') // remove non-ingredient words
+            .replace(/\s{2,}/g, ' ')
             .trim();
         // Remove trailing section headers
         result = result.replace(/(CONTAINS|PRODUCED|MAY CONTAIN|ALLERGEN|PRODUCTS THAT|FRIED|NOODLES|SEASONING|SWEET|CHILI|OIL|SAUCE|SHALLOT).*/i, '').trim();
@@ -643,13 +645,18 @@ function getCleanedIngredientListFromOCR(ocrText) {
         const lines = ocrText.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
         extracted = lines.filter(isLikelyIngredient).join(', ');
     }
-    // Split by comma/semicolon, trim, dedupe, and filter out empty
+    // Split by comma/semicolon, trim, dedupe, filter out empty, and remove non-ingredient words/symbols
     const ingredients = Array.from(
         new Set(
             extracted
                 .split(/[,;]/)
                 .map(i => i.trim())
                 .filter(i => i.length > 0)
+                .map(i => i.replace(/\(.*?\)/g, '')) // remove parenthesis content
+                .map(i => i.replace(/\b(and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that)\b/gi, '')) // remove non-ingredient words
+                .map(i => i.replace(/[^a-zA-Z0-9\-\s]/g, '')) // remove most symbols except dash
+                .map(i => i.replace(/\s{2,}/g, ' '))
+                .map(i => i.trim())
         )
     );
     return ingredients.join(', ');
@@ -2371,13 +2378,9 @@ if (reportForm) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Report Submitted',
-                    text: 'Your report has been submitted successfully. We will review it shortly.',
+                    text: 'Your report has been submitted successfully.',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#4f46e5'
-                }).then(() => {
-                    // Only close modal and reset form, do not reload or reset analysis result
-                    if (reportModal) reportModal.classList.add('hidden');
-                    reportForm.reset();
                 });
                 // Optionally, update the dashboard if it's open
                 if (document.getElementById('userDashboardModal') && !document.getElementById('userDashboardModal').classList.contains('hidden')) {
