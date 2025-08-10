@@ -852,7 +852,7 @@ async function analyzeUploadedImage() {
         // Use Cohere AI to extract/clean ingredients
         let ingredientList = '';
         try {
-            const aiRes = await fetch('http://localhost:3000/extract-ingredients-ai', {
+            const aiRes = await fetch(getApiUrl(API_ENDPOINTS.EXTRACT_INGREDIENTS_AI), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ocrText })
@@ -883,7 +883,7 @@ async function analyzeUploadedImage() {
             return;
         }
         // Call backend for analysis
-        const response = await fetch('http://localhost:3000/analyze-ingredients', {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.ANALYZE_INGREDIENTS), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1069,7 +1069,7 @@ async function analyzeCapturedImage(imageData) {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/analyze-ingredients', {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.ANALYZE_INGREDIENTS), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1312,7 +1312,7 @@ if (signUpForm) {
         const password = passwordInput.value;
 
         // Use backend API for sign-up
-        fetch('http://localhost:3000/signup', {
+        fetch(getApiUrl(API_ENDPOINTS.SIGN_UP), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1400,7 +1400,7 @@ if (signInForm) {
         const password = passwordInput.value;
 
         // Use backend API for sign-in
-        fetch('http://localhost:3000/login', {
+        fetch(getApiUrl(API_ENDPOINTS.SIGN_IN), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1618,7 +1618,7 @@ async function loadSavedResults() {
     
     try {
         const token = localStorage.getItem('jwtToken');
-        const response = await fetch('http://localhost:3000/user-saved-results', {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_SAVED_RESULTS), {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1704,9 +1704,38 @@ function displaySavedResults(results) {
     });
 }
 
+async function loadUserReports() {
+    if (!currentUser) return;
+    
+    try {
+        const token = localStorage.getItem('jwtToken');
+        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_USER_REPORTS), {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayUserReports(data.reports);
+        } else {
+            throw new Error(data.error || 'Failed to load reports');
+        }
+    } catch (error) {
+        console.error('Error loading user reports:', error);
+        document.getElementById('userReportsList').innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                <p>Failed to load reports</p>
+            </div>
+        `;
+    }
+}
+
 async function deleteSavedResult(resultId) {
     try {
-        const response = await fetch(`http://localhost:3000/saved-results/${resultId}`, {
+        const response = await fetch(`${getApiUrl(API_ENDPOINTS.DELETE_SAVED_RESULT)}/${resultId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
@@ -1735,292 +1764,6 @@ async function deleteSavedResult(resultId) {
             if (container && container.children.length === 0) {
                 container.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results yet</p></div>`;
             }
-        } else {
-            throw new Error('Failed to delete saved result');
-        }
-    } catch (error) {
-        console.error('Error deleting saved result:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Delete Failed',
-            text: 'Failed to delete saved result',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#ef4444'
-        });
-    }
-}
-
-async function loadUserReports() {
-    if (!currentUser) return;
-    
-    try {
-        const token = localStorage.getItem('jwtToken');
-        const response = await fetch('http://localhost:3000/user-reports', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            displayUserReports(data.reports);
-        } else {
-            throw new Error(data.error || 'Failed to load reports');
-        }
-    } catch (error) {
-        console.error('Error loading user reports:', error);
-        document.getElementById('userReportsList').innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Failed to load reports</p>
-            </div>
-        `;
-    }
-}
-
-function displayUserReports(reports) {
-    const container = document.getElementById('userReportsList');
-    
-    if (!reports || reports.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-flag text-2xl mb-2"></i>
-                <p>No reports submitted yet</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '';
-    reports.forEach(report => {
-        const date = new Date(report.created_at).toLocaleDateString();
-        const statusColor = {
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'solved': 'bg-green-100 text-green-800',
-            'rejected': 'bg-red-100 text-red-800'
-        }[report.status] || 'bg-gray-100 text-gray-800';
-        
-        html += `
-            <div class="bg-white border rounded-lg p-4">
-                <div class="flex justify-between items-start mb-2">
-                    <h5 class="font-medium">${report.item_name}</h5>
-                    <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColor}">
-                        ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                    </span>
-                </div>
-                <p class="text-sm text-gray-600 mb-2">${report.reason}</p>
-                <div class="text-xs text-gray-500">
-                    Submitted: ${date}
-                </div>
-                <div class="flex space-x-2 mt-2">
-                    <button class="delete-user-report bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300" data-id="${report._id}">Delete</button>
-                </div>
-                ${report.admin_note ? `
-                    <div class="mt-2 p-2 bg-blue-50 rounded text-sm">
-                        <strong>Admin Response:</strong> ${report.admin_note}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-
-    // Delete report (user)
-    document.querySelectorAll('.delete-user-report').forEach(button => {
-        button.addEventListener('click', async function() {
-            const reportId = this.getAttribute('data-id');
-            const confirmed = await customConfirm('Are you sure you want to delete this report?');
-            if (confirmed) {
-                try {
-                    const response = await fetch(`http://localhost:3000/reports/${reportId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
-                            'user-id': currentUser.id,
-                            'user-email': currentUser.email,
-                            'user-name': currentUser.name
-                        }
-                    });
-                    if (response.ok) {
-                        loadUserReports();
-                    } else {
-                        const data = await response.json();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Delete Failed',
-                            text: data.error || 'Failed to delete report',
-                            confirmButtonColor: '#ef4444'
-                        });
-                    }
-                } catch (err) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Delete Failed',
-                        text: 'Failed to delete report',
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            }
-        });
-    });
-}
-
-// --- ADMIN DASHBOARD FUNCTIONALITY ---
-const adminDashboardModal = document.getElementById('adminDashboardModal');
-const closeAdminDashboard = document.getElementById('closeAdminDashboard');
-const adminTabButtons = document.querySelectorAll('.admin-tab-button');
-const adminTabContents = document.querySelectorAll('.admin-tab-content');
-
-adminTabButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        adminTabButtons.forEach(b => b.classList.remove('active', 'border-b-2', 'border-indigo-500', 'text-indigo-600'));
-        this.classList.add('active', 'border-b-2', 'border-indigo-500', 'text-indigo-600');
-        const tab = this.getAttribute('data-tab');
-        adminTabContents.forEach(content => {
-            if (content.id === `${tab}-tab`) {
-                content.classList.remove('hidden');
-            } else {
-                content.classList.add('hidden');
-            }
-        });
-        
-        // Load data for the selected tab
-        if (tab === 'admin-saved-results') {
-            loadAdminSavedResults();
-        } else if (tab === 'admin-reports') {
-            loadAdminReports();
-        }
-    });
-});
-
-if (adminDashboardBtn) {
-    adminDashboardBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (adminDashboardModal) {
-            adminDashboardModal.classList.remove('hidden');
-            // Default to loading saved results and set active tab
-            const savedResultsTab = document.querySelector('.admin-tab-button[data-tab="admin-saved-results"]');
-            if (savedResultsTab) {
-                savedResultsTab.click(); // This will trigger the tab click event and load data
-            } else {
-                loadAdminSavedResults();
-            }
-        }
-    });
-}
-
-if (closeAdminDashboard) {
-    closeAdminDashboard.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (adminDashboardModal) adminDashboardModal.classList.add('hidden');
-    });
-}
-
-async function loadAdminSavedResults() {
-    if (!currentUser || currentUser.id !== 1) return;
-    try {
-        const response = await fetch('http://localhost:3000/user-saved-results', {
-            headers: {
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        const data = await response.json();
-        if (response.ok) {
-            displayAdminSavedResults(data.saved_results);
-        } else {
-            throw new Error(data.error || 'Failed to load saved results');
-        }
-    } catch (error) {
-        console.error('Error loading admin saved results:', error);
-        document.getElementById('adminSavedResultsList').innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Failed to load saved results</p>
-            </div>
-        `;
-    }
-}
-
-function displayAdminSavedResults(results) {
-    const container = document.getElementById('adminSavedResultsList');
-    if (!results || results.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-save text-2xl mb-2"></i>
-                <p>No saved results yet</p>
-            </div>
-        `;
-        return;
-    }
-    let html = '';
-    results.forEach(result => {
-        let resultData = result.result_data;
-        // If result_data is a string, try to parse it
-        if (typeof resultData === 'string') {
-            try { resultData = JSON.parse(resultData); } catch {}
-        }
-        const date = new Date(result.created_at).toLocaleDateString();
-        html += `
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h5 class="font-medium">Scan Result - ${date}</h5>
-                        <p class="text-sm text-gray-600">User ID: ${result.user_id || 'N/A'}</p>
-                        <p class="text-sm text-gray-600">Overall Status: ${resultData.overallStatus || ''}</p>
-                    </div>
-                    <button type="button" class="delete-admin-saved-result text-red-600 hover:text-red-800" data-id="${result.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <div class="text-sm text-gray-600">
-                    <p><strong>Ingredients:</strong> ${resultData.ingredients || 'N/A'}</p>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-    // Add delete event listeners with confirmation
-    document.querySelectorAll('.delete-admin-saved-result').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const resultId = this.getAttribute('data-id');
-            Swal.fire({
-                title: 'Delete Saved Result?',
-                text: 'Are you sure you want to delete this saved result? This action cannot be undone.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Delete',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#4f46e5'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await deleteAdminSavedResult(resultId);
-                }
-            });
-        });
-    });
-}
-
-async function deleteAdminSavedResult(resultId) {
-    try {
-        const response = await fetch(`http://localhost:3000/saved-results/${resultId}`, {
-            method: 'DELETE',
-            headers: {
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        if (response.ok) {
-            loadAdminSavedResults(); // Reload the list
         } else {
             throw new Error('Failed to delete saved result');
         }
@@ -2484,7 +2227,7 @@ if (reportForm) {
         }
         
         try {
-            const response = await fetch('http://localhost:3000/submit-report', {
+            const response = await fetch(getApiUrl(API_ENDPOINTS.REPORT_INACCURACY), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2718,7 +2461,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!testimonialsCarousel) return;
         testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400">Loading testimonials...</div>';
         try {
-            const response = await fetch('http://localhost:3000/api/testimonials');
+            const response = await fetch(getApiUrl(API_ENDPOINTS.GET_TESTIMONIALS));
             const testimonials = await response.json();
             if (!Array.isArray(testimonials) || testimonials.length === 0) {
                 testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400">No testimonials yet. Be the first to review!</div>';

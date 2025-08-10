@@ -6,6 +6,7 @@ const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || DEFAULT_API_URL;
 // API endpoints
 export const API_ENDPOINTS = {
   ANALYZE_INGREDIENTS: '/analyze-ingredients',
+  EXTRACT_INGREDIENTS_AI: '/extract-ingredients-ai',
   SIGN_IN: '/auth/signin',
   SIGN_UP: '/auth/signup',
   SAVE_RESULT: '/api/save-result',
