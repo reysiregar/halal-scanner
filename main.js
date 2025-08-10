@@ -1704,6 +1704,77 @@ function displaySavedResults(results) {
     });
 }
 
+function displayUserReports(reports) {
+    const container = document.getElementById('userReportsList');
+    
+    if (!reports || reports.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-clipboard-list text-2xl mb-2"></i>
+                <p>No reports found</p>
+                <p class="text-sm mt-2">Your submitted reports will appear here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    `;
+    
+    reports.forEach(report => {
+        const date = new Date(report.createdAt).toLocaleDateString();
+        let statusBadge = '';
+        
+        switch(report.status) {
+            case 'pending':
+                statusBadge = 'bg-yellow-100 text-yellow-800';
+                break;
+            case 'in_progress':
+                statusBadge = 'bg-blue-100 text-blue-800';
+                break;
+            case 'resolved':
+                statusBadge = 'bg-green-100 text-green-800';
+                break;
+            case 'rejected':
+                statusBadge = 'bg-red-100 text-red-800';
+                break;
+            default:
+                statusBadge = 'bg-gray-100 text-gray-800';
+        }
+        
+        html += `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-medium">${report.item_name || 'Unnamed Item'}</h4>
+                    <span class="text-xs px-2 py-1 rounded-full ${statusBadge}">
+                        ${report.status.replace('_', ' ').toUpperCase()}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">${report.reason || 'No reason provided'}</p>
+                <div class="text-xs text-gray-400 flex justify-between items-center">
+                    <span>${date}</span>
+                    ${report.admin_note ? `
+                        <button class="text-blue-500 hover:underline" 
+                                onclick="document.getElementById('adminNoteText').textContent='${report.admin_note.replace(/'/g, "\\'")}'; 
+                                         document.getElementById('adminNoteModal').classList.remove('hidden');">
+                            View Note
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
 async function loadUserReports() {
     if (!currentUser) return;
     
