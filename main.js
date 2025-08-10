@@ -436,142 +436,86 @@ function cleanupCamera() {
 }
 
 // Cleanup on page unload and page hide
-window.addEventListener('beforeunload', cleanupCamera);
-window.addEventListener('pagehide', cleanupCamera);
 
 // Function to get camera constraints
 function getCameraConstraints(useFrontCamera = false) {
+    // For mobile devices, prefer the environment (back) camera by default
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     return {
         video: {
-            facingMode: useFrontCamera ? 'user' : 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            // Important for iOS Safari
-            frameRate: { ideal: 30, max: 30 }
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 },
+            // On mobile, prefer the environment (back) camera by default
+            facingMode: isMobile && !useFrontCamera ? 'environment' : 'user',
+            frameRate: { ideal: 24, max: 30 },
+            // Add these for better mobile compatibility
+            resizeMode: 'cover',
+            aspectRatio: { ideal: 16/9 }
         },
         audio: false
     };
 }
 
-// Function to setup video element for mobile
-function setupVideoElement() {
-    const video = document.getElementById('cameraFeed');
-    if (!video) return;
-    
-    // Add required attributes for mobile browsers
-    video.setAttribute('playsinline', '');
-    video.setAttribute('webkit-playsinline', '');
-    video.setAttribute('muted', '');
-    video.setAttribute('autoplay', '');
-    
-    // Ensure the video element is properly sized
-    video.style.width = '100%';
-    video.style.height = 'auto';
-    video.style.display = 'block';
-    
-    return video;
-}
-
-// Start camera with error handling
-async function startCamera() {
-    // Check if we're on HTTPS (required for camera access on most browsers)
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-        showCameraError('Camera access requires a secure connection (HTTPS) or localhost.');
-        return;
-    }
-
-    // Check if camera is supported
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showCameraError('Camera access is not supported by your browser.');
-        return;
-    }
-
-    const video = setupVideoElement();
-    if (!video) {
-        showCameraError('Camera feed element not found.');
-        return;
-    }
-
-    try {
-        // Clean up any existing stream
-        cleanupCamera();
-        
-        // Request camera access
-        stream = await navigator.mediaDevices.getUserMedia(
-            getCameraConstraints(usingFrontCamera)
-        );
-        
-        // Set the video source and play
-        video.srcObject = stream;
-        
-        // Handle iOS specific requirements
-        if (video.mozSrcObject !== undefined) {
-            video.mozSrcObject = stream;
-        }
-        
-        // Play the video
-        try {
-            await video.play();
-        } catch (playError) {
-            // If autoplay fails, show a play button
-            showPlayButton(video);
-        }
-        
-    } catch (error) {
-        handleCameraError(error);
-    }
-}
+// ...
 
 // Show play button when autoplay is blocked
 function showPlayButton(video) {
-    const playButton = document.createElement('button');
-    playButton.textContent = 'Tap to Play';
-    playButton.className = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded';
-    playButton.style.position = 'absolute';
-    playButton.style.top = '50%';
-    playButton.style.left = '50%';
-    playButton.style.transform = 'translate(-50%, -50%)';
-    playButton.style.zIndex = '10';
-    
-    playButton.onclick = async () => {
-        try {
-            await video.play();
-            playButton.remove();
-        } catch (err) {
-            console.error('Error playing video after button click:', err);
-        }
-    };
-    
-    video.parentNode.style.position = 'relative';
-    video.parentNode.appendChild(playButton);
-}
-
-// Handle camera errors
-function handleCameraError(error) {
-    console.error('Camera Error:', error);
-    
-    let errorMessage = 'Could not access the camera. ';
-    
-    switch (error.name) {
-        case 'NotAllowedError':
-            errorMessage = 'Camera access was denied. Please allow camera access in your browser settings.';
-            break;
-        case 'NotFoundError':
-        case 'DevicesNotFoundError':
-            errorMessage = 'No camera found on your device.';
-            break;
-        case 'NotReadableError':
-            errorMessage = 'Camera is already in use by another application.';
-            break;
-        case 'OverconstrainedError':
-        case 'ConstraintNotSatisfiedError':
-            errorMessage = 'The requested camera configuration is not supported.';
-            break;
-        default:
-            errorMessage = 'An unexpected error occurred while accessing the camera.';
+    // Remove any existing play buttons first
+    const existingButton = document.querySelector('.camera-play-button');
+    if (existingButton) {
+        existingButton.remove();
     }
     
-    showCameraError(errorMessage);
+    const playButton = document.createElement('button');
+    playButton.className = 'camera-play-button fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
+    playButton.innerHTML = `
+        <div class="bg-white p-6 rounded-lg text-center max-w-xs mx-4">
+            <i class="fas fa-camera text-4xl text-indigo-600 mb-3"></i>
+            <h3 class="font-bold text-lg mb-2">Camera Access Needed</h3>
+            <p class="text-gray-600 text-sm mb-4">Tap to allow camera access and start scanning ingredients.</p>
+            <div class="bg-indigo-600 text-white px-6 py-2 rounded-md font-medium">
+                Enable Camera
+            </div>
+        </div>
+    `;
+    
+    // Add a small delay before showing the button to prevent immediate dismissal
+    setTimeout(() => {
+        document.body.appendChild(playButton);
+        
+        // Add click handler with error handling
+        const clickHandler = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show a loading indicator
+            playButton.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+                    <p class="text-gray-700">Starting camera...</p>
+                </div>
+            `;
+            
+            video.play()
+                .then(() => {
+                    playButton.remove();
+                })
+                .catch(error => {
+                    console.error('Error starting video:', error);
+                    showCameraError('Failed to start camera. Please check permissions and try again.');
+                    playButton.remove();
+                });
+            
+            // Remove the click handler to prevent multiple clicks
+            playButton.onclick = null;
+        };
+        
+        playButton.onclick = clickHandler;
+        
+        // Also allow tapping anywhere on the screen to start
+        document.addEventListener('click', clickHandler, { once: true });
+    }, 300);
 }
 
 // Show camera error message
