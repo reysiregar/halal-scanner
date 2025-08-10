@@ -423,6 +423,7 @@ if (testAnalysisBtn) {
 
 // Camera functionality
 let stream = null;
+let usingFrontCamera = false; // Track which camera is in use
 
 // Cleanup function for camera
 function cleanupCamera() {
@@ -434,70 +435,185 @@ function cleanupCamera() {
     }
 }
 
-// Cleanup on page unload
+// Cleanup on page unload and page hide
 window.addEventListener('beforeunload', cleanupCamera);
+window.addEventListener('pagehide', cleanupCamera);
 
-function startCamera() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
-        })
-        .then(function(mediaStream) {
-            stream = mediaStream;
-            const video = document.getElementById('cameraFeed');
-            if (video) {
-                video.srcObject = mediaStream;
-                video.play().catch(function(error) {
-                    console.error("Error playing video: ", error);
-                });
-            }
-        })
-        .catch(function(error) {
-            console.error("Error accessing camera: ", error);
-            let errorMessage = "Could not access the camera. ";
-            if (error.name === 'NotAllowedError') {
-                errorMessage += "Please ensure you've granted camera permissions.";
-            } else if (error.name === 'NotFoundError') {
-                errorMessage += "No camera found on your device.";
-            } else {
-                errorMessage += "Please try again or use a different browser.";
-            }
-            Swal.fire({
-                icon: 'error',
-                title: 'Camera Error',
-                text: errorMessage,
-                confirmButtonColor: '#ef4444'
-            });
-        });
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Not Supported',
-            text: 'Camera access is not supported by your browser.',
-            confirmButtonColor: '#ef4444'
-        });
+// Function to get camera constraints
+function getCameraConstraints(useFrontCamera = false) {
+    return {
+        video: {
+            facingMode: useFrontCamera ? 'user' : 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            // Important for iOS Safari
+            frameRate: { ideal: 30, max: 30 }
+        },
+        audio: false
+    };
+}
+
+// Function to setup video element for mobile
+function setupVideoElement() {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return;
+    
+    // Add required attributes for mobile browsers
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    
+    // Ensure the video element is properly sized
+    video.style.width = '100%';
+    video.style.height = 'auto';
+    video.style.display = 'block';
+    
+    return video;
+}
+
+// Start camera with error handling
+async function startCamera() {
+    // Check if we're on HTTPS (required for camera access on most browsers)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        showCameraError('Camera access requires a secure connection (HTTPS) or localhost.');
+        return;
+    }
+
+    // Check if camera is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showCameraError('Camera access is not supported by your browser.');
+        return;
+    }
+
+    const video = setupVideoElement();
+    if (!video) {
+        showCameraError('Camera feed element not found.');
+        return;
+    }
+
+    try {
+        // Clean up any existing stream
+        cleanupCamera();
+        
+        // Request camera access
+        stream = await navigator.mediaDevices.getUserMedia(
+            getCameraConstraints(usingFrontCamera)
+        );
+        
+        // Set the video source and play
+        video.srcObject = stream;
+        
+        // Handle iOS specific requirements
+        if (video.mozSrcObject !== undefined) {
+            video.mozSrcObject = stream;
+        }
+        
+        // Play the video
+        try {
+            await video.play();
+        } catch (playError) {
+            // If autoplay fails, show a play button
+            showPlayButton(video);
+        }
+        
+    } catch (error) {
+        handleCameraError(error);
     }
 }
 
-function stopCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        const video = document.getElementById('cameraFeed');
-        if (video) {
-            video.srcObject = null;
+// Show play button when autoplay is blocked
+function showPlayButton(video) {
+    const playButton = document.createElement('button');
+    playButton.textContent = 'Tap to Play';
+    playButton.className = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded';
+    playButton.style.position = 'absolute';
+    playButton.style.top = '50%';
+    playButton.style.left = '50%';
+    playButton.style.transform = 'translate(-50%, -50%)';
+    playButton.style.zIndex = '10';
+    
+    playButton.onclick = async () => {
+        try {
+            await video.play();
+            playButton.remove();
+        } catch (err) {
+            console.error('Error playing video after button click:', err);
         }
-        stream = null;
+    };
+    
+    video.parentNode.style.position = 'relative';
+    video.parentNode.appendChild(playButton);
+}
+
+// Handle camera errors
+function handleCameraError(error) {
+    console.error('Camera Error:', error);
+    
+    let errorMessage = 'Could not access the camera. ';
+    
+    switch (error.name) {
+        case 'NotAllowedError':
+            errorMessage = 'Camera access was denied. Please allow camera access in your browser settings.';
+            break;
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+            errorMessage = 'No camera found on your device.';
+            break;
+        case 'NotReadableError':
+            errorMessage = 'Camera is already in use by another application.';
+            break;
+        case 'OverconstrainedError':
+        case 'ConstraintNotSatisfiedError':
+            errorMessage = 'The requested camera configuration is not supported.';
+            break;
+        default:
+            errorMessage = 'An unexpected error occurred while accessing the camera.';
     }
+    
+    showCameraError(errorMessage);
+}
+
+// Show camera error message
+function showCameraError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Camera Access Error',
+        text: message,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'OK'
+    });
+}
+
+// Stop camera and clean up
+function stopCamera() {
+    cleanupCamera();
+    const video = document.getElementById('cameraFeed');
+    if (video) {
+        video.srcObject = null;
+    }
+}
+
+// Toggle between front and back camera
+async function toggleCamera() {
+    usingFrontCamera = !usingFrontCamera;
+    await startCamera();
 }
 
 // Switch camera
 const switchCamera = document.getElementById('switchCamera');
 if (switchCamera) {
-    switchCamera.addEventListener('click', function(e) {
+    switchCamera.addEventListener('click', async function(e) {
+        e.preventDefault();
+        this.disabled = true; // Prevent multiple rapid clicks
+        try {
+            await toggleCamera();
+        } catch (error) {
+            console.error('Error switching camera:', error);
+            showCameraError('Failed to switch camera. Please try again.');
+        } finally {
+            this.disabled = false;
+        }
         e.preventDefault();
         stopCamera();
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {

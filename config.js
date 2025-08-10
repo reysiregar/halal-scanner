@@ -1,5 +1,7 @@
 // Backend API configuration
-export const API_BASE_URL = 'https://mid-andreana-veez-37004fdb.koyeb.app';
+// Use environment variable if available, otherwise fallback to production URL
+const DEFAULT_API_URL = 'https://mid-andreana-veez-37004fdb.koyeb.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_URL;
 
 // API endpoints
 export const API_ENDPOINTS = {
@@ -16,7 +18,22 @@ export const API_ENDPOINTS = {
   GET_TESTIMONIALS: '/api/testimonials'
 };
 
-// Helper function to get full API URL
+// Helper function to get full API URL with error handling
 export const getApiUrl = (endpoint) => {
-  return `${API_BASE_URL}${endpoint}`;
+  try {
+    // Ensure the API base URL ends with a slash for proper concatenation
+    const baseUrl = API_BASE_URL.endsWith('/') 
+      ? API_BASE_URL.slice(0, -1) 
+      : API_BASE_URL;
+      
+    // Ensure the endpoint starts with a slash
+    const normalizedEndpoint = endpoint.startsWith('/') 
+      ? endpoint 
+      : `/${endpoint}`;
+      
+    return `${baseUrl}${normalizedEndpoint}`;
+  } catch (error) {
+    console.error('Error constructing API URL:', error);
+    throw new Error('Failed to construct API URL');
+  }
 };

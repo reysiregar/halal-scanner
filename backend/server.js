@@ -27,8 +27,46 @@ if (!process.env.COHERE_API_KEY) {
 }
 
 const app = express();
-app.use(cors());
+
+// Configure CORS with allowed origins
+const allowedOrigins = [
+  'http://localhost:5173', // Local development
+  'https://aihalal-scanner.vercel.app' // Replace with your production frontend domain
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Halal Scanner API',
+    status: 'operational',
+    documentation: 'https://github.com/reysiregar/halal-scanner',
+    version: '1.0.0'
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() });
+});
+
 
 // Load haram ingredients database (new structure)
 let haramIngredientsArr = [];

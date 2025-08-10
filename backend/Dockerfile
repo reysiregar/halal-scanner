@@ -4,17 +4,25 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY backend/package*.json ./
-RUN npm install
+COPY package*.json ./
+RUN npm install --production
 
 # Copy the rest of the application
-COPY backend/ ./
+COPY . .
 
-# List files for debugging
-RUN ls -la
+# Create necessary directories if they don't exist
+RUN mkdir -p uploads
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
 
 # Expose the port the app runs on
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 # Command to run the application
 CMD ["node", "server.js"]
