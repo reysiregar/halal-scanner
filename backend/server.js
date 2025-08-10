@@ -287,7 +287,7 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch(err => { console.error('MongoDB connection error:', err); process.exit(1); });
 
 // --- AUTH: Signup endpoint ---
-app.post('/signup', async (req, res) => {
+app.post('/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'Name, email, and password are required.' });
@@ -310,7 +310,7 @@ app.post('/signup', async (req, res) => {
 });
 
 // --- AUTH: Login endpoint ---
-app.post('/login', async (req, res) => {
+app.post('/auth/signin', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required.' });
