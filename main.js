@@ -524,12 +524,23 @@ async function startCamera() {
             });
         }
         
-        // Hide loading indicator when video is playing
+        // Hide loading indicator when video is playing and scroll to scanner section
         video.onplaying = () => {
             if (loadingIndicator && loadingIndicator.parentNode) {
                 loadingIndicator.remove();
             }
             video.onplaying = null; // Clean up
+            
+            // Smooth scroll to the scanner section
+            const scannerSection = document.getElementById('scannerSection');
+            if (scannerSection) {
+                setTimeout(() => {
+                    scannerSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100); // Small delay to ensure the UI is ready
+            }
         };
         
         // Fallback in case onplaying doesn't fire
@@ -651,69 +662,11 @@ function stopCamera() {
     }
 }
 
-// Toggle between front and back camera
-async function toggleCamera() {
-    usingFrontCamera = !usingFrontCamera;
-    await startCamera();
-}
-
-// Switch camera
+// Camera switch functionality is disabled to ensure only rear camera is used
 const switchCamera = document.getElementById('switchCamera');
 if (switchCamera) {
-    switchCamera.addEventListener('click', async function(e) {
-        e.preventDefault();
-        this.disabled = true; // Prevent multiple rapid clicks
-        try {
-            await toggleCamera();
-        } catch (error) {
-            console.error('Error switching camera:', error);
-            showCameraError('Failed to switch camera. Please try again.');
-        } finally {
-            this.disabled = false;
-        }
-        e.preventDefault();
-        stopCamera();
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            const video = document.getElementById('cameraFeed');
-            if (!video) return;
-            const currentStream = video.srcObject;
-            const tracks = currentStream ? currentStream.getTracks() : [];
-            let facingMode = 'user';
-            if (tracks.length > 0) {
-                const currentTrack = tracks[0];
-                const settings = currentTrack.getSettings();
-                if (settings.facingMode) {
-                    facingMode = settings.facingMode === 'user' ? 'environment' : 'user';
-                }
-            }
-            navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    facingMode: facingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                } 
-            })
-            .then(function(mediaStream) {
-                if (currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
-                stream = mediaStream;
-                video.srcObject = mediaStream;
-                video.play().catch(function(error) {
-                    console.error("Error playing video: ", error);
-                });
-            })
-            .catch(function(error) {
-                console.error("Error switching camera: ", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Switch Camera Error',
-                    text: 'Could not switch camera. Please try again.',
-                    confirmButtonColor: '#ef4444'
-                });
-            });
-        }
-    });
+    // Hide the switch camera button
+    switchCamera.style.display = 'none';
 }
 
 // Capture image from camera
@@ -2443,6 +2396,15 @@ function addPasswordToggleFunctionality() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function() {
+    // Show welcome message on every page load
+    customConfirm('Welcome to Halal Scanner!\n\nThis tool helps you check if food products are halal.\n\nPlease note that this is an AI-powered tool and should be used as a reference only. Always verify with reliable sources when in doubt.')
+        .then(accepted => {
+            console.log('User accepted the welcome message');
+        })
+        .catch(error => {
+            console.error('Error showing welcome message:', error);
+        });
+
     checkAuthStatus();
     addSaveResultsFunctionality();
     addReportInaccuracyFunctionality();
