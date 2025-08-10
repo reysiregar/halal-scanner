@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/backend
 
 # Copy package files and install dependencies
 COPY package*.json ./
