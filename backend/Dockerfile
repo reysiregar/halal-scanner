@@ -1,14 +1,14 @@
 FROM node:18-alpine
 
 # Set working directory
-WORKDIR /app/backend
+WORKDIR /app
 
 # Copy package files and install dependencies
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install
 
 # Copy the rest of the application
-COPY . .
+COPY backend/ ./
 
 # List files for debugging
 RUN ls -la
