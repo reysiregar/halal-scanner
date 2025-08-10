@@ -1,0 +1,17 @@
+services:
+  - name: halal-scanner-backend
+    env:
+      - name: PORT
+        value: "3000"
+      - name: MONGODB_URI
+        secret: true
+    ports:
+      - port: 3000
+        http: {}
+    routes:
+      - path: /
+        port: 3000
+    docker:
+      args:
+        - --no-cache
+      file: ./Dockerfile

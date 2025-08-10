@@ -20,7 +20,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
+const mongodbUri = process.env.MONGODB_URI || 'mongodb+srv://levina25:Levinadb_25@halalscanner.upz1eoh.mongodb.net/?retryWrites=true&w=majority&appName=HalalScanner';
 
 // Load haram ingredients database (new structure)
 let haramIngredientsArr = [];
