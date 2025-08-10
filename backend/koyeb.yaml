@@ -3,15 +3,20 @@ services:
     env:
       - name: PORT
         value: "3000"
-      - name: MONGO_URI
-        secret: true
+      - key: MONGO_URI
+        secret: MONGO_URI
+      - name: NODE_ENV
+        value: "production"
     ports:
       - port: 3000
-        http: {}
+        protocol: HTTP
     routes:
       - path: /
         port: 3000
-    docker:
+    build:
+      command: |
+        npm install
+        npm run build --if-present
       args:
         - --no-cache
-      file: ./Dockerfile
+      dockerfile: ./Dockerfile
