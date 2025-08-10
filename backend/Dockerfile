@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/backend
 
 # Copy package files and install dependencies
 COPY package*.json ./
@@ -17,4 +17,4 @@ RUN ls -la
 EXPOSE 3000
 
 # Command to run the application
-CMD ["node", "backend/server.js"]
+CMD ["node", "server.js"]
