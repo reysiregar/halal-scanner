@@ -1281,7 +1281,7 @@ if (signInForm) {
         const password = passwordInput.value;
 
         // Use backend API for sign-in
-        fetch('http://localhost:3000/signin', {
+        fetch('http://localhost:3000/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1299,7 +1299,7 @@ if (signInForm) {
                     confirmButtonColor: '#ef4444'
                 });
             } else {
-                const user = data.data;
+                const user = data.user;
                 const token = data.token;
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 localStorage.setItem('jwtToken', token);
@@ -1364,7 +1364,7 @@ function updateUIAfterLogin(user) {
         signInBtnIcon.classList.remove('fa-sign-in-alt');
         signInBtnIcon.classList.add('fa-sign-out-alt');
     }
-    if (user.id === 1) {
+    if (user.email === 'admin@halalscanner.com') {
         // Admin: show only admin dashboard
         if (adminDashboardBtn) adminDashboardBtn.classList.remove('hidden');
         if (userDashboardBtn) userDashboardBtn.classList.add('hidden');
@@ -1385,6 +1385,7 @@ function signOut() {
     const userDashboardBtn = document.getElementById('userDashboardBtn');
     const adminDashboardBtn = document.getElementById('adminDashboardBtn'); // Ensure admin button is also handled
     const signInBtnText = signInBtn ? signInBtn.querySelector('span') : null;
+    const signInBtnIcon = signInBtn ? signInBtn.querySelector('i') : null;
     
     if (signInBtnText) signInBtnText.textContent = 'Sign In';
     if (signInBtnIcon) {
@@ -1420,6 +1421,7 @@ if (signInBtn) {
             }).then((result) => {
                 if (result.isConfirmed) {
                     signOut();
+                    location.reload(); // Reload to update UI (Dashboard button hidden)
                 }
             });
         } else {
@@ -1496,11 +1498,10 @@ async function loadSavedResults() {
     if (!currentUser) return;
     
     try {
+        const token = localStorage.getItem('jwtToken');
         const response = await fetch('http://localhost:3000/user-saved-results', {
             headers: {
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
+                'Authorization': `Bearer ${token}`
             }
         });
         
@@ -1547,7 +1548,7 @@ function displaySavedResults(results) {
                         <h5 class="font-medium">Scan Result - ${date}</h5>
                         <p class="text-sm text-gray-600">Overall Status: ${resultData.overallStatus}</p>
                     </div>
-                    <button type="button" class="delete-saved-result text-red-600 hover:text-red-800" data-id="${result.id}">
+                    <button type="button" class="delete-saved-result text-red-600 hover:text-red-800" data-id="${result._id}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1589,6 +1590,7 @@ async function deleteSavedResult(resultId) {
         const response = await fetch(`http://localhost:3000/saved-results/${resultId}`, {
             method: 'DELETE',
             headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
                 'user-id': currentUser.id,
                 'user-email': currentUser.email,
                 'user-name': currentUser.name
@@ -1633,11 +1635,10 @@ async function loadUserReports() {
     if (!currentUser) return;
     
     try {
+        const token = localStorage.getItem('jwtToken');
         const response = await fetch('http://localhost:3000/user-reports', {
             headers: {
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
+                'Authorization': `Bearer ${token}`
             }
         });
         
@@ -1694,7 +1695,7 @@ function displayUserReports(reports) {
                     Submitted: ${date}
                 </div>
                 <div class="flex space-x-2 mt-2">
-                    <button class="delete-user-report bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300" data-id="${report.id}">Delete</button>
+                    <button class="delete-user-report bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300" data-id="${report._id}">Delete</button>
                 </div>
                 ${report.admin_note ? `
                     <div class="mt-2 p-2 bg-blue-50 rounded text-sm">
@@ -1717,6 +1718,8 @@ function displayUserReports(reports) {
                     const response = await fetch(`http://localhost:3000/reports/${reportId}`, {
                         method: 'DELETE',
                         headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
                             'user-id': currentUser.id,
                             'user-email': currentUser.email,
                             'user-name': currentUser.name
@@ -2244,6 +2247,7 @@ function addSaveResultsFunctionality() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
                         'user-id': currentUser.id,
                         'user-email': currentUser.email,
                         'user-name': currentUser.name
@@ -2365,6 +2369,7 @@ if (reportForm) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
                     'user-id': currentUser.id,
                     'user-email': currentUser.email,
                     'user-name': currentUser.name
@@ -2401,51 +2406,7 @@ if (reportForm) {
     });
 }
 
-// --- DELETE SAVED RESULT FUNCTIONALITY ---
-async function deleteSavedResult(resultId) {
-    try {
-        const response = await fetch(`http://localhost:3000/saved-results/${resultId}`, {
-            method: 'DELETE',
-            headers: {
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        
-        if (response.ok) {
-            // Remove the deleted item from the UI without reloading
-            const btn = document.querySelector(`.delete-saved-result[data-id="${resultId}"]`);
-            if (btn) {
-                const card = btn.closest('.bg-gray-50, .saved-result-card');
-                if (card) card.remove();
-            }
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted',
-                text: 'Saved result deleted.',
-                timer: 3000,
-                showConfirmButton: false
-            });
-            // If no more cards, show empty state
-            const container = document.getElementById('savedResultsList');
-            if (container && container.children.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results yet</p></div>`;
-            }
-        } else {
-            throw new Error('Failed to delete saved result');
-        }
-    } catch (error) {
-        console.error('Error deleting saved result:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Delete Failed',
-            text: 'Failed to delete saved result',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#ef4444'
-        });
-    }
-}
+
 
 // --- PASSWORD TOGGLE FUNCTIONALITY ---
 function addPasswordToggleFunctionality() {

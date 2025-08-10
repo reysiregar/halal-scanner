@@ -1,6 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const User = require('./models/User');
+const SavedResult = require('./models/SavedResult');
+const Testimonial = require('./models/Testimonial');
+const Report = require('./models/Report');
 const fs = require('fs');
 const path = require('path');
 const stringSimilarity = require('string-similarity');
@@ -204,84 +209,90 @@ function authenticateJWT(requireAdmin = false) {
     };
 }
 
-// open the database
-let db = new sqlite3.Database('./halalscanner.db', (err) => {
-    if (err) {
-        console.error(err.message);
-        throw err;
+// Connect to MongoDB
+const MONGO_URI = 'mongodb+srv://levina25:Levinadb_25@halalscanner.upz1eoh.mongodb.net/HalalScanner?retryWrites=true&w=majority&appName=HalalScanner';
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => { console.error('MongoDB connection error:', err); process.exit(1); });
+
+// --- AUTH: Signup endpoint ---
+app.post('/signup', async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Name, email, and password are required.' });
     }
-    console.log('✅ Connected to database.');
-
-    // Create users table with is_admin column
-    const usersSql = `
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            is_admin INTEGER DEFAULT 0
-        )`;
-    db.run(usersSql, (err) => {
-        if (err) {
-            return console.error(err.message);
+    try {
+        const existing = await User.findOne({ email });
+        if (existing) {
+            return res.status(409).json({ error: 'Email already registered.' });
         }
-    });
+        const hashed = await bcrypt.hash(password, 10);
+        const user = new User({ name, email, password: hashed });
+        await user.save();
+        // Remove password from response
+        const userObj = user.toObject();
+        delete userObj.password;
+        res.json({ success: true, user: userObj });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to register user.' });
+    }
+});
 
-    // Create saved_results table
-    const savedResultsSql = `
-    CREATE TABLE IF NOT EXISTS saved_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        result_data TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    )`;
-    db.run(savedResultsSql, (err) => {
-        if (err) {
-            return console.error('Error creating saved_results table:', err.message);
+// --- AUTH: Login endpoint ---
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required.' });
+    }
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
         }
-    });
-
-    // Create testimonials table
-    const testimonialsSql = `
-    CREATE TABLE IF NOT EXISTS testimonials (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        rating INTEGER NOT NULL,
-        testimony TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`;
-    db.run(testimonialsSql, (err) => {
-        if (err) {
-            return console.error('Error creating testimonials table:', err.message);
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
         }
-    });
+        // Build JWT payload
+        const payload = {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            is_admin: user.is_admin
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+        const userObj = user.toObject();
+        delete userObj.password;
+        res.json({ success: true, token, user: userObj });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to login.' });
+    }
+});
 
-    global.db = db;
-
-    // --- API: Add a testimonial ---
-    app.post('/api/testimonials', (req, res) => {
+// --- API: Add a testimonial ---
+app.post('/api/testimonials', async (req, res) => {
         const { name, rating, testimony } = req.body;
         if (!name || !rating || !testimony) {
             return res.status(400).json({ error: 'Name, rating, and testimony are required.' });
         }
-        const sql = 'INSERT INTO testimonials (name, rating, testimony) VALUES (?, ?, ?)';
-        db.run(sql, [name, rating, testimony], function(err) {
-            if (err) {
-                return res.status(500).json({ error: 'Failed to save testimonial.' });
-            }
-            res.json({ success: true, id: this.lastID });
-        });
+        // Save testimonial using Mongoose
+        try {
+            const testimonial = new Testimonial({ name, rating, testimony });
+            await testimonial.save();
+            res.json({ success: true, id: testimonial._id });
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to save testimonial.' });
+        }
     });
 
     // --- API: Get all testimonials ---
-    app.get('/api/testimonials', (req, res) => {
-        db.all('SELECT * FROM testimonials ORDER BY created_at DESC', [], (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: 'Failed to fetch testimonials.' });
-            }
-            res.json(rows);
-        });
+    app.get('/api/testimonials', async (req, res) => {
+        try {
+            const testimonials = await Testimonial.find().sort({ created_at: -1 });
+            res.json(testimonials);
+        } catch (err) {
+            res.status(500).json({ error: 'Failed to fetch testimonials.' });
+        }
     });
 
     // Ingredient analysis endpoint
@@ -348,65 +359,9 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
                 .join(', ');
             res.json({ success: true, ingredients: cleaned });
         } catch (error) {
-            console.error('Cohere extraction error:', error);
-            res.status(500).json({ error: 'Failed to extract ingredients with AI' });
-        }
-    });
-
-    // Signup endpoint
-    app.post('/signup', (req, res) => {
-        const { name, email, password } = req.body;
-        const sql = 'INSERT INTO users (name, email, password) VALUES (?,?,?)';
-        const params = [name, email, password];
-
-        db.run(sql, params, function(err, result) {
-            if (err) {
-                res.status(400).json({"error": err.message});
-                return;
-            }
-            res.json({
-                "message": "success",
-                "data": { name, email },
-                "id": this.lastID
-            });
-        });
-    });
-
-    // Signin endpoint (returns JWT)
-    app.post('/signin', (req, res) => {
-        const { email, password } = req.body;
-        const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
-        const params = [email, password];
-        db.get(sql, params, (err, row) => {
-            if (err) {
-                res.status(400).json({"error": err.message});
-                return;
-            }
-            if (row) {
-                // Issue JWT
-                const token = jwt.sign({
-                    id: row.id,
-                    email: row.email,
-                    name: row.name,
-                    is_admin: !!row.is_admin
-                }, JWT_SECRET, { expiresIn: '12h' });
-                res.json({
-                    message: "success",
-                    token,
-                    data: row
-                });
-            } else {
-                res.status(404).json({"error": "User not found"});
-            }
-        });
-    });
-
-    // Helper function to check if user is admin (for demo, we'll use a simple check)
-    function isAdmin(userId) {
-        // For demo purposes, let's consider user with ID 1 as admin
-        // In production, you'd have a proper admin role system
         return userId === 1;
     }
+});
 
     // Get current user from session/token (simplified for demo)
     function getCurrentUser(req) {
@@ -427,230 +382,135 @@ let db = new sqlite3.Database('./halalscanner.db', (err) => {
         };
     }
 
-    // Submit inaccuracy report
-    app.post('/submit-report', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        const { item_name, reason } = req.body;
-        
-        if (!item_name || !reason) {
-            return res.status(400).json({ error: 'Item name and reason are required' });
-        }
-        
-        const sql = 'INSERT INTO reports (user_id, item_name, reason) VALUES (?, ?, ?)';
-        const params = [user.id, item_name, reason];
-        
-        db.run(sql, params, function(err) {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            res.json({
-                message: 'Report submitted successfully',
-                report_id: this.lastID
-            });
-        });
-    });
-
-    // Get user's reports
-    app.get('/user-reports', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        const sql = 'SELECT * FROM reports WHERE user_id = ? ORDER BY created_at DESC';
-        const params = [user.id];
-        
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            res.json({ reports: rows });
-        });
-    });
-
-    // Get all reports (admin only)
-    app.get('/admin/reports', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        if (!isAdmin(user.id)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        
-        const sql = `
-            SELECT r.*, u.name as user_name, u.email as user_email 
-            FROM reports r 
-            LEFT JOIN users u ON r.user_id = u.id 
-            ORDER BY r.created_at DESC
-        `;
-        
-        db.all(sql, [], (err, rows) => {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            res.json({ reports: rows });
-        });
-    });
-
-    // Update report status (admin only)
-    app.put('/admin/reports/:id', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        if (!isAdmin(user.id)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        const { id } = req.params;
-        const { status, admin_note } = req.body;
-        if (!status || !['pending', 'solved', 'rejected'].includes(status)) {
-            return res.status(400).json({ error: 'Valid status required' });
-        }
-        // Get the report to find the user_id
-        db.get('SELECT * FROM reports WHERE id = ?', [id], (err, report) => {
-            if (err) {
-                return res.status(400).json({ error: err.message });
-            }
-            if (!report) {
-                return res.status(404).json({ error: 'Report not found' });
-            }
-            const sql = `
-                UPDATE reports 
-                SET status = ?, admin_note = ?
-                WHERE id = ?
-            `;
-            const params = [status, admin_note, id];
-            db.run(sql, params, function(err) {
-                if (err) {
-                    return res.status(400).json({ error: err.message });
-                }
-                res.json({ message: 'Report status updated successfully' });
-            });
-        });
-    });
-
-    // Save scan results
-    app.post('/save-results', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        const { result_data } = req.body;
-        
-        if (!result_data) {
-            return res.status(400).json({ error: 'Result data is required' });
-        }
-        
-        const sql = 'INSERT INTO saved_results (user_id, result_data) VALUES (?, ?)';
-        const params = [user.id, JSON.stringify(result_data)];
-        
-        db.run(sql, params, function(err) {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            res.json({
-                message: 'Results saved successfully',
-                saved_id: this.lastID
-            });
-        });
-    });
-
-    // Get user's saved results
-    app.get('/user-saved-results', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        const sql = 'SELECT * FROM saved_results WHERE user_id = ? ORDER BY created_at DESC';
-        const params = [user.id];
-        
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            // Parse the JSON data for each result
-            const results = rows.map(row => ({
-                ...row,
-                result_data: JSON.parse(row.result_data)
-            }));
-            res.json({ saved_results: results });
-        });
-    });
-
-    // Delete saved result
-    app.delete('/saved-results/:id', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        
-        const { id } = req.params;
-        
-        const sql = 'DELETE FROM saved_results WHERE id = ? AND user_id = ?';
-        const params = [id, user.id];
-        
-        db.run(sql, params, function(err) {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            if (this.changes === 0) {
-                res.status(404).json({ error: 'Saved result not found' });
-                return;
-            }
-            res.json({ message: 'Saved result deleted successfully' });
-        });
-    });
-
-    // Delete report (user or admin)
-    app.delete('/reports/:id', (req, res) => {
-        const user = getCurrentUser(req);
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-        const { id } = req.params;
-        db.get('SELECT * FROM reports WHERE id = ?', [id], (err, report) => {
-            if (err) return res.status(400).json({ error: err.message });
-            if (!report) return res.status(404).json({ error: 'Report not found' });
-            // Admin can delete only if reviewed
-            if (isAdmin(user.id)) {
-                if (report.status === 'pending') {
-                    return res.status(400).json({ error: 'Admin must review the report before deleting.' });
-                }
-                db.run('DELETE FROM reports WHERE id = ?', [id], function(err) {
-                    if (err) return res.status(400).json({ error: err.message });
-                    res.json({ message: 'Report deleted by admin.' });
-                });
-            } else {
-                // User can only delete their own report
-                if (report.user_id !== user.id) {
-                    return res.status(403).json({ error: 'You can only delete your own report.' });
-                }
-                db.run('DELETE FROM reports WHERE id = ? AND user_id = ?', [id, user.id], function(err) {
-                    if (err) return res.status(400).json({ error: err.message });
-                    res.json({ message: 'Report deleted.' });
-                });
-            }
-        });
-    });
-
-    app.listen(PORT, () => {
-        console.log(`✅ Server is running: port ${PORT}`);
-    });
+// Submit inaccuracy report
+app.post('/submit-report', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  const { item_name, reason } = req.body;
+  if (!item_name || !reason) {
+    return res.status(400).json({ error: 'Item name and reason are required' });
+  }
+  try {
+    const report = new Report({ user_id: user.id, item_name, reason });
+    await report.save();
+    res.json({ message: 'Report submitted successfully', report_id: report._id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// After db is initialized, add:
-global.db = db;
+// Get user's reports
+app.get('/user-reports', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  try {
+    const reports = await Report.find({ user_id: user.id }).sort({ created_at: -1 });
+    res.json({ reports });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get all reports (admin only)
+app.get('/admin/reports', authenticateJWT(true), async (req, res) => {
+  try {
+    const reports = await Report.find().populate('user_id', 'name email').sort({ created_at: -1 });
+    res.json({ reports });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Update report status (admin only)
+app.put('/admin/reports/:id', authenticateJWT(true), async (req, res) => {
+  const { id } = req.params;
+  const { status, admin_note } = req.body;
+  if (!status || !['pending', 'solved', 'rejected'].includes(status)) {
+    return res.status(400).json({ error: 'Valid status required' });
+  }
+  try {
+    const report = await Report.findById(id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+    report.status = status;
+    report.admin_note = admin_note;
+    await report.save();
+    res.json({ message: 'Report status updated successfully' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Save scan results
+app.post('/save-results', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  const { result_data } = req.body;
+  if (!result_data) {
+    return res.status(400).json({ error: 'Result data is required' });
+  }
+  try {
+    const saved = new SavedResult({ user_id: user.id, result_data: JSON.stringify(result_data) });
+    await saved.save();
+    res.json({ message: 'Results saved successfully', saved_id: saved._id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get user's saved results
+app.get('/user-saved-results', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  try {
+    const results = await SavedResult.find({ user_id: user.id }).sort({ created_at: -1 });
+    const parsedResults = results.map(r => ({
+      ...r.toObject(),
+      result_data: JSON.parse(r.result_data)
+    }));
+    res.json({ saved_results: parsedResults });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Delete saved result
+app.delete('/saved-results/:id', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+  try {
+    const result = await SavedResult.findOneAndDelete({ _id: id, user_id: user.id });
+    if (!result) {
+      return res.status(404).json({ error: 'Saved result not found' });
+    }
+    res.json({ message: 'Saved result deleted successfully' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Delete report (user or admin)
+app.delete('/reports/:id', authenticateJWT(), async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+  try {
+    const report = await Report.findById(id);
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+    if (user.is_admin) {
+      if (report.status === 'pending') {
+        return res.status(400).json({ error: 'Admin must review the report before deleting.' });
+      }
+      await report.deleteOne();
+      res.json({ message: 'Report deleted by admin.' });
+    } else {
+      if (report.user_id.toString() !== user.id) {
+        return res.status(403).json({ error: 'You can only delete your own report.' });
+      }
+      await report.deleteOne();
+      res.json({ message: 'Report deleted.' });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ Server is running: port ${PORT}`);
+});
