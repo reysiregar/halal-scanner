@@ -12,7 +12,7 @@ function clean(str) {
         .toLowerCase();
 }
 
-const dbPath = path.join(__dirname, '../ingredients.json');
+const dbPath = path.join(__dirname, './ingredients.json');
 const unknownPath = path.join(__dirname, '../unknown_ingredients.txt');
 
 const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));

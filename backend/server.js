@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -11,22 +12,28 @@ const path = require('path');
 const stringSimilarity = require('string-similarity');
 const { CohereClient } = require('cohere-ai');
 const cohere = new CohereClient({
-  token: 'aA2FHRswke9hKG8mSCdhXI8NuBzONV6qMAZgL3le'
+  token: process.env.COHERE_API_KEY
 });
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+const JWT_SECRET = process.env.JWT_SECRET;
+const MONGO_URI = process.env.MONGO_URI;
+const PORT = process.env.PORT || 3000;
+
+if (!JWT_SECRET) {
+  console.warn('Warning: JWT_SECRET is not set. JWT operations may fail.');
+}
+if (!process.env.COHERE_API_KEY) {
+  console.warn('Warning: COHERE_API_KEY is not set. AI extraction endpoint will not work.');
+}
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
-const mongodbUri = process.env.MONGODB_URI || 'mongodb+srv://levina25:Levinadb_25@halalscanner.upz1eoh.mongodb.net/?retryWrites=true&w=majority&appName=HalalScanner';
-
 // Load haram ingredients database (new structure)
 let haramIngredientsArr = [];
 try {
-    const haramData = fs.readFileSync(path.join(__dirname, '../ingredients.json'), 'utf8');
+    const haramData = fs.readFileSync(path.join(__dirname, './ingredients.json'), 'utf8');
     const parsed = JSON.parse(haramData);
     haramIngredientsArr = parsed.ingredients || [];
 } catch (error) {
@@ -211,7 +218,10 @@ function authenticateJWT(requireAdmin = false) {
 }
 
 // Connect to MongoDB
-const MONGO_URI = 'mongodb+srv://levina25:Levinadb_25@halalscanner.upz1eoh.mongodb.net/HalalScanner?retryWrites=true&w=majority&appName=HalalScanner';
+if (!MONGO_URI) {
+  console.error('MongoDB connection error: MONGO_URI is not defined. Set it in your environment variables (.env).');
+  process.exit(1);
+}
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => { console.error('MongoDB connection error:', err); process.exit(1); });
@@ -360,9 +370,10 @@ app.post('/api/testimonials', async (req, res) => {
                 .join(', ');
             res.json({ success: true, ingredients: cleaned });
         } catch (error) {
-        return userId === 1;
-    }
-});
+            console.error('AI extraction error:', error);
+            res.status(500).json({ error: 'Failed to extract ingredients' });
+        }
+    });
 
     // Get current user from session/token (simplified for demo)
     function getCurrentUser(req) {
@@ -515,3 +526,5 @@ app.delete('/reports/:id', authenticateJWT(), async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server is running: port ${PORT}`);
 });
+
+app.get('/health', (req, res) => res.json({ status: 'ok' }));

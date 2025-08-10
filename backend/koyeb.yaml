@@ -3,7 +3,7 @@ services:
     env:
       - name: PORT
         value: "3000"
-      - name: MONGODB_URI
+      - name: MONGO_URI
         secret: true
     ports:
       - port: 3000

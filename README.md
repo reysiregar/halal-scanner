@@ -41,7 +41,7 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 3. **Configure MongoDB**
    - Create `.env` in `backend`:
      ```env
-     MONGODB_URI=mongodb://localhost:27017/halal-scanner
+     MONGO_URI=mongodb://localhost:27017/halal-scanner
      JWT_SECRET=your_secret
      ```
    - Or use your MongoDB Atlas URI.
@@ -56,8 +56,11 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 ---
 
 ## 🔑 Test Accounts
-- **Admin:** admin@halalscanner.com / 8uWskpH015Gz
-- **User:** user@halalscanner.com / GqTXG7UbS5YQ
+You can generate default credentials for Admin and User using the `mongo-init.js` script.
+```bash
+cd backend
+node mongo-init.js
+```
 
 ---
 
