@@ -436,6 +436,119 @@ function cleanupCamera() {
 }
 
 // Cleanup on page unload and page hide
+window.addEventListener('beforeunload', cleanupCamera);
+window.addEventListener('pagehide', cleanupCamera);
+
+// Function to setup video element for mobile
+function setupVideoElement() {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return null;
+    
+    // Add required attributes for mobile browsers
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    
+    // Ensure the video element is properly sized
+    video.style.width = '100%';
+    video.style.height = 'auto';
+    video.style.display = 'block';
+    
+    return video;
+}
+
+// Start camera with error handling
+async function startCamera() {
+    // Check if we're on HTTPS (required for camera access on most browsers)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && !window.location.hostname.endsWith('.local')) {
+        showCameraError('Camera access requires a secure connection (HTTPS) or localhost.');
+        return;
+    }
+
+    // Check if camera is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showCameraError('Camera access is not supported by your browser.');
+        return;
+    }
+
+    const video = setupVideoElement();
+    if (!video) {
+        showCameraError('Camera feed element not found.');
+        return;
+    }
+
+    try {
+        // Show loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingIndicator.innerHTML = '<div class="text-white text-lg">Initializing camera...</div>';
+        document.body.appendChild(loadingIndicator);
+
+        // Clean up any existing stream
+        cleanupCamera();
+        
+        // Request camera access with improved error handling
+        stream = await navigator.mediaDevices.getUserMedia(
+            getCameraConstraints(usingFrontCamera)
+        ).catch(error => {
+            console.error('Camera access error:', error);
+            throw error;
+        });
+        
+        // Set the video source
+        video.srcObject = stream;
+        
+        // Handle different browser implementations
+        if ('srcObject' in video) {
+            video.srcObject = stream;
+        } else {
+            // For older browsers
+            video.src = window.URL.createObjectURL(stream);
+        }
+        
+        // iOS specific handling
+        video.setAttribute('playsinline', true);
+        video.setAttribute('webkit-playsinline', true);
+        video.setAttribute('muted', true);
+        video.setAttribute('autoplay', true);
+        
+        // Play the video with improved error handling
+        const playPromise = video.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.error('Video play error:', error);
+                // If autoplay fails, show a play button
+                showPlayButton(video);
+            });
+        }
+        
+        // Hide loading indicator when video is playing
+        video.onplaying = () => {
+            if (loadingIndicator && loadingIndicator.parentNode) {
+                loadingIndicator.remove();
+            }
+            video.onplaying = null; // Clean up
+        };
+        
+        // Fallback in case onplaying doesn't fire
+        setTimeout(() => {
+            if (loadingIndicator && loadingIndicator.parentNode) {
+                loadingIndicator.remove();
+            }
+        }, 3000);
+        
+    } catch (error) {
+        // Remove loading indicator if it exists
+        const loadingIndicator = document.querySelector('.fixed.inset-0.bg-black');
+        if (loadingIndicator && loadingIndicator.parentNode) {
+            loadingIndicator.remove();
+        }
+        
+        handleCameraError(error);
+    }
+}
 
 // Function to get camera constraints
 function getCameraConstraints(useFrontCamera = false) {
