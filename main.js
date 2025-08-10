@@ -1,3 +1,6 @@
+// Import configuration
+import { getApiUrl, API_ENDPOINTS } from './config.js';
+
 // Modal handling with null checks
 const signInModal = document.getElementById('signInModal');
 const signUpModal = document.getElementById('signUpModal');
@@ -270,7 +273,7 @@ if (testAnalysisBtn) {
         if (uploadResultsContainer) uploadResultsContainer.classList.add('hidden');
         
         try {
-            const response = await fetch('http://localhost:3000/analyze-ingredients', {
+            const response = await fetch(getApiUrl(API_ENDPOINTS.ANALYZE_INGREDIENTS), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1921,7 +1924,7 @@ async function loadAdminReports() {
     if (!currentUser || currentUser.id !== 1) return;
     
     try {
-        const response = await fetch('http://localhost:3000/admin/reports', {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_ADMIN_REPORTS), {
             headers: {
                 'user-id': currentUser.id,
                 'user-email': currentUser.email,
@@ -2049,7 +2052,7 @@ function displayAdminReports(reports) {
             const confirmed = await customConfirm('Are you sure you want to delete this report?');
             if (confirmed) {
                 try {
-                    const response = await fetch(`http://localhost:3000/reports/${reportId}`, {
+                    const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_REPORT) + `/${reportId}`, {
                         method: 'DELETE',
                         headers: {
                             'user-id': currentUser.id,
@@ -2086,7 +2089,7 @@ async function updateReportStatus(reportId, status, adminNote) {
     try {
         const body = { status: status };
         if (adminNote !== undefined) body.admin_note = adminNote;
-        const response = await fetch(`http://localhost:3000/admin/reports/${reportId}`, {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.UPDATE_REPORT_STATUS) + `/${reportId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -2243,7 +2246,7 @@ function addSaveResultsFunctionality() {
                 timestamp: new Date().toISOString()
             };
             try {
-                const response = await fetch('http://localhost:3000/save-results', {
+                const response = await fetch(getApiUrl(API_ENDPOINTS.SAVE_RESULTS), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2547,7 +2550,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             try {
-                const response = await fetch('http://localhost:3000/api/testimonials', {
+                const response = await fetch(getApiUrl(API_ENDPOINTS.GET_TESTIMONIALS), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
