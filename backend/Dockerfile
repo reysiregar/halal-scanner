@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy all files except those in .dockerignore
+# Copy the rest of the application
 COPY . .
 
 # List files for debugging
