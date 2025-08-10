@@ -31,21 +31,43 @@ const app = express();
 // Configure CORS with allowed origins
 const allowedOrigins = [
   'http://localhost:5173', // Local development
-  'https://aihalal-scanner.vercel.app' // Replace with your production frontend domain
+  'https://aihalal-scanner.vercel.app', // Production frontend
+  'https://mid-andreana-veez-37004fdb.koyeb.app' // Backend domain for direct frontend access
 ];
+
+// Add development origins for common ports
+const devOrigins = [
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:8080'
+];
+
+// Combine all allowed origins
+const allAllowedOrigins = [...new Set([...allowedOrigins, ...devOrigins])];
 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    // Check if the origin is in the allowed list or is a subdomain of an allowed origin
+    const isAllowed = allAllowedOrigins.some(allowedOrigin => {
+      return origin === allowedOrigin || 
+             origin.startsWith(allowedOrigin.replace('*', ''));
+    });
+    
+    if (!isAllowed) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
+      console.warn(msg);
       return callback(new Error(msg), false);
     }
     return callback(null, true);
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
