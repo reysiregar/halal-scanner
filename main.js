@@ -2397,13 +2397,16 @@ function addPasswordToggleFunctionality() {
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function() {
     // Show welcome message on every page load
-    customConfirm('Welcome to Halal Scanner!\n\nThis tool helps you check if food products are halal.\n\nPlease note that this is an AI-powered tool and should be used as a reference only. Always verify with reliable sources when in doubt.')
-        .then(accepted => {
-            console.log('User accepted the welcome message');
-        })
-        .catch(error => {
-            console.error('Error showing welcome message:', error);
-        });
+    // Use setTimeout to ensure all DOM elements are fully loaded
+    setTimeout(() => {
+        customConfirm('Welcome to Halal Scanner!\n\nThis tool helps you check if food products are halal.\n\nPlease note that this is an AI-powered tool and should be used as a reference only. Always verify with reliable sources when in doubt.')
+            .then(accepted => {
+                console.log('User accepted the welcome message');
+            })
+            .catch(error => {
+                console.error('Error showing welcome message:', error);
+            });
+    }, 500); // Small delay to ensure all elements are ready
 
     checkAuthStatus();
     addSaveResultsFunctionality();
@@ -2558,7 +2561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="bg-gray-50 p-6 rounded-xl shadow-sm min-w-[320px] max-w-[340px] w-full snap-center flex-shrink-0">
+                <div class="bg-gray-50 p-4 sm:p-6 rounded-xl shadow-sm w-[85vw] sm:w-[320px] snap-center flex-shrink-0 mx-1">
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-2xl text-indigo-600 font-bold mr-4">
                             <i class="fas fa-user"></i>
