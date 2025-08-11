@@ -83,6 +83,12 @@ const disclaimerModal = document.getElementById('disclaimerModal');
 const closeDisclaimer = document.getElementById('closeDisclaimer');
 const acceptDisclaimer = document.getElementById('acceptDisclaimer');
 
+// Welcome modal elements (new design)
+const welcomeModal = document.getElementById('welcomeModal');
+const closeWelcome = document.getElementById('closeWelcome');
+const acceptWelcome = document.getElementById('acceptWelcome');
+const declineWelcome = document.getElementById('declineWelcome');
+
 if (!localStorage.getItem('disclaimerAccepted') && disclaimerModal) {
     disclaimerModal.classList.remove('hidden');
 }
@@ -92,6 +98,8 @@ if (closeDisclaimer) {
     closeDisclaimer.addEventListener('click', function(e) {
         e.preventDefault();
         if (disclaimerModal) disclaimerModal.classList.add('hidden');
+        // Optionally show welcome after closing disclaimer without accepting
+        if (welcomeModal) welcomeModal.classList.remove('hidden');
     });
 }
 
@@ -101,6 +109,30 @@ if (acceptDisclaimer) {
         e.preventDefault();
         localStorage.setItem('disclaimerAccepted', 'true');
         if (disclaimerModal) disclaimerModal.classList.add('hidden');
+        // Show welcome modal after accepting disclaimer
+        if (welcomeModal) welcomeModal.classList.remove('hidden');
+    });
+}
+
+// Welcome modal handlers
+if (closeWelcome) {
+    closeWelcome.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (welcomeModal) welcomeModal.classList.add('hidden');
+    });
+}
+
+if (acceptWelcome) {
+    acceptWelcome.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (welcomeModal) welcomeModal.classList.add('hidden');
+    });
+}
+
+if (declineWelcome) {
+    declineWelcome.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (welcomeModal) welcomeModal.classList.add('hidden');
     });
 }
 
@@ -2396,17 +2428,12 @@ function addPasswordToggleFunctionality() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Show welcome message on every page load
-    // Use setTimeout to ensure all DOM elements are fully loaded
+    // Show welcome modal after page load if disclaimer already accepted
     setTimeout(() => {
-        customConfirm('Welcome to Halal Scanner!\n\nThis tool helps you check if food products are halal.\n\nPlease note that this is an AI-powered tool and should be used as a reference only. Always verify with reliable sources when in doubt.')
-            .then(accepted => {
-                console.log('User accepted the welcome message');
-            })
-            .catch(error => {
-                console.error('Error showing welcome message:', error);
-            });
-    }, 500); // Small delay to ensure all elements are ready
+        if (localStorage.getItem('disclaimerAccepted')) {
+            if (welcomeModal) welcomeModal.classList.remove('hidden');
+        }
+    }, 300);
 
     checkAuthStatus();
     addSaveResultsFunctionality();
@@ -2561,21 +2588,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="bg-gray-50 p-4 sm:p-6 rounded-xl shadow-sm w-[85vw] sm:w-[320px] snap-center flex-shrink-0 mx-1">
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-2xl text-indigo-600 font-bold mr-4">
+                <div class="testimonial-card bg-gray-50 p-3 sm:p-6 rounded-xl shadow-sm w-[80vw] sm:w-[320px] snap-center flex-shrink-0 mx-1">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-indigo-100 flex items-center justify-center text-xl sm:text-2xl text-indigo-600 font-bold mr-3 sm:mr-4">
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
-                            <div class="flex text-yellow-400">
+                            <h4 class="font-semibold text-sm sm:text-base">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
+                            <div class="flex text-yellow-400 text-sm sm:text-base">
                                 ${'<i class=\'fas fa-star\'></i>'.repeat(Math.floor(t.rating))}
                                 ${t.rating % 1 >= 0.5 ? '<i class=\'fas fa-star-half-alt\'></i>' : ''}
                                 ${'<i class=\'far fa-star\'></i>'.repeat(5 - Math.ceil(t.rating))}
                             </div>
                         </div>
                     </div>
-                    <p class="text-gray-600">"${t.testimony.replace(/"/g, '&quot;')}"</p>
+                    <p class="testimonial-text text-gray-600 text-sm sm:text-base">"${t.testimony.replace(/"/g, '&quot;')}"</p>
                 </div>
             `).join('');
         } catch (err) {
