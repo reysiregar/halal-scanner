@@ -1,8 +1,9 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 
-const MONGO_URI = 'mongodb+srv://levina25:Levinadb_25@halalscanner.upz1eoh.mongodb.net/HalalScanner?retryWrites=true&w=majority&appName=HalalScanner';
+const MONGO_URI = process.env.MONGO_URI;
 
 function randomString(length) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
