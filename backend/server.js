@@ -314,7 +314,15 @@ app.get('/api/saved-results', authenticateJWT(), async (req, res) => {
   try {
     const userId = req.user.id;
     const results = await SavedResult.find({ user: userId }).sort({ createdAt: -1 });
-    res.json({ saved_results: results });
+    // Convert to camelCase for frontend compatibility
+    const camelResults = results.map(r => ({
+      _id: r._id,
+      user: r.user_id, // frontend expects 'user'
+      result_data: typeof r.result_data === 'string' ? JSON.parse(r.result_data) : r.result_data,
+      createdAt: r.created_at,
+      __v: r.__v
+    }));
+    res.json({ saved_results: camelResults });
   } catch (error) {
     console.error('Error fetching saved results:', error);
     res.status(500).json({ error: 'Failed to fetch saved results' });
@@ -326,7 +334,18 @@ app.get('/api/user/reports', authenticateJWT(), async (req, res) => {
   try {
     const userId = req.user.id;
     const reports = await Report.find({ user: userId }).sort({ createdAt: -1 });
-    res.json({ reports });
+    // Convert to camelCase for frontend compatibility
+    const camelReports = reports.map(r => ({
+      _id: r._id,
+      user: r.user_id, // frontend expects 'user'
+      item_name: r.item_name,
+      reason: r.reason,
+      status: r.status,
+      createdAt: r.created_at,
+      admin_note: r.admin_note,
+      __v: r.__v
+    }));
+    res.json({ reports: camelReports });
   } catch (error) {
     console.error('Error fetching user reports:', error);
     res.status(500).json({ error: 'Failed to fetch user reports' });
