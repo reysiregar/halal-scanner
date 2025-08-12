@@ -2660,12 +2660,44 @@ document.addEventListener('DOMContentLoaded', function() {
             return 320; // fallback
         }
 
+        function canScrollNext() {
+            // Always allow next if more than one testimonial
+            return testimonialsCarousel.scrollWidth > testimonialsCarousel.clientWidth + 10;
+        }
+
         testimonialPrev.addEventListener('click', () => {
             testimonialsCarousel.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
         });
         testimonialNext.addEventListener('click', () => {
-            testimonialsCarousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+            // Always allow next if more than one testimonial
+            if (testimonialsCarousel.scrollWidth > testimonialsCarousel.clientWidth + 10) {
+                testimonialsCarousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+            } else if (testimonialsCarousel.childElementCount > 1) {
+                // On mobile, always allow next if more than one testimonial
+                testimonialsCarousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+            }
         });
+
+        // Always enable next/prev buttons if more than one testimonial
+        function updateNavButtons() {
+            if (testimonialsCarousel.childElementCount > 1) {
+                testimonialNext.disabled = false;
+                testimonialPrev.disabled = false;
+                testimonialNext.classList.remove('opacity-50', 'pointer-events-none');
+                testimonialPrev.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                testimonialNext.disabled = true;
+                testimonialPrev.disabled = true;
+                testimonialNext.classList.add('opacity-50', 'pointer-events-none');
+                testimonialPrev.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+        // Initial state
+        updateNavButtons();
+        // Update on window resize (for mobile/desktop switch)
+        window.addEventListener('resize', updateNavButtons);
+        // Also update after testimonials are loaded
+        setTimeout(updateNavButtons, 500);
         
         // Update button states based on scroll position
         const updateButtonStates = () => {

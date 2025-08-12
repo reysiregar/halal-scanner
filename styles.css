@@ -564,7 +564,7 @@ section[id] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: box-shadow 0.2s;
+    /* Removed hover effect */
 }
 
 .avatar-sm {
@@ -631,6 +631,7 @@ section[id] {
         max-width: 95vw;
         padding: 10px;
         border-radius: 10px;
+        /* No hover effect on mobile */
     }
     .avatar-sm {
         width: 36px;
