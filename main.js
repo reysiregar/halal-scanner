@@ -2282,7 +2282,7 @@ function addSaveResultsFunctionality() {
                 timestamp: new Date().toISOString()
             };
             try {
-                const response = await fetch(getApiUrl(API_ENDPOINTS.SAVE_RESULTS), {
+                const response = await fetch(getApiUrl(API_ENDPOINTS.SAVE_RESULT), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
