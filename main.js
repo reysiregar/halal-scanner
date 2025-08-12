@@ -724,6 +724,10 @@ if (captureBtn) {
             });
             return;
         }
+        // Close the scanner section immediately
+        const scannerSection = document.getElementById('scannerSection');
+        if (scannerSection) scannerSection.classList.add('hidden');
+        stopCamera();
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -1096,9 +1100,23 @@ async function analyzeCapturedImage(imageData) {
                     <i class="fas fa-exclamation-triangle text-4xl text-yellow-300 mb-4"></i>
                     <h3 class="text-xl font-medium text-gray-700">No Text Detected</h3>
                     <p class="text-gray-500 mt-2">No text was found in the image. Please capture a clear image of the product's ingredient list.</p>
+                    <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                        <i class="fas fa-redo mr-1"></i> Try Again
+                    </button>
                 </div>
             `;
             resultsContainer.classList.remove('hidden');
+            setTimeout(() => {
+                const tryAgainBtn = document.getElementById('tryAgainBtn');
+                if (tryAgainBtn) {
+                    tryAgainBtn.onclick = function() {
+                        const scannerSection = document.getElementById('scannerSection');
+                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+            }, 100);
         }
         return;
     }
@@ -1111,9 +1129,23 @@ async function analyzeCapturedImage(imageData) {
                     <i class="fas fa-exclamation-triangle text-4xl text-yellow-300 mb-4"></i>
                     <h3 class="text-xl font-medium text-gray-700">No Ingredient List Detected</h3>
                     <p class="text-gray-500 mt-2">Please capture a clear image of the product's ingredient list.</p>
+                    <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                        <i class="fas fa-redo mr-1"></i> Try Again
+                    </button>
                 </div>
             `;
             resultsContainer.classList.remove('hidden');
+            setTimeout(() => {
+                const tryAgainBtn = document.getElementById('tryAgainBtn');
+                if (tryAgainBtn) {
+                    tryAgainBtn.onclick = function() {
+                        const scannerSection = document.getElementById('scannerSection');
+                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+            }, 100);
         }
         return;
     }
@@ -1257,19 +1289,31 @@ async function analyzeCapturedImage(imageData) {
     } catch (error) {
         console.error('Analysis error:', error);
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
-        
-        // Show error message
+        // Show error message with Try Again button
         const errorHTML = `
             <div class="text-center py-8">
                 <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i>
                 <h3 class="text-xl font-medium text-gray-700">Analysis Failed</h3>
                 <p class="text-gray-500 mt-2">Unable to analyze ingredients. Please try again.</p>
+                <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                    <i class="fas fa-redo mr-1"></i> Try Again
+                </button>
             </div>
         `;
-        
         if (resultsContainer) {
             resultsContainer.innerHTML = errorHTML;
             resultsContainer.classList.remove('hidden');
+            setTimeout(() => {
+                const tryAgainBtn = document.getElementById('tryAgainBtn');
+                if (tryAgainBtn) {
+                    tryAgainBtn.onclick = function() {
+                        const scannerSection = document.getElementById('scannerSection');
+                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+            }, 100);
         }
     }
 }

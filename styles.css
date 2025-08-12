@@ -235,11 +235,6 @@ section[id] {
     margin: 0 auto;
 }
 
-.testimonial-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
 .testimonial-card p {
     position: relative;
     padding-left: 10px;
