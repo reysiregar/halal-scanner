@@ -311,26 +311,26 @@ app.post('/auth/signup', async (req, res) => {
 
 // --- SAVED RESULTS: Get all saved results for current user ---
 app.get('/api/saved-results', authenticateJWT(), async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const results = await SavedResult.find({ user: userId }).sort({ createdAt: -1 });
-        res.json(results);
-    } catch (error) {
-        console.error('Error fetching saved results:', error);
-        res.status(500).json({ error: 'Failed to fetch saved results' });
-    }
+  try {
+    const userId = req.user.id;
+    const results = await SavedResult.find({ user: userId }).sort({ createdAt: -1 });
+    res.json({ saved_results: results });
+  } catch (error) {
+    console.error('Error fetching saved results:', error);
+    res.status(500).json({ error: 'Failed to fetch saved results' });
+  }
 });
 
 // --- USER REPORTS: Get all reports for current user ---
 app.get('/api/user/reports', authenticateJWT(), async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const reports = await Report.find({ user: userId }).sort({ createdAt: -1 });
-        res.json(reports);
-    } catch (error) {
-        console.error('Error fetching user reports:', error);
-        res.status(500).json({ error: 'Failed to fetch user reports' });
-    }
+  try {
+    const userId = req.user.id;
+    const reports = await Report.find({ user: userId }).sort({ createdAt: -1 });
+    res.json({ reports });
+  } catch (error) {
+    console.error('Error fetching user reports:', error);
+    res.status(500).json({ error: 'Failed to fetch user reports' });
+  }
 });
 
 // --- AUTH: Login endpoint ---
