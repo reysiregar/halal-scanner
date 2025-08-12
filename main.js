@@ -2618,7 +2618,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="avatar-initials">${t.name ? t.name.charAt(0).toUpperCase() : 'A'}</span>
                         </div>
                         <h4 class="testimonial-name">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
-                        <p class="testimonial-role">${t.role || 'Verified User'}</p>
+                        ${t.role ? `<p class=\"testimonial-role\">${t.role}</p>` : ''}
                         <div class="testimonial-stars">
                             ${'<i class=\"fas fa-star\"></i>'.repeat(Math.floor(t.rating))}
                             ${t.rating % 1 >= 0.5 ? '<i class=\"fas fa-star-half-alt\"></i>' : ''}
@@ -2649,7 +2649,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enhanced carousel navigation
     if (testimonialPrev && testimonialNext && testimonialsCarousel) {
-        const scrollAmount = 380; // Match this with the card width + margin
+        // Dynamically calculate scroll amount based on card width
+        function getScrollAmount() {
+            const card = testimonialsCarousel.querySelector('.testimonial-card');
+            if (card) {
+                const style = window.getComputedStyle(card);
+                const marginRight = parseInt(style.marginRight) || 0;
+                return card.offsetWidth + marginRight;
+            }
+            return 320; // fallback
+        }
+
+        testimonialPrev.addEventListener('click', () => {
+            testimonialsCarousel.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+        });
+        testimonialNext.addEventListener('click', () => {
+            testimonialsCarousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+        });
         
         // Update button states based on scroll position
         const updateButtonStates = () => {
