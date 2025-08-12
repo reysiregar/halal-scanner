@@ -724,9 +724,9 @@ if (captureBtn) {
             });
             return;
         }
-        // Only hide the camera preview, not the whole scanner section
-        const cameraPreview = video.closest('.camera-preview');
-        if (cameraPreview) cameraPreview.classList.add('hidden');
+    // Hide the camera card (which includes camera preview and Capture/Switch buttons)
+    const cameraCard = video.closest('.bg-white');
+    if (cameraCard) cameraCard.classList.add('hidden');
         stopCamera();
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -1110,8 +1110,12 @@ async function analyzeCapturedImage(imageData) {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
+                        // Show the camera card again
                         const scannerSection = document.getElementById('scannerSection');
-                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        if (scannerSection) {
+                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                            if (cameraCard) cameraCard.classList.remove('hidden');
+                        }
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -1139,8 +1143,12 @@ async function analyzeCapturedImage(imageData) {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
+                        // Show the camera card again
                         const scannerSection = document.getElementById('scannerSection');
-                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        if (scannerSection) {
+                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                            if (cameraCard) cameraCard.classList.remove('hidden');
+                        }
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -1307,8 +1315,12 @@ async function analyzeCapturedImage(imageData) {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
+                        // Show the camera card again
                         const scannerSection = document.getElementById('scannerSection');
-                        if (scannerSection) scannerSection.classList.remove('hidden');
+                        if (scannerSection) {
+                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                            if (cameraCard) cameraCard.classList.remove('hidden');
+                        }
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
