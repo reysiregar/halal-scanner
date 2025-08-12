@@ -1,3 +1,11 @@
+// Show the existing welcome modal on first visit per session
+document.addEventListener('DOMContentLoaded', function() {
+    var welcomeModal = document.getElementById('welcomeModal');
+    if (welcomeModal && !sessionStorage.getItem('welcomeModalShown')) {
+        welcomeModal.classList.remove('hidden');
+        sessionStorage.setItem('welcomeModalShown', 'true');
+    }
+});
 // Import configuration
 import { getApiUrl, API_ENDPOINTS } from './config.js';
 
@@ -39,13 +47,6 @@ if (mobileMenuBtn && mobileMenu) {
         }
     });
 }
-
-// Commented out to prevent sign-in modal from always opening on click:
-// if (signInButton) {
-//     signInButton.addEventListener('click', () => {
-//         if (signInModal) signInModal.classList.remove('hidden');
-//     });
-// }
 
 if (closeSignIn) {
     closeSignIn.addEventListener('click', (e) => {
@@ -2611,7 +2612,7 @@ document.addEventListener('DOMContentLoaded', function() {
             testimonialsCarousel.classList.add('testimonials-carousel');
             
             testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="testimonial-card bg-white p-6 rounded-2xl shadow-md w-[85vw] sm:w-[380px] snap-center flex-shrink-0 mx-3 relative overflow-hidden">
+                <div class="testimonial-card bg-white p-6 rounded-2xl shadow-md snap-center flex-shrink-0 relative overflow-hidden">
                     <div class="absolute top-6 right-6 text-indigo-100 text-6xl -z-0">
                         <i class="fas fa-quote-right"></i>
                     </div>
