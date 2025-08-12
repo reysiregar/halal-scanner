@@ -31,7 +31,7 @@ const app = express();
 // Configure CORS with allowed origins
 const allowedOrigins = [
   'http://localhost:5173', // Local development
-  'https://aihalal-scanner.vercel.app', // Production frontend
+  'https://ai-halal-scanner.vercel.app', // Production frontend
   'https://mid-andreana-veez-37004fdb.koyeb.app' // Backend domain for direct frontend access
 ];
 
