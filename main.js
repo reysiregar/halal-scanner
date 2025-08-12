@@ -115,24 +115,31 @@ if (acceptDisclaimer) {
 }
 
 // Welcome modal handlers
+function closeWelcomeModal() {
+    if (welcomeModal) {
+        welcomeModal.classList.add('hidden');
+        sessionStorage.setItem('welcomeShown', 'true');
+    }
+}
+
 if (closeWelcome) {
     closeWelcome.addEventListener('click', function(e) {
         e.preventDefault();
-        if (welcomeModal) welcomeModal.classList.add('hidden');
+        closeWelcomeModal();
     });
 }
 
 if (acceptWelcome) {
     acceptWelcome.addEventListener('click', function(e) {
         e.preventDefault();
-        if (welcomeModal) welcomeModal.classList.add('hidden');
+        closeWelcomeModal();
     });
 }
 
 if (declineWelcome) {
     declineWelcome.addEventListener('click', function(e) {
         e.preventDefault();
-        if (welcomeModal) welcomeModal.classList.add('hidden');
+        closeWelcomeModal();
     });
 }
 
@@ -2429,11 +2436,23 @@ function addPasswordToggleFunctionality() {
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function() {
     // Show welcome modal after page load if disclaimer already accepted
+    // Use a slightly longer timeout to ensure all elements are loaded
     setTimeout(() => {
-        if (localStorage.getItem('disclaimerAccepted')) {
-            if (welcomeModal) welcomeModal.classList.remove('hidden');
+        const disclaimerAccepted = localStorage.getItem('disclaimerAccepted') === 'true';
+        const welcomeShown = sessionStorage.getItem('welcomeShown');
+        
+        if (disclaimerAccepted && welcomeModal && !welcomeShown) {
+            welcomeModal.classList.remove('hidden');
+            sessionStorage.setItem('welcomeShown', 'true');
+            
+            // Close modal when clicking outside
+            welcomeModal.addEventListener('click', function(e) {
+                if (e.target === welcomeModal) {
+                    welcomeModal.classList.add('hidden');
+                }
+            });
         }
-    }, 300);
+    }, 500);
 
     checkAuthStatus();
     addSaveResultsFunctionality();
@@ -2579,48 +2598,137 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load testimonials from backend and render
     async function loadTestimonials() {
         if (!testimonialsCarousel) return;
-        testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400">Loading testimonials...</div>';
+        testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400 py-8">Loading testimonials...</div>';
         try {
             const response = await fetch(getApiUrl(API_ENDPOINTS.GET_TESTIMONIALS));
             const testimonials = await response.json();
             if (!Array.isArray(testimonials) || testimonials.length === 0) {
-                testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400">No testimonials yet. Be the first to review!</div>';
+                testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400 py-8">No testimonials yet. Be the first to review!</div>';
                 return;
             }
+            
+            // Add a class to the carousel for better styling
+            testimonialsCarousel.classList.add('testimonials-carousel');
+            
             testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="testimonial-card bg-gray-50 p-3 sm:p-6 rounded-xl shadow-sm w-[80vw] sm:w-[320px] snap-center flex-shrink-0 mx-1">
-                    <div class="flex items-center mb-3 sm:mb-4">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-indigo-100 flex items-center justify-center text-xl sm:text-2xl text-indigo-600 font-bold mr-3 sm:mr-4">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-sm sm:text-base">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
-                            <div class="flex text-yellow-400 text-sm sm:text-base">
-                                ${'<i class=\'fas fa-star\'></i>'.repeat(Math.floor(t.rating))}
-                                ${t.rating % 1 >= 0.5 ? '<i class=\'fas fa-star-half-alt\'></i>' : ''}
-                                ${'<i class=\'far fa-star\'></i>'.repeat(5 - Math.ceil(t.rating))}
+                <div class="testimonial-card bg-white p-6 rounded-2xl shadow-md w-[85vw] sm:w-[380px] snap-center flex-shrink-0 mx-3 relative overflow-hidden">
+                    <div class="absolute top-6 right-6 text-indigo-100 text-6xl -z-0">
+                        <i class="fas fa-quote-right"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex items-start mb-4">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl text-white font-bold mr-4 flex-shrink-0">
+                                ${t.name ? t.name.charAt(0).toUpperCase() : 'A'}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg text-gray-800">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
+                                <p class="text-sm text-gray-500 mb-2">${t.role || 'Verified User'}</p>
+                                <div class="flex text-yellow-400 text-sm">
+                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(t.rating))}
+                                    ${t.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
+                                    ${'<i class="far fa-star"></i>'.repeat(5 - Math.ceil(t.rating))}
+                                </div>
                             </div>
                         </div>
+                        <p class="text-gray-600 mt-4 leading-relaxed">${t.testimony.replace(/"/g, '&quot;')}</p>
                     </div>
-                    <p class="testimonial-text text-gray-600 text-sm sm:text-base">"${t.testimony.replace(/"/g, '&quot;')}"</p>
                 </div>
             `).join('');
         } catch (err) {
-            testimonialsCarousel.innerHTML = '<div class="text-center text-red-400">Failed to load testimonials.</div>';
+            console.error('Error loading testimonials:', err);
+            testimonialsCarousel.innerHTML = `
+                <div class="text-center py-8 px-4">
+                    <div class="inline-block p-4 bg-red-50 rounded-full text-red-500 mb-3">
+                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                    </div>
+                    <p class="text-red-400">Failed to load testimonials.</p>
+                    <button onclick="loadTestimonials()" class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        <i class="fas fa-sync-alt mr-1"></i> Try again
+                    </button>
+                </div>`;
         }
     }
 
     // Initial load
+    // Initialize testimonials
     loadTestimonials();
 
-    // Carousel scroll logic
+    // Enhanced carousel navigation
     if (testimonialPrev && testimonialNext && testimonialsCarousel) {
+        const scrollAmount = 380; // Match this with the card width + margin
+        
+        // Update button states based on scroll position
+        const updateButtonStates = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = testimonialsCarousel;
+            testimonialPrev.disabled = scrollLeft === 0;
+            testimonialNext.disabled = scrollLeft + clientWidth >= scrollWidth - 10; // Small threshold for float imprecision
+            
+            // Update button styles based on state
+            testimonialPrev.style.opacity = testimonialPrev.disabled ? '0.5' : '1';
+            testimonialNext.style.opacity = testimonialNext.disabled ? '0.5' : '1';
+            testimonialPrev.style.cursor = testimonialPrev.disabled ? 'not-allowed' : 'pointer';
+            testimonialNext.style.cursor = testimonialNext.disabled ? 'not-allowed' : 'pointer';
+        };
+
+        // Initial state
+        updateButtonStates();
+
+        // Scroll event listener
+        testimonialsCarousel.addEventListener('scroll', updateButtonStates);
+
+        // Navigation handlers with smooth scroll
         testimonialPrev.addEventListener('click', () => {
-            testimonialsCarousel.scrollBy({ left: -360, behavior: 'smooth' });
+            if (testimonialPrev.disabled) return;
+            testimonialsCarousel.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
         });
+
         testimonialNext.addEventListener('click', () => {
-            testimonialsCarousel.scrollBy({ left: 360, behavior: 'smooth' });
+            if (testimonialNext.disabled) return;
+            testimonialsCarousel.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
         });
+
+        // Handle keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && !testimonialPrev.disabled) {
+                testimonialPrev.click();
+            } else if (e.key === 'ArrowRight' && !testimonialNext.disabled) {
+                testimonialNext.click();
+            }
+        });
+
+        // Handle touch events for mobile swipe
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        testimonialsCarousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        testimonialsCarousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            handleSwipe();
+        }, { passive: true });
+
+        const handleSwipe = () => {
+            const swipeThreshold = 50; // Minimum distance to trigger swipe
+            const swipeDistance = touchEndX - touchStartX;
+
+            if (Math.abs(swipeDistance) > swipeThreshold) {
+                if (swipeDistance > 0 && !testimonialPrev.disabled) {
+                    // Swipe right - go to previous
+                    testimonialPrev.click();
+                } else if (swipeDistance < 0 && !testimonialNext.disabled) {
+                    // Swipe left - go to next
+                    testimonialNext.click();
+                }
+            }
+        };
     }
 });
 
