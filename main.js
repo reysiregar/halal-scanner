@@ -2612,26 +2612,19 @@ document.addEventListener('DOMContentLoaded', function() {
             testimonialsCarousel.classList.add('testimonials-carousel');
             
             testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="testimonial-card bg-white p-6 rounded-2xl shadow-md snap-center flex-shrink-0 relative overflow-hidden">
-                    <div class="absolute top-6 right-6 text-indigo-100 text-6xl -z-0">
-                        <i class="fas fa-quote-right"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="flex items-start mb-4">
-                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl text-white font-bold mr-4 flex-shrink-0">
-                                ${t.name ? t.name.charAt(0).toUpperCase() : 'A'}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-lg text-gray-800">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
-                                <p class="text-sm text-gray-500 mb-2">${t.role || 'Verified User'}</p>
-                                <div class="flex text-yellow-400 text-sm">
-                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(t.rating))}
-                                    ${t.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
-                                    ${'<i class="far fa-star"></i>'.repeat(5 - Math.ceil(t.rating))}
-                                </div>
-                            </div>
+                <div class="testimonial-card bg-white p-4 rounded-xl shadow-md snap-center flex-shrink-0 relative overflow-hidden">
+                    <div class="flex flex-col items-center text-center relative z-10">
+                        <div class="avatar-sm mb-2">
+                            <span class="avatar-initials">${t.name ? t.name.charAt(0).toUpperCase() : 'A'}</span>
                         </div>
-                        <p class="text-gray-600 mt-4 leading-relaxed">${t.testimony.replace(/"/g, '&quot;')}</p>
+                        <h4 class="testimonial-name">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
+                        <p class="testimonial-role">${t.role || 'Verified User'}</p>
+                        <div class="testimonial-stars">
+                            ${'<i class=\"fas fa-star\"></i>'.repeat(Math.floor(t.rating))}
+                            ${t.rating % 1 >= 0.5 ? '<i class=\"fas fa-star-half-alt\"></i>' : ''}
+                            ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.ceil(t.rating))}
+                        </div>
+                        <p class="testimonial-text mt-2">${t.testimony.replace(/"/g, '&quot;')}</p>
                     </div>
                 </div>
             `).join('');

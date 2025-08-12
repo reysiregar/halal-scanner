@@ -553,9 +553,65 @@ section[id] {
 }
 
 /* === Testimonials (mobile tuning) === */
+
 .testimonial-card {
-    /* Ensure cards don't exceed viewport width */
-    max-width: 90vw;
+    max-width: 350px;
+    width: 100%;
+    margin: 0 auto 16px auto;
+    padding: 16px;
+    border-radius: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s;
+}
+
+.avatar-sm {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+.avatar-initials {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.testimonial-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+.testimonial-role {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.testimonial-stars {
+    color: #fbbf24;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+.testimonial-text {
+    font-size: 0.95rem;
+    color: #334155;
+    line-height: 1.5;
+    margin-top: 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
 }
 
 .testimonial-text {
@@ -568,11 +624,28 @@ section[id] {
 
 @media (max-width: 640px) {
     #testimonialsCarousel {
-        gap: 12px; /* tighter spacing between cards */
-        padding: 0 6px;
+        gap: 8px;
+        padding: 0 4px;
     }
     .testimonial-card {
-        padding: 12px; /* p-3 equivalent */
-        border-radius: 12px;
+        max-width: 95vw;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    .testimonial-name {
+        font-size: 0.98rem;
+    }
+    .testimonial-role {
+        font-size: 0.8rem;
+    }
+    .testimonial-text {
+        font-size: 0.92rem;
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
     }
 }
