@@ -724,9 +724,9 @@ if (captureBtn) {
             });
             return;
         }
-        // Close the scanner section immediately
-        const scannerSection = document.getElementById('scannerSection');
-        if (scannerSection) scannerSection.classList.add('hidden');
+        // Only hide the camera preview, not the whole scanner section
+        const cameraPreview = video.closest('.camera-preview');
+        if (cameraPreview) cameraPreview.classList.add('hidden');
         stopCamera();
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
