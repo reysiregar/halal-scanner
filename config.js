@@ -14,8 +14,8 @@ export const API_ENDPOINTS = {
   DELETE_SAVED_RESULT: '/api/saved-results',
   REPORT_INACCURACY: '/submit-report',
   GET_USER_REPORTS: '/user-reports',
-  GET_ADMIN_REPORTS: '/api/admin/reports',
-  UPDATE_REPORT_STATUS: '/api/admin/reports/status',
+  GET_ADMIN_REPORTS: '/admin/reports',
+  UPDATE_REPORT_STATUS: '/admin/reports/status',
   GET_TESTIMONIALS: '/api/testimonials'
 };
 
