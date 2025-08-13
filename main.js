@@ -2138,11 +2138,13 @@ async function deleteSavedResult(resultId) {
 }
 
 async function loadAdminReports() {
-    if (!currentUser || currentUser.id !== 1) return;
+    if (!currentUser) return;
     
     try {
+        const token = localStorage.getItem('jwtToken');
         const response = await fetch(getApiUrl(API_ENDPOINTS.GET_ADMIN_REPORTS), {
             headers: {
+                'Authorization': `Bearer ${token}`,
                 'user-id': currentUser.id,
                 'user-email': currentUser.email,
                 'user-name': currentUser.name
