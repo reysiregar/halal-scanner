@@ -2314,6 +2314,12 @@ async function updateReportStatus(reportId, status, adminNote) {
         if (!token) {
             throw new Error('Not authenticated');
         }
+
+        // Ensure currentUser is defined
+        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!currentUser || !currentUser.id) {
+            throw new Error('User information is missing');
+        }
         
         const body = { 
             status: status,
@@ -2328,7 +2334,8 @@ async function updateReportStatus(reportId, status, adminNote) {
             url: url.toString(),
             reportId,
             status,
-            hasAdminNote: !!adminNote 
+            hasAdminNote: !!adminNote,
+            body: body
         });
         
         const response = await fetch(url, {
@@ -2337,16 +2344,25 @@ async function updateReportStatus(reportId, status, adminNote) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
                 'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
+                'user-email': currentUser.email || '',
+                'user-name': currentUser.name || ''
             },
             body: JSON.stringify(body)
         });
+
+        const responseData = await response.json().catch(() => ({}));
+        
         if (response.ok) {
             activateAdminReportsTab();
             loadAdminReports(); // Reload the list
+            return { success: true };
         } else {
-            throw new Error('Failed to update report status');
+            console.error('Server response error:', {
+                status: response.status,
+                statusText: response.statusText,
+                response: responseData
+            });
+            throw new Error(responseData.message || 'Failed to update report status');
         }
     } catch (error) {
         console.error('Error updating report status:', error);
