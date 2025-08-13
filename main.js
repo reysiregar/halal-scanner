@@ -1944,22 +1944,52 @@ function displaySavedResults(results) {
     
     let html = '';
     results.forEach(result => {
-        const resultData = result.result_data;
-        const date = new Date(result.created_at).toLocaleDateString();
+        // Parse the result_data if it's a string
+        const resultData = typeof result.result_data === 'string' 
+            ? JSON.parse(result.result_data) 
+            : result.result_data;
+            
+        const date = result.created_at 
+            ? new Date(result.created_at).toLocaleDateString() 
+            : 'Unknown date';
+        
+        // Create a status badge with appropriate color
+        const statusText = resultData.overallStatus || 'unknown';
+        const statusColors = {
+            halal: 'bg-green-100 text-green-800',
+            haram: 'bg-red-100 text-red-800',
+            mashbooh: 'bg-yellow-100 text-yellow-800',
+            unknown: 'bg-gray-100 text-gray-800'
+        };
+        const statusClass = statusColors[statusText] || statusColors.unknown;
+        
+        // Limit ingredients preview length
+        const ingredientsPreview = resultData.ingredients 
+            ? (resultData.ingredients.length > 100 
+                ? resultData.ingredients.substring(0, 100) + '...' 
+                : resultData.ingredients)
+            : 'No ingredients data';
         
         html += `
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h5 class="font-medium">Scan Result - ${date}</h5>
-                        <p class="text-sm text-gray-600">Overall Status: ${resultData.overallStatus}</p>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <h5 class="font-medium text-gray-900">Scan from ${date}</h5>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
+                                ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p class="mb-2">${ingredientsPreview}</p>
+                        </div>
                     </div>
-                    <button type="button" class="delete-saved-result text-red-600 hover:text-red-800" data-id="${result._id}">
+                    <button type="button" 
+                            class="delete-saved-result text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100"
+                            data-id="${result._id}"
+                            title="Delete this result">
                         <i class="fas fa-trash"></i>
                     </button>
-                </div>
-                <div class="text-sm text-gray-600">
-                    <p><strong>Ingredients:</strong> ${resultData.ingredients || 'N/A'}</p>
                 </div>
             </div>
         `;
