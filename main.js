@@ -1694,9 +1694,15 @@ if (adminDashboardBtn) {
         
         if (adminDashboardModal) {
             adminDashboardModal.classList.remove('hidden');
-            // Load admin reports when opening the modal
-            activateAdminReportsTab();
-            loadAdminReports();
+            
+            // Activate the first tab and load its content
+            const firstTab = document.querySelector('.admin-tab-button');
+            if (firstTab) {
+                firstTab.click();
+            } else {
+                // Fallback to loading admin reports if tab click fails
+                loadAdminReports();
+            }
         }
     });
 }
@@ -1723,6 +1729,11 @@ if (adminDashboardModal) {
 const tabButtons = document.querySelectorAll('.tab-button');
 const tabContents = document.querySelectorAll('.tab-content');
 
+// Tab functionality for admin dashboard
+const adminTabButtons = document.querySelectorAll('.admin-tab-button');
+const adminTabContents = document.querySelectorAll('.admin-tab-content');
+
+// User dashboard tabs
 tabButtons.forEach(button => {
     button.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1752,9 +1763,135 @@ tabButtons.forEach(button => {
     });
 });
 
+// Admin dashboard tabs
+adminTabButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTab = button.getAttribute('data-tab');
+        
+        // Update active tab button
+        adminTabButtons.forEach(btn => {
+            btn.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
+            btn.classList.add('text-gray-500');
+        });
+        button.classList.add('active', 'border-indigo-500', 'text-indigo-600');
+        button.classList.remove('text-gray-500');
+        
+        // Show target tab content
+        adminTabContents.forEach(content => {
+            content.classList.add('hidden');
+        });
+        const targetContent = document.getElementById(`${targetTab}-tab`);
+        if (targetContent) targetContent.classList.remove('hidden');
+        
+        // Load data for the selected tab
+        if (targetTab === 'admin-saved-results') {
+            loadAdminSavedResults();
+        } else if (targetTab === 'admin-reports') {
+            loadAdminReports();
+        }
+    });
+});
+
 async function loadUserDashboard() {
     await loadSavedResults();
     await loadUserReports();
+}
+
+async function loadAdminSavedResults() {
+    if (!currentUser) return;
+    
+    try {
+        const token = localStorage.getItem('jwtToken');
+        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_ALL_SAVED_RESULTS), {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'user-id': currentUser.id,
+                'user-email': currentUser.email,
+                'user-name': currentUser.name
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayAdminSavedResults(data.saved_results || []);
+        } else {
+            throw new Error(data.error || 'Failed to load saved results');
+        }
+    } catch (error) {
+        console.error('Error loading admin saved results:', error);
+        const container = document.getElementById('adminSavedResultsList');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                    <p>Failed to load saved results</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function displayAdminSavedResults(results) {
+    const container = document.getElementById('adminSavedResultsList');
+    if (!container) return;
+    
+    if (!results || results.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-save text-2xl mb-2"></i>
+                <p>No saved results found</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingredients</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${results.map(result => {
+                        const date = new Date(result.created_at).toLocaleString();
+                        const statusClass = {
+                            'halal': 'bg-green-100 text-green-800',
+                            'haram': 'bg-red-100 text-red-800',
+                            'mashbooh': 'bg-yellow-100 text-yellow-800',
+                            'unknown': 'bg-gray-100 text-gray-800'
+                        }[result.overall_status] || 'bg-gray-100 text-gray-800';
+                        
+                        return `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div class="font-medium">${result.user_name || 'Unknown'}</div>
+                                    <div class="text-gray-500 text-xs">${result.user_email || ''}</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                                    ${result.ingredients || 'No ingredients'}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                        ${result.overall_status || 'unknown'}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${date}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
 }
 
 async function loadSavedResults() {
