@@ -1756,6 +1756,7 @@ function displaySavedResults(results) {
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-save text-2xl mb-2"></i>
                 <p>No saved results yet</p>
+                <p class="text-sm mt-2">Your saved scan results will appear here</p>
             </div>
         `;
         return;
