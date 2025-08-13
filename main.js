@@ -2123,7 +2123,7 @@ async function loadUserReports() {
 
 async function deleteSavedResult(resultId) {
     try {
-        const response = await fetch(`${getApiUrl(API_ENDPOINTS.DELETE_SAVED_RESULT)}/${resultId}`, {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_SAVED_RESULT(resultId)), {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
