@@ -2311,9 +2311,10 @@ async function updateReportStatus(reportId, status, adminNote) {
             status: status,
             admin_note: adminNote || '' // Always include admin_note, even if empty
         };
-        const endpoint = API_ENDPOINTS.UPDATE_REPORT_STATUS.replace(':id', reportId);
+        // Construct the URL with the report ID
+        const endpoint = `${API_ENDPOINTS.UPDATE_REPORT_STATUS}/${reportId}`;
         const url = new URL(getApiUrl(endpoint));
-        console.log('Updating report status:', { url, body });
+        console.log('Updating report status:', { url: url.toString(), body });
         const response = await fetch(url, {
             method: 'PUT',
             headers: {
