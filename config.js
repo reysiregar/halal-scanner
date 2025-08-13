@@ -10,7 +10,7 @@ export const API_ENDPOINTS = {
   SIGN_IN: '/auth/signin',
   SIGN_UP: '/auth/signup',
   SAVE_RESULT: '/save-results',
-  GET_SAVED_RESULTS: '/api/saved-results',
+  GET_SAVED_RESULTS: '/user-saved-results',
   DELETE_SAVED_RESULT: '/api/saved-results',
   REPORT_INACCURACY: '/submit-report',
   GET_USER_REPORTS: '/user-reports',

@@ -314,7 +314,7 @@ app.post('/auth/signup', async (req, res) => {
 app.get('/api/saved-results', authenticateJWT(), async (req, res) => {
   try {
     const userId = req.user.id;
-    const results = await SavedResult.find({ user: userId }).sort({ createdAt: -1 });
+    const results = await SavedResult.find({ user_id: userId }).sort({ createdAt: -1 });
     // Convert to camelCase for frontend compatibility
     const camelResults = results.map(r => ({
       _id: r._id,
