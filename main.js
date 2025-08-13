@@ -2306,15 +2306,31 @@ function displayAdminReports(reports) {
 
 async function updateReportStatus(reportId, status, adminNote) {
     try {
+        if (!reportId) {
+            throw new Error('Report ID is required');
+        }
+        
         const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            throw new Error('Not authenticated');
+        }
+        
         const body = { 
             status: status,
             admin_note: adminNote || '' // Always include admin_note, even if empty
         };
+        
         // Construct the URL with the report ID
-        const endpoint = `${API_ENDPOINTS.UPDATE_REPORT_STATUS}/${reportId}`;
-        const url = new URL(getApiUrl(endpoint));
-        console.log('Updating report status:', { url: url.toString(), body });
+        const baseUrl = getApiUrl(API_ENDPOINTS.UPDATE_REPORT_STATUS);
+        const url = new URL(`${baseUrl}/${reportId}`);
+        
+        console.log('Updating report status:', { 
+            url: url.toString(),
+            reportId,
+            status,
+            hasAdminNote: !!adminNote 
+        });
+        
         const response = await fetch(url, {
             method: 'PUT',
             headers: {
