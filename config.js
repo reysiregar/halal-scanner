@@ -11,11 +11,11 @@ export const API_ENDPOINTS = {
   SIGN_UP: '/auth/signup',
   SAVE_RESULT: '/save-results',
   GET_SAVED_RESULTS: '/user-saved-results',
-  DELETE_SAVED_RESULT: '/api/saved-results',
+  DELETE_SAVED_RESULT: (id) => `/saved-results/${id}`,
   REPORT_INACCURACY: '/submit-report',
   GET_USER_REPORTS: '/user-reports',
   GET_ADMIN_REPORTS: '/admin/reports',
-  UPDATE_REPORT_STATUS: '/admin/reports',
+  UPDATE_REPORT_STATUS: (id) => `/admin/reports/${id}`,
   GET_TESTIMONIALS: '/api/testimonials'
 };
 
