@@ -1803,7 +1803,7 @@ async function loadAdminSavedResults() {
     
     try {
         const token = localStorage.getItem('jwtToken');
-        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_ALL_SAVED_RESULTS), {
+        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_SAVED_RESULTS), {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'user-id': currentUser.id,
@@ -1812,13 +1812,12 @@ async function loadAdminSavedResults() {
             }
         });
         
-        const data = await response.json();
-        
-        if (response.ok) {
-            displayAdminSavedResults(data.saved_results || []);
-        } else {
-            throw new Error(data.error || 'Failed to load saved results');
+        if (!response.ok) {
+            throw new Error('Failed to load saved results');
         }
+        
+        const data = await response.json();
+        displayAdminSavedResults(data || []);
     } catch (error) {
         console.error('Error loading admin saved results:', error);
         const container = document.getElementById('adminSavedResultsList');
