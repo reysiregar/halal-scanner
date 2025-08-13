@@ -1660,6 +1660,9 @@ if (signInBtn) {
 const userDashboardBtn = document.getElementById('userDashboardBtn');
 const userDashboardModal = document.getElementById('userDashboardModal');
 const closeUserDashboard = document.getElementById('closeUserDashboard');
+const adminDashboardBtn = document.getElementById('adminDashboardBtn');
+const adminDashboardModal = document.getElementById('adminDashboardModal');
+const closeAdminDashboard = document.getElementById('closeAdminDashboard');
 
 if (userDashboardBtn) {
     userDashboardBtn.addEventListener('click', (e) => {
@@ -1678,6 +1681,41 @@ if (closeUserDashboard) {
     closeUserDashboard.addEventListener('click', (e) => {
         e.preventDefault();
         if (userDashboardModal) userDashboardModal.classList.add('hidden');
+    });
+}
+
+// Admin dashboard button click handler
+if (adminDashboardBtn) {
+    adminDashboardBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Hide sign in modal if open
+        const signInModal = document.getElementById('signInModal');
+        if (signInModal) signInModal.classList.add('hidden');
+        
+        if (adminDashboardModal) {
+            adminDashboardModal.classList.remove('hidden');
+            // Load admin reports when opening the modal
+            activateAdminReportsTab();
+            loadAdminReports();
+        }
+    });
+}
+
+// Close admin dashboard modal
+if (closeAdminDashboard) {
+    closeAdminDashboard.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (adminDashboardModal) adminDashboardModal.classList.add('hidden');
+    });
+}
+
+// Close modal when clicking outside
+if (adminDashboardModal) {
+    adminDashboardModal.addEventListener('click', (e) => {
+        if (e.target === adminDashboardModal) {
+            e.preventDefault();
+            adminDashboardModal.classList.add('hidden');
+        }
     });
 }
 
