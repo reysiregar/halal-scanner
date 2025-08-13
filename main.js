@@ -2307,9 +2307,13 @@ function displayAdminReports(reports) {
 async function updateReportStatus(reportId, status, adminNote) {
     try {
         const token = localStorage.getItem('jwtToken');
-        const body = { status: status };
-        if (adminNote !== undefined) body.admin_note = adminNote;
-        const url = new URL(getApiUrl(API_ENDPOINTS.UPDATE_REPORT_STATUS).replace(':id', reportId));
+        const body = { 
+            status: status,
+            admin_note: adminNote || '' // Always include admin_note, even if empty
+        };
+        const endpoint = API_ENDPOINTS.UPDATE_REPORT_STATUS.replace(':id', reportId);
+        const url = new URL(getApiUrl(endpoint));
+        console.log('Updating report status:', { url, body });
         const response = await fetch(url, {
             method: 'PUT',
             headers: {

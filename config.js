@@ -15,7 +15,7 @@ export const API_ENDPOINTS = {
   REPORT_INACCURACY: '/submit-report',
   GET_USER_REPORTS: '/user-reports',
   GET_ADMIN_REPORTS: '/admin/reports',
-  UPDATE_REPORT_STATUS: '/admin/reports/status',
+  UPDATE_REPORT_STATUS: '/admin/reports',
   GET_TESTIMONIALS: '/api/testimonials'
 };
 
