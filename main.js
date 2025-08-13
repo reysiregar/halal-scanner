@@ -1817,7 +1817,8 @@ async function loadAdminSavedResults() {
         }
         
         const data = await response.json();
-        displayAdminSavedResults(data || []);
+        // The API returns { saved_results: [...] } so we need to pass data.saved_results
+        displayAdminSavedResults(data.saved_results || []);
     } catch (error) {
         console.error('Error loading admin saved results:', error);
         const container = document.getElementById('adminSavedResultsList');
@@ -1859,26 +1860,31 @@ function displayAdminSavedResults(results) {
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     ${results.map(result => {
-                        const date = new Date(result.created_at).toLocaleString();
+                        // Extract data from the nested result_data if it exists
+                        const resultData = result.result_data || {};
+                        const ingredients = resultData.ingredients || 'No ingredients';
+                        const overallStatus = resultData.overallStatus || 'unknown';
+                        const date = new Date(result.createdAt || result.created_at || Date.now()).toLocaleString();
+                        
                         const statusClass = {
                             'halal': 'bg-green-100 text-green-800',
                             'haram': 'bg-red-100 text-red-800',
                             'mashbooh': 'bg-yellow-100 text-yellow-800',
                             'unknown': 'bg-gray-100 text-gray-800'
-                        }[result.overall_status] || 'bg-gray-100 text-gray-800';
+                        }[overallStatus.toLowerCase()] || 'bg-gray-100 text-gray-800';
                         
                         return `
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div class="font-medium">${result.user_name || 'Unknown'}</div>
-                                    <div class="text-gray-500 text-xs">${result.user_email || ''}</div>
+                                    <div class="font-medium">${result.user?.name || 'Unknown'}</div>
+                                    <div class="text-gray-500 text-xs">${result.user?.email || ''}</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                                    ${result.ingredients || 'No ingredients'}
+                                    ${ingredients}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                                        ${result.overall_status || 'unknown'}
+                                        ${overallStatus}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
