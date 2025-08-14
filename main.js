@@ -838,17 +838,57 @@ function getCleanedIngredientListFromOCR(ocrText) {
 // Utility to check if OCR text is likely an ingredient list
 function isLikelyIngredientList(text) {
     if (!text || typeof text !== 'string') return false;
-    const lower = text.toLowerCase();
-    // Require the word 'ingredient' or 'bahan' (for Indonesian/Malay)
-    if (lower.includes('ingredient') || lower.includes('bahan')) return true;
-    // Require at least 2 food keywords AND at least 2 commas (to avoid single-word or short lists)
-    const foodKeywords = [
-        'salt', 'oil', 'sugar', 'flour', 'extract', 'gum', 'acid', 'starch', 'protein', 'spice', 'herb', 'flavour', 'flavor', 'color', 'colour', 'preservative', 'emulsifier', 'thickener', 'lecithin', 'yeast', 'enzyme', 'vitamin', 'whey', 'milk', 'egg', 'soy', 'bean', 'corn', 'wheat', 'gluten', 'dextrose', 'malt', 'monosodium', 'glutamate', 'powder', 'onion', 'garlic', 'pepper', 'seasoning', 'shallot', 'caramel', 'citrate', 'benzoate', 'sorbate', 'carbonate', 'phosphate', 'lactate', 'pectin', 'pectins', 'casein', 'caseinate', 'carrageenan', 'agar', 'xanthan', 'pectin', 'sorbitol', 'mannitol', 'aspartame', 'sucralose', 'saccharin', 'maltodextrin', 'fructose', 'glucose', 'honey', 'molasses', 'syrup', 'vinegar', 'mustard', 'celery', 'cocoa', 'chocolate', 'fruit', 'vegetable', 'juice', 'concentrate', 'fiber', 'fibre', 'seed', 'nut', 'sesame', 'sunflower', 'canola', 'rapeseed', 'palm', 'coconut', 'olive', 'soybean', 'peanut', 'almond', 'cashew', 'hazelnut', 'walnut', 'pistachio', 'macadamia', 'brazil', 'pecan', 'pine', 'chestnut', 'date', 'raisin', 'apricot', 'fig', 'prune', 'plum', 'apple', 'banana', 'orange', 'lemon', 'lime', 'grape', 'berry', 'strawberry', 'blueberry', 'raspberry', 'blackberry', 'cranberry', 'melon', 'watermelon', 'cantaloupe', 'honeydew', 'mango', 'papaya', 'pineapple', 'kiwi', 'guava', 'passion', 'dragon', 'lychee', 'longan', 'rambutan', 'durian', 'jackfruit', 'soursop', 'starfruit', 'carambola', 'tamarind', 'avocado', 'olive', 'artichoke', 'asparagus', 'beet', 'broccoli', 'brussels', 'cabbage', 'carrot', 'cauliflower', 'celery', 'chard', 'chicory', 'collard', 'corn', 'cress', 'cucumber', 'dandelion', 'edamame', 'eggplant', 'endive', 'fennel', 'garlic', 'ginger', 'horseradish', 'jicama', 'kale', 'kohlrabi', 'leek', 'lettuce', 'mushroom', 'okra', 'onion', 'parsnip', 'pea', 'pepper', 'potato', 'pumpkin', 'radish', 'rutabaga', 'shallot', 'spinach', 'squash', 'sweet', 'tomato', 'turnip', 'yam', 'zucchini'
+    
+    // Clean the text for better matching
+    const cleanText = text.replace(/[^\w\s,.-]/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+    
+    // Check for common ingredient list indicators
+    const indicators = [
+        'ingredient', 'bahan', 'mengandung', 'mengandungi', 'contains',
+        'materials', 'komposisi', 'komposition', 'zusammensetzung', 'ingrédients',
+        'ingredientes', 'ingredienti', 'ingredienser', 'ingredienser', 'ingredienser',
+        'ingredienser', 'ingredienser', 'ingredienser', 'ingredienser', 'ingredienser'
     ];
-    const keywordCount = foodKeywords.reduce((count, word) => count + (lower.includes(word) ? 1 : 0), 0);
-    const commaCount = (lower.match(/,/g) || []).length;
-    if (keywordCount >= 2 && commaCount >= 2) return true;
-    // E-number detection: only if 'ingredient' or 'bahan' is present
+    
+    // Check for indicators in the first few lines
+    const firstLines = cleanText.split('\n').slice(0, 5).join(' ');
+    const hasIndicator = indicators.some(indicator => firstLines.includes(indicator));
+    
+    // Common food-related keywords
+    const foodKeywords = [
+        'salt', 'oil', 'sugar', 'flour', 'extract', 'gum', 'acid', 'starch', 'protein',
+        'spice', 'herb', 'flavour', 'flavor', 'color', 'colour', 'preservative', 'emulsifier',
+        'thickener', 'lecithin', 'yeast', 'enzyme', 'vitamin', 'whey', 'milk', 'egg', 'soy',
+        'bean', 'corn', 'wheat', 'gluten', 'dextrose', 'malt', 'monosodium', 'glutamate',
+        'powder', 'onion', 'garlic', 'pepper', 'seasoning', 'shallot', 'caramel', 'citrate',
+        'benzoate', 'sorbate', 'carbonate', 'phosphate', 'lactate', 'pectin', 'casein',
+        'carrageenan', 'agar', 'xanthan', 'sorbitol', 'mannitol', 'aspartame', 'sucralose',
+        'saccharin', 'maltodextrin', 'fructose', 'glucose', 'honey', 'molasses', 'syrup',
+        'vinegar', 'mustard', 'cocoa', 'chocolate', 'fruit', 'vegetable', 'juice', 'concentrate'
+    ];
+    
+    // Count food keywords and separators
+    const keywordCount = foodKeywords.reduce((count, word) => 
+        count + (cleanText.includes(word) ? 1 : 0), 0);
+    const separatorCount = (cleanText.match(/[,;]|\band\b/gi) || []).length;
+    
+    // Check for E-numbers (common in ingredients)
+    const eNumberCount = (cleanText.match(/\be\d{3}[a-z]?\b/gi) || []).length;
+    
+    // More lenient conditions
+    if (hasIndicator) return true;  // If we see an indicator, trust it
+    if (keywordCount >= 1 && separatorCount >= 1) return true;  // More lenient threshold
+    if (eNumberCount > 0) return true;  // E-numbers are strong indicators
+    if (keywordCount >= 2) return true;  // Multiple food keywords
+    
+    // Check for common patterns like percentages or quantity indicators
+    const hasQuantityIndicators = /(\d+%|\d+\s*(g|mg|ml|oz|kg|l)\b)/i.test(cleanText);
+    if (hasQuantityIndicators && keywordCount >= 1) return true;
+    
+    // If we have a decent amount of text with some structure, it might be an ingredient list
+    const wordCount = cleanText.split(/\s+/).length;
+    if (wordCount >= 5 && (separatorCount >= 2 || keywordCount >= 1)) return true;
+    
     return false;
 }
 
@@ -1074,21 +1114,69 @@ async function analyzeUploadedImage() {
     }
 }
 
+// Preprocess image before OCR
+async function preprocessImageForOCR(imageData) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Apply preprocessing
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Convert to grayscale and enhance contrast
+            for (let i = 0; i < data.length; i += 4) {
+                // Convert to grayscale using luminance formula
+                const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
+                // Apply contrast
+                const factor = 1.5;
+                const newValue = (avg - 128) * factor + 128;
+                const pixel = Math.max(0, Math.min(255, newValue));
+                
+                data[i] = pixel;     // R
+                data[i + 1] = pixel; // G
+                data[i + 2] = pixel; // B
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg'));
+        };
+        img.src = imageData;
+    });
+}
+
 // Real AI analysis for captured image
 async function analyzeCapturedImage(imageData) {
     const loadingIndicator = document.getElementById('loadingIndicator');
     const resultsContainer = document.getElementById('resultsContainer');
 
-    // --- NEW: Run OCR on the captured image (if not already) ---
+    // --- Run OCR on the captured image with preprocessing ---
     let ocrText = '';
     try {
+        // Preprocess image first
+        const processedImage = await preprocessImageForOCR(imageData);
+        
+        // Configure Tesseract for better text recognition
         const result = await window.Tesseract.recognize(
-            imageData,
+            processedImage,
             'eng',
-            { logger: m => {/* Optionally log progress */} }
+            { 
+                logger: m => console.log(m),
+                tessedit_pageseg_mode: 6, // Assume a single uniform block of text
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()% ',
+                preserve_interword_spaces: '1'
+            }
         );
         ocrText = result.data.text;
     } catch (err) {
+        console.error('OCR Error:', err);
         ocrText = '';
     }
     // --- NEW: Check for empty OCR result ---
@@ -1096,27 +1184,59 @@ async function analyzeCapturedImage(imageData) {
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
         if (resultsContainer) {
             resultsContainer.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-300 mb-4"></i>
-                    <h3 class="text-xl font-medium text-gray-700">No Text Detected</h3>
-                    <p class="text-gray-500 mt-2">No text was found in the image. Please capture a clear image of the product's ingredient list.</p>
-                    <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
-                        <i class="fas fa-redo mr-1"></i> Try Again
-                    </button>
+                <div class="text-center py-8 px-4">
+                    <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-800 mb-3">No Text Detected</h3>
+                    <div class="max-w-md mx-auto bg-red-50 p-4 rounded-lg text-left mb-4">
+                        <p class="text-gray-700 mb-2"><i class="fas fa-lightbulb text-red-500 mr-2"></i> We couldn't find any text in your image. Here's how to improve your scan:</p>
+                        <ul class="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                            <li>Make sure there's enough light on the package</li>
+                            <li>Hold your device steady and straight</li>
+                            <li>Get closer to the text</li>
+                            <li>Check for glare or reflections</li>
+                            <li>Try a different angle if the text is shiny</li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                        <button id="tryAgainBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center">
+                            <i class="fas fa-camera mr-2"></i> Try Again
+                        </button>
+                        <button id="manualInputBtn" class="border border-indigo-600 text-indigo-600 px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition flex items-center justify-center">
+                            <i class="fas fa-keyboard mr-2"></i> Enter Ingredients Manually
+                        </button>
+                    </div>
                 </div>
             `;
             resultsContainer.classList.remove('hidden');
             setTimeout(() => {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
+                const manualInputBtn = document.getElementById('manualInputBtn');
+                const scannerSection = document.getElementById('scannerSection');
+                
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        const scannerSection = document.getElementById('scannerSection');
                         if (scannerSection) {
                             const cameraCard = scannerSection.querySelector('.grid > .bg-white');
                             if (cameraCard) cameraCard.classList.remove('hidden');
                         }
                         startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+                
+                if (manualInputBtn) {
+                    manualInputBtn.onclick = function() {
+                        // Hide scanner and show manual input
+                        if (scannerSection) {
+                            scannerSection.classList.add('hidden');
+                        }
+                        const manualInputSection = document.getElementById('manualInputSection');
+                        if (manualInputSection) {
+                            manualInputSection.classList.remove('hidden');
+                            const inputField = manualInputSection.querySelector('textarea');
+                            if (inputField) inputField.focus();
+                        }
                         resultsContainer.classList.add('hidden');
                     };
                 }
@@ -1129,27 +1249,59 @@ async function analyzeCapturedImage(imageData) {
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
         if (resultsContainer) {
             resultsContainer.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-300 mb-4"></i>
-                    <h3 class="text-xl font-medium text-gray-700">No Ingredient List Detected</h3>
-                    <p class="text-gray-500 mt-2">Please capture a clear image of the product's ingredient list.</p>
-                    <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
-                        <i class="fas fa-redo mr-1"></i> Try Again
-                    </button>
+                <div class="text-center py-8 px-4">
+                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-800 mb-3">No Ingredient List Detected</h3>
+                    <div class="max-w-md mx-auto bg-yellow-50 p-4 rounded-lg text-left mb-4">
+                        <p class="text-gray-700 mb-2"><i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Tips for better results:</p>
+                        <ul class="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                            <li>Ensure good lighting when taking the photo</li>
+                            <li>Hold your device steady and parallel to the ingredient list</li>
+                            <li>Make sure the text is in focus and not blurry</li>
+                            <li>Try to capture only the ingredient list section</li>
+                            <li>Check for glare or reflections on the packaging</li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                        <button id="tryAgainBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center">
+                            <i class="fas fa-camera mr-2"></i> Try Again
+                        </button>
+                        <button id="manualInputBtn" class="border border-indigo-600 text-indigo-600 px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition flex items-center justify-center">
+                            <i class="fas fa-keyboard mr-2"></i> Enter Manually
+                        </button>
+                    </div>
                 </div>
             `;
             resultsContainer.classList.remove('hidden');
             setTimeout(() => {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
+                const manualInputBtn = document.getElementById('manualInputBtn');
+                const scannerSection = document.getElementById('scannerSection');
+                
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        const scannerSection = document.getElementById('scannerSection');
                         if (scannerSection) {
                             const cameraCard = scannerSection.querySelector('.grid > .bg-white');
                             if (cameraCard) cameraCard.classList.remove('hidden');
                         }
                         startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+                
+                if (manualInputBtn) {
+                    manualInputBtn.onclick = function() {
+                        // Hide scanner and show manual input
+                        if (scannerSection) {
+                            scannerSection.classList.add('hidden');
+                        }
+                        const manualInputSection = document.getElementById('manualInputSection');
+                        if (manualInputSection) {
+                            manualInputSection.classList.remove('hidden');
+                            const inputField = manualInputSection.querySelector('textarea');
+                            if (inputField) inputField.focus();
+                        }
                         resultsContainer.classList.add('hidden');
                     };
                 }
@@ -1313,15 +1465,33 @@ async function analyzeCapturedImage(imageData) {
             resultsContainer.classList.remove('hidden');
             setTimeout(() => {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
+                const manualInputBtn = document.getElementById('manualInputBtn');
+                const scannerSection = document.getElementById('scannerSection');
+                
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        const scannerSection = document.getElementById('scannerSection');
                         if (scannerSection) {
                             const cameraCard = scannerSection.querySelector('.grid > .bg-white');
                             if (cameraCard) cameraCard.classList.remove('hidden');
                         }
                         startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+                
+                if (manualInputBtn) {
+                    manualInputBtn.onclick = function() {
+                        // Hide scanner and show manual input
+                        if (scannerSection) {
+                            scannerSection.classList.add('hidden');
+                        }
+                        const manualInputSection = document.getElementById('manualInputSection');
+                        if (manualInputSection) {
+                            manualInputSection.classList.remove('hidden');
+                            const inputField = manualInputSection.querySelector('textarea');
+                            if (inputField) inputField.focus();
+                        }
                         resultsContainer.classList.add('hidden');
                     };
                 }
