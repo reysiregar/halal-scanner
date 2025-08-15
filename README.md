@@ -38,13 +38,16 @@ A modern web app to scan and analyze food ingredients for halal status, with use
    cd ..
    npm install
    ```
-3. **Configure MongoDB**
+3. **Configure Environment Variables**
    - Create `.env` in `backend`:
      ```env
      MONGO_URI=mongodb://localhost:27017/halal-scanner
-     JWT_SECRET=your_secret
+     JWT_SECRET=your_jwt_secret_here
+     COHERE_API_KEY=your_cohere_api_key_here
      ```
-   - Or use your MongoDB Atlas URI.
+   - Replace `your_jwt_secret_here` with a secure secret for JWT
+   - Replace `your_cohere_api_key_here` with your Cohere API key
+   - For production, use a MongoDB Atlas URI instead of localhost
 4. **Start the backend**
    ```bash
    cd backend
@@ -65,20 +68,37 @@ node mongo-init.js
 ---
 
 ## 📚 API Endpoints (Backend)
-- `POST   /signup` — Register user
-- `POST   /login` — Authenticate user, returns JWT
+
+### Authentication
+- `POST   /auth/signup` — Register user
+- `POST   /auth/signin` — Authenticate user, returns JWT
+
+### Ingredient Analysis
 - `POST   /analyze-ingredients` — Analyze ingredient list for halal status
 - `POST   /extract-ingredients-ai` — Extract ingredients from OCR text (AI)
-- `POST   /save-results` — Save scan result (auth required)
-- `GET    /user-saved-results` — Get user’s saved results (auth required)
-- `DELETE /saved-results/:id` — Delete saved result (auth required)
-- `POST   /submit-report` — Submit inaccuracy report (auth required)
-- `GET    /user-reports` — Get user’s reports (auth required)
-- `GET    /admin/reports` — Get all reports (admin only)
-- `PUT    /admin/reports/:id` — Update report status/note (admin only)
-- `DELETE /reports/:id` — Delete report (user or admin)
-- `POST   /api/testimonials` — Submit testimonial
+
+### Saved Results (Auth Required)
+- `GET    /api/saved-results` — Get user's saved results
+- `POST   /save-results` — Save scan result
+- `DELETE /saved-results/:id` — Delete saved result
+
+### Reports (Auth Required)
+- `POST   /submit-report` — Submit inaccuracy report
+- `GET    /user-reports` — Get user's reports
+- `GET    /api/user/reports` — Get user's reports (alternative endpoint)
+- `DELETE /reports/:id` — Delete report
+
+### Admin Endpoints (Admin Only)
+- `GET    /admin/reports` — Get all reports
+- `PUT    /admin/reports/:id` — Update report status/note
+
+### Testimonials
 - `GET    /api/testimonials` — Get all testimonials
+- `POST   /api/testimonials` — Submit testimonial
+
+### Health Check
+- `GET    /health` — Check API status
+- `GET    /` — Welcome message and API status
 
 ---
 
