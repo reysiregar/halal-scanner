@@ -519,10 +519,17 @@ async function startCamera() {
     }
 
     try {
-        // Show loading indicator
+        // Show loading indicator with scanning line
         const loadingIndicator = document.createElement('div');
         loadingIndicator.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        loadingIndicator.innerHTML = '<div class="text-white text-lg">Initializing camera...</div>';
+        loadingIndicator.innerHTML = `
+            <div class="text-white text-lg flex flex-col items-center">
+                <div class="scanner-animation mb-4">
+                    <div class="scanner-line"></div>
+                </div>
+                Initializing camera...
+            </div>
+        `;
         document.body.appendChild(loadingIndicator);
 
         // Clean up any existing stream
@@ -656,7 +663,9 @@ function showPlayButton(video) {
             // Show a loading indicator
             playButton.innerHTML = `
                 <div class="flex flex-col items-center">
-                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-3"></div>
+                    <div class="scanner-animation mb-3">
+                        <div class="scanner-line"></div>
+                    </div>
                     <p class="text-gray-700">Starting camera...</p>
                 </div>
             `;
@@ -1245,6 +1254,8 @@ async function analyzeCapturedImage(imageData) {
         return;
     }
     // --- Ingredient list detection ---
+    // Retry logic for Try Again button
+    let scanRetryCount = window.scanRetryCount || 0;
     if (!isLikelyIngredientList(ocrText)) {
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
         if (resultsContainer) {
@@ -1277,9 +1288,25 @@ async function analyzeCapturedImage(imageData) {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
                 const manualInputBtn = document.getElementById('manualInputBtn');
                 const scannerSection = document.getElementById('scannerSection');
-                
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
+                        scanRetryCount++;
+                        window.scanRetryCount = scanRetryCount;
+                        if (scanRetryCount >= 3) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Having trouble?',
+                                text: 'If scanning keeps failing, please enter ingredients manually for best results.',
+                                confirmButtonColor: '#6366f1',
+                                confirmButtonText: 'Enter Manually'
+                            }).then(() => {
+                                if (scannerSection) scannerSection.classList.add('hidden');
+                                const manualInputSection = document.getElementById('manualInputSection');
+                                if (manualInputSection) manualInputSection.classList.remove('hidden');
+                            });
+                            resultsContainer.classList.add('hidden');
+                            return;
+                        }
                         // Show the camera card again
                         if (scannerSection) {
                             const cameraCard = scannerSection.querySelector('.grid > .bg-white');
@@ -1289,13 +1316,9 @@ async function analyzeCapturedImage(imageData) {
                         resultsContainer.classList.add('hidden');
                     };
                 }
-                
                 if (manualInputBtn) {
                     manualInputBtn.onclick = function() {
-                        // Hide scanner and show manual input
-                        if (scannerSection) {
-                            scannerSection.classList.add('hidden');
-                        }
+                        if (scannerSection) scannerSection.classList.add('hidden');
                         const manualInputSection = document.getElementById('manualInputSection');
                         if (manualInputSection) {
                             manualInputSection.classList.remove('hidden');
