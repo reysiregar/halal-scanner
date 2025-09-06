@@ -3224,7 +3224,7 @@ document.addEventListener('DOMContentLoaded', function() {
         testimonialPrev.addEventListener('click', () => {
             if (testimonialPrev.disabled) return;
             testimonialsCarousel.scrollBy({
-                left: -scrollAmount,
+                left: -getScrollAmount(),
                 behavior: 'smooth'
             });
         });
@@ -3232,7 +3232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         testimonialNext.addEventListener('click', () => {
             if (testimonialNext.disabled) return;
             testimonialsCarousel.scrollBy({
-                left: scrollAmount,
+                left: getScrollAmount(),
                 behavior: 'smooth'
             });
         });
