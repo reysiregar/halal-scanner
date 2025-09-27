@@ -1335,27 +1335,68 @@ async function analyzeCapturedImage(imageData) {
         
         updateProgress(30, "Running OCR analysis...");
         
-        // Enhanced Tesseract configuration for better text recognition
-        const result = await window.Tesseract.recognize(
-            processedImage,
-            'eng',
-            { 
-                logger: m => {
-                    console.log(m);
-                    // Update progress based on OCR progress
-                    if (m.status === 'recognizing text' && m.progress) {
-                        const ocrProgress = Math.round(30 + (m.progress * 40)); // 30-70%
-                        updateProgress(ocrProgress, "Recognizing text...");
+        let result;
+        let ocrAttempt = 1;
+        const maxAttempts = 2;
+        
+        // Try OCR with different configurations for better accuracy
+        while (ocrAttempt <= maxAttempts) {
+            try {
+                const ocrConfig = ocrAttempt === 1 ? {
+                    // First attempt: Standard configuration
+                    tessedit_pageseg_mode: 6,
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()%& ',
+                    preserve_interword_spaces: '1',
+                    tessedit_ocr_engine_mode: 2
+                } : {
+                    // Second attempt: More permissive configuration
+                    tessedit_pageseg_mode: 8, // Treat the image as a single word
+                    tessedit_ocr_engine_mode: 1, // Neural nets LSTM only
+                    tessedit_do_invert: '1' // Try inverting the image
+                };
+                
+                updateProgress(30 + (ocrAttempt - 1) * 20, `OCR analysis (attempt ${ocrAttempt})...`);
+                
+                result = await window.Tesseract.recognize(
+                    processedImage,
+                    'eng',
+                    { 
+                        logger: m => {
+                            console.log(m);
+                            if (m.status === 'recognizing text' && m.progress) {
+                                const baseProgress = 30 + (ocrAttempt - 1) * 20;
+                                const ocrProgress = Math.round(baseProgress + (m.progress * 20));
+                                updateProgress(ocrProgress, `Recognizing text (attempt ${ocrAttempt})...`);
+                            }
+                        },
+                        ...ocrConfig
                     }
-                },
-                tessedit_pageseg_mode: 6, // Assume a single uniform block of text
-                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()%& ',
-                preserve_interword_spaces: '1',
-                tessedit_ocr_engine_mode: 2, // Use LSTM neural network
-                tessedit_do_invert: '0'
+                );
+                
+                // Check if we got good results
+                if (result.data.text.trim().length > 10 && result.data.confidence > 50) {
+                    break; // Good result, stop trying
+                }
+                
+                ocrAttempt++;
+            } catch (attemptError) {
+                console.error(`OCR attempt ${ocrAttempt} failed:`, attemptError);
+                ocrAttempt++;
             }
-        );
+        }
+        
         ocrText = result.data.text;
+        
+        // Check OCR confidence level for better user feedback
+        const confidence = result.data.confidence;
+        console.log(`OCR Confidence: ${confidence}%`);
+        
+        if (confidence < 60) {
+            updateProgress(85, "Low confidence detected, verifying...");
+            console.warn(`Low OCR confidence: ${confidence}%. Text may need verification.`);
+        } else {
+            updateProgress(85, "High confidence text detected!");
+        }
         updateProgress(80, "Analyzing ingredients...");
     } catch (err) {
         console.error('OCR Error:', err);
@@ -1469,14 +1510,40 @@ async function analyzeCapturedImage(imageData) {
                         if (scanRetryCount >= 3) {
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Having trouble?',
-                                text: 'If scanning keeps failing, please enter ingredients manually for best results.',
+                                title: 'Scanning Tips',
+                                html: `
+                                    <div class="text-left">
+                                        <p class="mb-3">Having trouble with scanning? Try these tips:</p>
+                                        <ul class="text-sm space-y-2">
+                                            <li>• <strong>Lighting:</strong> Ensure good lighting or use the flash button</li>
+                                            <li>• <strong>Distance:</strong> Hold device 6-8 inches from the text</li>
+                                            <li>• <strong>Angle:</strong> Keep the camera parallel to the ingredient list</li>
+                                            <li>• <strong>Steady:</strong> Hold steady and tap to focus before capturing</li>
+                                            <li>• <strong>Clean text:</strong> Make sure text is clear and unobstructed</li>
+                                        </ul>
+                                        <p class="mt-3 text-sm text-gray-600">Would you like to try again or enter ingredients manually?</p>
+                                    </div>
+                                `,
+                                showCancelButton: true,
                                 confirmButtonColor: '#6366f1',
-                                confirmButtonText: 'Enter Manually'
-                            }).then(() => {
-                                if (scannerSection) scannerSection.classList.add('hidden');
-                                const manualInputSection = document.getElementById('manualInputSection');
-                                if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                confirmButtonText: 'Try Again',
+                                cancelButtonText: 'Enter Manually',
+                                cancelButtonColor: '#f59e0b'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Reset retry count and try again
+                                    window.scanRetryCount = 0;
+                                    if (scannerSection) {
+                                        const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                                        if (cameraCard) cameraCard.classList.remove('hidden');
+                                    }
+                                    startCamera();
+                                    resultsContainer.classList.add('hidden');
+                                } else {
+                                    if (scannerSection) scannerSection.classList.add('hidden');
+                                    const manualInputSection = document.getElementById('manualInputSection');
+                                    if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                }
                             });
                             resultsContainer.classList.add('hidden');
                             return;
