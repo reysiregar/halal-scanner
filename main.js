@@ -473,6 +473,17 @@ function cleanupCamera() {
         });
         stream = null;
     }
+    
+    // Reset enhanced camera state
+    currentMediaTrack = null;
+    isFlashlightOn = false;
+    
+    // Reset flashlight button state
+    const flashlightBtn = document.getElementById('flashlightBtn');
+    if (flashlightBtn) {
+        flashlightBtn.classList.remove('flashlight-on');
+        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
+    }
 }
 
 // Cleanup on page unload and page hide
@@ -546,6 +557,12 @@ async function startCamera() {
         // Set the video source
         video.srcObject = stream;
         
+        // Track the video track for advanced controls
+        const videoTracks = stream.getVideoTracks();
+        if (videoTracks.length > 0) {
+            currentMediaTrack = videoTracks[0];
+        }
+        
         // Handle different browser implementations
         if ('srcObject' in video) {
             video.srcObject = stream;
@@ -577,6 +594,10 @@ async function startCamera() {
                 loadingIndicator.remove();
             }
             video.onplaying = null; // Clean up
+            
+            // Set up enhanced camera features
+            setupTapToFocus();
+            setupScanningTips();
             
             // Smooth scroll to the scanner section
             const scannerSection = document.getElementById('scannerSection');
@@ -716,6 +737,114 @@ const switchCamera = document.getElementById('switchCamera');
 if (switchCamera) {
     // Hide the switch camera button
     switchCamera.style.display = 'none';
+}
+
+// Enhanced camera controls
+let isFlashlightOn = false;
+let currentMediaTrack = null;
+
+// Flashlight toggle functionality
+const flashlightBtn = document.getElementById('flashlightBtn');
+if (flashlightBtn) {
+    flashlightBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        await toggleFlashlight();
+    });
+}
+
+async function toggleFlashlight() {
+    try {
+        if (currentMediaTrack && currentMediaTrack.getCapabilities) {
+            const capabilities = currentMediaTrack.getCapabilities();
+            if (capabilities.torch) {
+                isFlashlightOn = !isFlashlightOn;
+                await currentMediaTrack.applyConstraints({
+                    advanced: [{ torch: isFlashlightOn }]
+                });
+                
+                const flashlightBtn = document.getElementById('flashlightBtn');
+                if (flashlightBtn) {
+                    if (isFlashlightOn) {
+                        flashlightBtn.classList.add('flashlight-on');
+                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> On';
+                    } else {
+                        flashlightBtn.classList.remove('flashlight-on');
+                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
+                    }
+                }
+            } else {
+                console.log('Flashlight not supported on this device');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling flashlight:', error);
+    }
+}
+
+// Tap-to-focus functionality
+function setupTapToFocus() {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return;
+
+    video.addEventListener('click', async function(e) {
+        if (!currentMediaTrack) return;
+
+        const rect = video.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+
+        // Show focus ring animation
+        showFocusRing(e.clientX - rect.left, e.clientY - rect.top);
+
+        try {
+            const capabilities = currentMediaTrack.getCapabilities();
+            if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+                await currentMediaTrack.applyConstraints({
+                    advanced: [{
+                        focusMode: 'manual',
+                        pointsOfInterest: [{ x: x, y: y }]
+                    }]
+                });
+            }
+        } catch (error) {
+            console.log('Tap-to-focus not supported:', error);
+        }
+    });
+}
+
+function showFocusRing(x, y) {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return;
+
+    // Remove any existing focus rings
+    const existingRings = video.parentNode.querySelectorAll('.focus-ring');
+    existingRings.forEach(ring => ring.remove());
+
+    // Create new focus ring
+    const focusRing = document.createElement('div');
+    focusRing.className = 'focus-ring';
+    focusRing.style.left = (x - 40) + 'px';
+    focusRing.style.top = (y - 40) + 'px';
+    
+    video.parentNode.appendChild(focusRing);
+    
+    // Remove focus ring after animation
+    setTimeout(() => {
+        focusRing.remove();
+    }, 1000);
+}
+
+// Auto-hide scanning tips after 4 seconds
+function setupScanningTips() {
+    const tips = document.getElementById('scanningTips');
+    if (tips) {
+        setTimeout(() => {
+            tips.classList.add('scanning-tips-fade');
+            setTimeout(() => {
+                tips.style.display = 'none';
+            }, 1000);
+        }, 4000);
+    }
 }
 
 // Capture image from camera
@@ -1123,7 +1252,21 @@ async function analyzeUploadedImage() {
     }
 }
 
-// Preprocess image before OCR
+// Progress tracking for OCR analysis
+function updateProgress(percent, status) {
+    const progressPercent = document.getElementById('progressPercent');
+    const progressStatus = document.getElementById('progressStatus');
+    
+    if (progressPercent) {
+        progressPercent.textContent = `${percent}%`;
+    }
+    
+    if (progressStatus) {
+        progressStatus.textContent = status;
+    }
+}
+
+// Enhanced preprocess image before OCR
 async function preprocessImageForOCR(imageData) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -1140,22 +1283,36 @@ async function preprocessImageForOCR(imageData) {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             
-            // Convert to grayscale and enhance contrast
+            // Enhanced preprocessing pipeline
+            // 1. Convert to grayscale using better luminance formula
             for (let i = 0; i < data.length; i += 4) {
-                // Convert to grayscale using luminance formula
-                const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
-                // Apply contrast
-                const factor = 1.5;
-                const newValue = (avg - 128) * factor + 128;
-                const pixel = Math.max(0, Math.min(255, newValue));
-                
-                data[i] = pixel;     // R
-                data[i + 1] = pixel; // G
-                data[i + 2] = pixel; // B
+                const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+                data[i] = gray;
+                data[i + 1] = gray;
+                data[i + 2] = gray;
+            }
+            
+            // 2. Apply adaptive contrast and brightness enhancement
+            const contrast = 1.8;
+            const brightness = 15;
+            for (let i = 0; i < data.length; i += 4) {
+                const enhanced = Math.min(255, Math.max(0, contrast * (data[i] - 128) + 128 + brightness));
+                data[i] = enhanced;
+                data[i + 1] = enhanced;
+                data[i + 2] = enhanced;
+            }
+            
+            // 3. Apply threshold for better text definition
+            const threshold = 140;
+            for (let i = 0; i < data.length; i += 4) {
+                const value = data[i] > threshold ? 255 : 0;
+                data[i] = value;
+                data[i + 1] = value;
+                data[i + 2] = value;
             }
             
             ctx.putImageData(imageData, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg'));
+            resolve(canvas.toDataURL('image/jpeg', 0.95));
         };
         img.src = imageData;
     });
@@ -1168,25 +1325,83 @@ async function analyzeCapturedImage(imageData) {
 
     // --- Run OCR on the captured image with preprocessing ---
     let ocrText = '';
+    
+    // Update progress indicator
+    updateProgress(10, "Preprocessing image...");
+    
     try {
         // Preprocess image first
         const processedImage = await preprocessImageForOCR(imageData);
         
-        // Configure Tesseract for better text recognition
-        const result = await window.Tesseract.recognize(
-            processedImage,
-            'eng',
-            { 
-                logger: m => console.log(m),
-                tessedit_pageseg_mode: 6, // Assume a single uniform block of text
-                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()% ',
-                preserve_interword_spaces: '1'
+        updateProgress(30, "Running OCR analysis...");
+        
+        let result;
+        let ocrAttempt = 1;
+        const maxAttempts = 2;
+        
+        // Try OCR with different configurations for better accuracy
+        while (ocrAttempt <= maxAttempts) {
+            try {
+                const ocrConfig = ocrAttempt === 1 ? {
+                    // First attempt: Standard configuration
+                    tessedit_pageseg_mode: 6,
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()%& ',
+                    preserve_interword_spaces: '1',
+                    tessedit_ocr_engine_mode: 2
+                } : {
+                    // Second attempt: More permissive configuration
+                    tessedit_pageseg_mode: 8, // Treat the image as a single word
+                    tessedit_ocr_engine_mode: 1, // Neural nets LSTM only
+                    tessedit_do_invert: '1' // Try inverting the image
+                };
+                
+                updateProgress(30 + (ocrAttempt - 1) * 20, `OCR analysis (attempt ${ocrAttempt})...`);
+                
+                result = await window.Tesseract.recognize(
+                    processedImage,
+                    'eng',
+                    { 
+                        logger: m => {
+                            console.log(m);
+                            if (m.status === 'recognizing text' && m.progress) {
+                                const baseProgress = 30 + (ocrAttempt - 1) * 20;
+                                const ocrProgress = Math.round(baseProgress + (m.progress * 20));
+                                updateProgress(ocrProgress, `Recognizing text (attempt ${ocrAttempt})...`);
+                            }
+                        },
+                        ...ocrConfig
+                    }
+                );
+                
+                // Check if we got good results
+                if (result.data.text.trim().length > 10 && result.data.confidence > 50) {
+                    break; // Good result, stop trying
+                }
+                
+                ocrAttempt++;
+            } catch (attemptError) {
+                console.error(`OCR attempt ${ocrAttempt} failed:`, attemptError);
+                ocrAttempt++;
             }
-        );
+        }
+        
         ocrText = result.data.text;
+        
+        // Check OCR confidence level for better user feedback
+        const confidence = result.data.confidence;
+        console.log(`OCR Confidence: ${confidence}%`);
+        
+        if (confidence < 60) {
+            updateProgress(85, "Low confidence detected, verifying...");
+            console.warn(`Low OCR confidence: ${confidence}%. Text may need verification.`);
+        } else {
+            updateProgress(85, "High confidence text detected!");
+        }
+        updateProgress(80, "Analyzing ingredients...");
     } catch (err) {
         console.error('OCR Error:', err);
         ocrText = '';
+        updateProgress(0, "OCR failed, retrying...");
     }
     // --- NEW: Check for empty OCR result ---
     if (!ocrText || ocrText.trim().length === 0) {
@@ -1295,14 +1510,40 @@ async function analyzeCapturedImage(imageData) {
                         if (scanRetryCount >= 3) {
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Having trouble?',
-                                text: 'If scanning keeps failing, please enter ingredients manually for best results.',
+                                title: 'Scanning Tips',
+                                html: `
+                                    <div class="text-left">
+                                        <p class="mb-3">Having trouble with scanning? Try these tips:</p>
+                                        <ul class="text-sm space-y-2">
+                                            <li>• <strong>Lighting:</strong> Ensure good lighting or use the flash button</li>
+                                            <li>• <strong>Distance:</strong> Hold device 6-8 inches from the text</li>
+                                            <li>• <strong>Angle:</strong> Keep the camera parallel to the ingredient list</li>
+                                            <li>• <strong>Steady:</strong> Hold steady and tap to focus before capturing</li>
+                                            <li>• <strong>Clean text:</strong> Make sure text is clear and unobstructed</li>
+                                        </ul>
+                                        <p class="mt-3 text-sm text-gray-600">Would you like to try again or enter ingredients manually?</p>
+                                    </div>
+                                `,
+                                showCancelButton: true,
                                 confirmButtonColor: '#6366f1',
-                                confirmButtonText: 'Enter Manually'
-                            }).then(() => {
-                                if (scannerSection) scannerSection.classList.add('hidden');
-                                const manualInputSection = document.getElementById('manualInputSection');
-                                if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                confirmButtonText: 'Try Again',
+                                cancelButtonText: 'Enter Manually',
+                                cancelButtonColor: '#f59e0b'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Reset retry count and try again
+                                    window.scanRetryCount = 0;
+                                    if (scannerSection) {
+                                        const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                                        if (cameraCard) cameraCard.classList.remove('hidden');
+                                    }
+                                    startCamera();
+                                    resultsContainer.classList.add('hidden');
+                                } else {
+                                    if (scannerSection) scannerSection.classList.add('hidden');
+                                    const manualInputSection = document.getElementById('manualInputSection');
+                                    if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                }
                             });
                             resultsContainer.classList.add('hidden');
                             return;
