@@ -519,20 +519,6 @@ async function startCamera() {
     }
 
     try {
-        // Show loading indicator with scanning line
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        loadingIndicator.innerHTML = `
-            <div class="text-white text-lg flex flex-col items-center">
-                <div class="scanner-animation mb-4">
-                    <div class="scanner-line"></div>
-                </div>
-                Initializing camera...
-            </div>
-        `;
-        document.body.appendChild(loadingIndicator);
-
-        // Clean up any existing stream
         cleanupCamera();
         
         // Request camera access with improved error handling
@@ -1125,38 +1111,39 @@ async function analyzeUploadedImage() {
 
 // Preprocess image before OCR
 async function preprocessImageForOCR(imageData) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Set canvas dimensions
-            canvas.width = img.width;
-            canvas.height = img.height;
-            
-            // Apply preprocessing
-            ctx.drawImage(img, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            // Convert to grayscale and enhance contrast
-            for (let i = 0; i < data.length; i += 4) {
-                // Convert to grayscale using luminance formula
-                const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
-                // Apply contrast
-                const factor = 1.5;
-                const newValue = (avg - 128) * factor + 128;
-                const pixel = Math.max(0, Math.min(255, newValue));
-                
-                data[i] = pixel;     // R
-                data[i + 1] = pixel; // G
-                data[i + 2] = pixel; // B
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const imageDataObj = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageDataObj.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
+                    const factor = 1.5;
+                    const newValue = (avg - 128) * factor + 128;
+                    const pixel = Math.max(0, Math.min(255, newValue));
+                    data[i] = pixel;
+                    data[i + 1] = pixel;
+                    data[i + 2] = pixel;
+                }
+                ctx.putImageData(imageDataObj, 0, 0);
+                resolve(canvas.toDataURL('image/jpeg'));
+            } catch (err) {
+                reject(new Error('Error during image preprocessing: ' + err.message));
             }
-            
-            ctx.putImageData(imageData, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg'));
         };
+        img.onerror = function() {
+            reject(new Error('Failed to load image for preprocessing'));
+        };
+        if (!imageData || typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
+            reject(new Error('Invalid image data for preprocessing'));
+            return;
+        }
         img.src = imageData;
     });
 }
@@ -1244,7 +1231,12 @@ async function analyzeCapturedImage(imageData) {
                         if (manualInputSection) {
                             manualInputSection.classList.remove('hidden');
                             const inputField = manualInputSection.querySelector('textarea');
-                            if (inputField) inputField.focus();
+                            if (inputField) {
+                                inputField.focus();
+                                manualInputSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        } else {
+                            alert('Manual input section not found. Please contact support or refresh the page.');
                         }
                         resultsContainer.classList.add('hidden');
                     };
@@ -1253,8 +1245,8 @@ async function analyzeCapturedImage(imageData) {
         }
         return;
     }
+
     // --- Ingredient list detection ---
-    // Retry logic for Try Again button
     let scanRetryCount = window.scanRetryCount || 0;
     if (!isLikelyIngredientList(ocrText)) {
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
