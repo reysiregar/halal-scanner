@@ -179,10 +179,30 @@
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="border-2 border-green-400 rounded-lg h-3/4 w-3/4 relative overflow-hidden">
                                 <div class="scan-animation"></div>
+                                <!-- Corner markers for better scanning guidance -->
+                                <div class="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-green-400"></div>
+                                <div class="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-green-400"></div>
+                                <div class="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-green-400"></div>
+                                <div class="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-green-400"></div>
                             </div>
                         </div>
+                        <!-- Scanning tips overlay -->
+                        <div id="scanningTips" class="absolute top-4 left-4 right-4 bg-black bg-opacity-70 text-white p-3 rounded-lg text-sm">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                                <span class="font-medium">Scanning Tips</span>
+                            </div>
+                            <ul class="text-xs space-y-1">
+                                <li>• Position ingredient list within the green frame</li>
+                                <li>• Ensure good lighting for best results</li>
+                                <li>• Hold steady and tap to focus if needed</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="mt-4 flex justify-center space-x-4">
+                    <div class="mt-4 flex justify-center space-x-3">
+                        <button id="flashlightBtn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition flex items-center" title="Toggle Flashlight">
+                            <i class="fas fa-flashlight mr-2"></i> Flash
+                        </button>
                         <button id="captureBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center">
                             <i class="fas fa-camera mr-2"></i> Capture
                         </button>
@@ -202,9 +222,17 @@
                     </div>
                     
                     <div id="loadingIndicator" class="hidden text-center py-8">
-                        <div class="inline-block loading-spinner border-4 border-indigo-500 border-t-transparent rounded-full w-12 h-12 mb-4"></div>
+                        <div class="relative inline-block mb-4">
+                            <div class="loading-spinner border-4 border-indigo-500 border-t-transparent rounded-full w-12 h-12"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="progressPercent" class="text-xs font-bold text-indigo-600">0%</span>
+                            </div>
+                        </div>
                         <h3 class="text-xl font-medium text-gray-700">Analyzing Ingredients...</h3>
                         <p class="text-gray-500 mt-2">Our AI & OCR is processing the image and checking for haram substances</p>
+                        <div class="mt-3">
+                            <div id="progressStatus" class="text-sm text-indigo-600 font-medium">Starting analysis...</div>
+                        </div>
                     </div>
                 </div>
             </div>

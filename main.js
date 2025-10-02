@@ -473,6 +473,17 @@ function cleanupCamera() {
         });
         stream = null;
     }
+    
+    // Reset enhanced camera state
+    currentMediaTrack = null;
+    isFlashlightOn = false;
+    
+    // Reset flashlight button state
+    const flashlightBtn = document.getElementById('flashlightBtn');
+    if (flashlightBtn) {
+        flashlightBtn.classList.remove('flashlight-on');
+        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
+    }
 }
 
 // Cleanup on page unload and page hide
@@ -532,6 +543,12 @@ async function startCamera() {
         // Set the video source
         video.srcObject = stream;
         
+        // Track the video track for advanced controls
+        const videoTracks = stream.getVideoTracks();
+        if (videoTracks.length > 0) {
+            currentMediaTrack = videoTracks[0];
+        }
+        
         // Handle different browser implementations
         if ('srcObject' in video) {
             video.srcObject = stream;
@@ -563,6 +580,10 @@ async function startCamera() {
                 loadingIndicator.remove();
             }
             video.onplaying = null; // Clean up
+            
+            // Set up enhanced camera features
+            setupTapToFocus();
+            setupScanningTips();
             
             // Smooth scroll to the scanner section
             const scannerSection = document.getElementById('scannerSection');
@@ -704,6 +725,114 @@ if (switchCamera) {
     switchCamera.style.display = 'none';
 }
 
+// Enhanced camera controls
+let isFlashlightOn = false;
+let currentMediaTrack = null;
+
+// Flashlight toggle functionality
+const flashlightBtn = document.getElementById('flashlightBtn');
+if (flashlightBtn) {
+    flashlightBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        await toggleFlashlight();
+    });
+}
+
+async function toggleFlashlight() {
+    try {
+        if (currentMediaTrack && currentMediaTrack.getCapabilities) {
+            const capabilities = currentMediaTrack.getCapabilities();
+            if (capabilities.torch) {
+                isFlashlightOn = !isFlashlightOn;
+                await currentMediaTrack.applyConstraints({
+                    advanced: [{ torch: isFlashlightOn }]
+                });
+                
+                const flashlightBtn = document.getElementById('flashlightBtn');
+                if (flashlightBtn) {
+                    if (isFlashlightOn) {
+                        flashlightBtn.classList.add('flashlight-on');
+                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> On';
+                    } else {
+                        flashlightBtn.classList.remove('flashlight-on');
+                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
+                    }
+                }
+            } else {
+                console.log('Flashlight not supported on this device');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling flashlight:', error);
+    }
+}
+
+// Tap-to-focus functionality
+function setupTapToFocus() {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return;
+
+    video.addEventListener('click', async function(e) {
+        if (!currentMediaTrack) return;
+
+        const rect = video.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+
+        // Show focus ring animation
+        showFocusRing(e.clientX - rect.left, e.clientY - rect.top);
+
+        try {
+            const capabilities = currentMediaTrack.getCapabilities();
+            if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+                await currentMediaTrack.applyConstraints({
+                    advanced: [{
+                        focusMode: 'manual',
+                        pointsOfInterest: [{ x: x, y: y }]
+                    }]
+                });
+            }
+        } catch (error) {
+            console.log('Tap-to-focus not supported:', error);
+        }
+    });
+}
+
+function showFocusRing(x, y) {
+    const video = document.getElementById('cameraFeed');
+    if (!video) return;
+
+    // Remove any existing focus rings
+    const existingRings = video.parentNode.querySelectorAll('.focus-ring');
+    existingRings.forEach(ring => ring.remove());
+
+    // Create new focus ring
+    const focusRing = document.createElement('div');
+    focusRing.className = 'focus-ring';
+    focusRing.style.left = (x - 40) + 'px';
+    focusRing.style.top = (y - 40) + 'px';
+    
+    video.parentNode.appendChild(focusRing);
+    
+    // Remove focus ring after animation
+    setTimeout(() => {
+        focusRing.remove();
+    }, 1000);
+}
+
+// Auto-hide scanning tips after 4 seconds
+function setupScanningTips() {
+    const tips = document.getElementById('scanningTips');
+    if (tips) {
+        setTimeout(() => {
+            tips.classList.add('scanning-tips-fade');
+            setTimeout(() => {
+                tips.style.display = 'none';
+            }, 1000);
+        }, 4000);
+    }
+}
+
 // Capture image from camera
 const captureBtn = document.getElementById('captureBtn');
 if (captureBtn) {
@@ -728,13 +857,9 @@ if (captureBtn) {
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const resultsContainer = document.getElementById('resultsContainer');
-        if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-        if (resultsContainer) resultsContainer.classList.add('hidden');
-        setTimeout(function() {
-            analyzeCapturedImage(canvas.toDataURL('image/jpeg'));
-        }, 2000);
+        
+        // Call analysis immediately without delay
+        analyzeCapturedImage(canvas.toDataURL('image/jpeg'));
     });
 }
 
@@ -1109,41 +1234,60 @@ async function analyzeUploadedImage() {
     }
 }
 
-// Preprocess image before OCR
+// Progress tracking for OCR analysis
+function updateProgress(percent, status) {
+    const progressPercent = document.getElementById('progressPercent');
+    const progressStatus = document.getElementById('progressStatus');
+    
+    if (progressPercent) {
+        progressPercent.textContent = `${percent}%`;
+    }
+    
+    if (progressStatus) {
+        progressStatus.textContent = status;
+    }
+}
+
+// Enhanced preprocess image before OCR
 async function preprocessImageForOCR(imageData) {
     return new Promise((resolve, reject) => {
         const img = new Image();
+        
+        // Add timeout to prevent hanging
+        const timeout = setTimeout(() => {
+            reject(new Error('Image preprocessing timed out'));
+        }, 10000); // 10 second timeout
+        
         img.onload = function() {
-            try {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const imageDataObj = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageDataObj.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
-                    const factor = 1.5;
-                    const newValue = (avg - 128) * factor + 128;
-                    const pixel = Math.max(0, Math.min(255, newValue));
-                    data[i] = pixel;
-                    data[i + 1] = pixel;
-                    data[i + 2] = pixel;
-                }
-                ctx.putImageData(imageDataObj, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg'));
-            } catch (err) {
-                reject(new Error('Error during image preprocessing: ' + err.message));
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Apply preprocessing
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Convert to grayscale and enhance contrast
+            for (let i = 0; i < data.length; i += 4) {
+                // Convert to grayscale using luminance formula
+                const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
+                // Apply contrast
+                const factor = 1.5;
+                const newValue = (avg - 128) * factor + 128;
+                const pixel = Math.max(0, Math.min(255, newValue));
+                
+                data[i] = pixel;     // R
+                data[i + 1] = pixel; // G
+                data[i + 2] = pixel; // B
             }
+            
+            ctx.putImageData(imageData, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg'));
         };
-        img.onerror = function() {
-            reject(new Error('Failed to load image for preprocessing'));
-        };
-        if (!imageData || typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
-            reject(new Error('Invalid image data for preprocessing'));
-            return;
-        }
         img.src = imageData;
     });
 }
@@ -1153,31 +1297,182 @@ async function analyzeCapturedImage(imageData) {
     const loadingIndicator = document.getElementById('loadingIndicator');
     const resultsContainer = document.getElementById('resultsContainer');
 
+    // Ensure loading indicator is shown immediately
+    if (loadingIndicator) {
+        loadingIndicator.classList.remove('hidden');
+    }
+    if (resultsContainer) {
+        resultsContainer.classList.add('hidden');
+    }
+
     // --- Run OCR on the captured image with preprocessing ---
     let ocrText = '';
+    
+    // Function to clean up and hide loading indicator
+    const hideLoadingIndicator = () => {
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('hidden');
+        }
+    };
+    
+    // Update progress indicator
+    updateProgress(0, "Starting analysis...");
+    
     try {
-        // Preprocess image first
+        updateProgress(10, "Preprocessing image...");
+        
+        // Preprocess image first with timeout
         const processedImage = await preprocessImageForOCR(imageData);
         
-        // Configure Tesseract for better text recognition
-        const result = await window.Tesseract.recognize(
-            processedImage,
-            'eng',
-            { 
-                logger: m => console.log(m),
-                tessedit_pageseg_mode: 6, // Assume a single uniform block of text
-                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()% ',
-                preserve_interword_spaces: '1'
+        updateProgress(30, "Running OCR analysis...");
+        
+        let result;
+        let ocrAttempt = 1;
+        const maxAttempts = 2;
+        
+        // Try OCR with different configurations for better accuracy
+        while (ocrAttempt <= maxAttempts) {
+            try {
+                const ocrConfig = ocrAttempt === 1 ? {
+                    // First attempt: Standard configuration
+                    tessedit_pageseg_mode: 6,
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()%& ',
+                    preserve_interword_spaces: '1',
+                    tessedit_ocr_engine_mode: 2
+                } : {
+                    // Second attempt: More permissive configuration
+                    tessedit_pageseg_mode: 8, // Treat the image as a single word
+                    tessedit_ocr_engine_mode: 1, // Neural nets LSTM only
+                    tessedit_do_invert: '1' // Try inverting the image
+                };
+                
+                updateProgress(30 + (ocrAttempt - 1) * 20, `OCR analysis (attempt ${ocrAttempt})...`);
+                
+                // Add timeout for OCR operation
+                const ocrPromise = window.Tesseract.recognize(
+                    processedImage,
+                    'eng',
+                    { 
+                        logger: m => {
+                            console.log(m);
+                            if (m.status === 'recognizing text' && m.progress) {
+                                const baseProgress = 30 + (ocrAttempt - 1) * 20;
+                                const ocrProgress = Math.round(baseProgress + (m.progress * 20));
+                                updateProgress(ocrProgress, `Recognizing text (attempt ${ocrAttempt})...`);
+                            }
+                        },
+                        ...ocrConfig
+                    }
+                );
+                
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('OCR operation timed out')), 30000); // 30 second timeout
+                });
+                
+                result = await Promise.race([ocrPromise, timeoutPromise]);
+                
+                // Check if we got good results
+                if (result.data.text.trim().length > 10 && result.data.confidence > 50) {
+                    break; // Good result, stop trying
+                }
+                
+                ocrAttempt++;
+            } catch (attemptError) {
+                console.error(`OCR attempt ${ocrAttempt} failed:`, attemptError);
+                ocrAttempt++;
+                
+                // If this was the last attempt, throw the error
+                if (ocrAttempt > maxAttempts) {
+                    throw attemptError;
+                }
             }
-        );
+        }
+        
         ocrText = result.data.text;
+        
+        // Check OCR confidence level for better user feedback
+        const confidence = result.data.confidence;
+        console.log(`OCR Confidence: ${confidence}%`);
+        
+        if (confidence < 60) {
+            updateProgress(85, "Low confidence detected, verifying...");
+            console.warn(`Low OCR confidence: ${confidence}%. Text may need verification.`);
+        } else {
+            updateProgress(85, "High confidence text detected!");
+        }
+        updateProgress(80, "Analyzing ingredients...");
+        
     } catch (err) {
         console.error('OCR Error:', err);
-        ocrText = '';
+        hideLoadingIndicator();
+        
+        // Show preprocessing/OCR error message
+        const errorHTML = `
+            <div class="text-center py-8 px-4">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                <h3 class="text-xl font-medium text-gray-800 mb-3">Processing Failed</h3>
+                <div class="max-w-md mx-auto bg-red-50 p-4 rounded-lg text-left mb-4">
+                    <p class="text-gray-700 mb-2"><i class="fas fa-info-circle text-red-500 mr-2"></i> ${err.message.includes('timeout') ? 'The image processing took too long.' : 'Unable to process the image.'}</p>
+                    <p class="text-sm text-gray-600">Please try again with:</p>
+                    <ul class="list-disc pl-5 space-y-1 text-sm text-gray-600 mt-2">
+                        <li>Better lighting conditions</li>
+                        <li>A clearer image of the text</li>
+                        <li>Steadier camera position</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                    <button id="tryAgainBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center">
+                        <i class="fas fa-camera mr-2"></i> Try Again
+                    </button>
+                    <button id="manualInputBtn" class="border border-indigo-600 text-indigo-600 px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition flex items-center justify-center">
+                        <i class="fas fa-keyboard mr-2"></i> Enter Manually
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        if (resultsContainer) {
+            resultsContainer.innerHTML = errorHTML;
+            resultsContainer.classList.remove('hidden');
+            setTimeout(() => {
+                const tryAgainBtn = document.getElementById('tryAgainBtn');
+                const manualInputBtn = document.getElementById('manualInputBtn');
+                const scannerSection = document.getElementById('scannerSection');
+                
+                if (tryAgainBtn) {
+                    tryAgainBtn.onclick = function() {
+                        // Show the camera card again
+                        if (scannerSection) {
+                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                            if (cameraCard) cameraCard.classList.remove('hidden');
+                        }
+                        startCamera();
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+                
+                if (manualInputBtn) {
+                    manualInputBtn.onclick = function() {
+                        // Hide scanner and show manual input
+                        if (scannerSection) {
+                            scannerSection.classList.add('hidden');
+                        }
+                        const manualInputSection = document.getElementById('manualInputSection');
+                        if (manualInputSection) {
+                            manualInputSection.classList.remove('hidden');
+                            const inputField = manualInputSection.querySelector('textarea');
+                            if (inputField) inputField.focus();
+                        }
+                        resultsContainer.classList.add('hidden');
+                    };
+                }
+            }, 100);
+        }
+        return;
     }
     // --- NEW: Check for empty OCR result ---
     if (!ocrText || ocrText.trim().length === 0) {
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        hideLoadingIndicator();
         if (resultsContainer) {
             resultsContainer.innerHTML = `
                 <div class="text-center py-8 px-4">
@@ -1249,7 +1544,7 @@ async function analyzeCapturedImage(imageData) {
     // --- Ingredient list detection ---
     let scanRetryCount = window.scanRetryCount || 0;
     if (!isLikelyIngredientList(ocrText)) {
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        hideLoadingIndicator();
         if (resultsContainer) {
             resultsContainer.innerHTML = `
                 <div class="text-center py-8 px-4">
@@ -1287,14 +1582,40 @@ async function analyzeCapturedImage(imageData) {
                         if (scanRetryCount >= 3) {
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Having trouble?',
-                                text: 'If scanning keeps failing, please enter ingredients manually for best results.',
+                                title: 'Scanning Tips',
+                                html: `
+                                    <div class="text-left">
+                                        <p class="mb-3">Having trouble with scanning? Try these tips:</p>
+                                        <ul class="text-sm space-y-2">
+                                            <li>• <strong>Lighting:</strong> Ensure good lighting or use the flash button</li>
+                                            <li>• <strong>Distance:</strong> Hold device 6-8 inches from the text</li>
+                                            <li>• <strong>Angle:</strong> Keep the camera parallel to the ingredient list</li>
+                                            <li>• <strong>Steady:</strong> Hold steady and tap to focus before capturing</li>
+                                            <li>• <strong>Clean text:</strong> Make sure text is clear and unobstructed</li>
+                                        </ul>
+                                        <p class="mt-3 text-sm text-gray-600">Would you like to try again or enter ingredients manually?</p>
+                                    </div>
+                                `,
+                                showCancelButton: true,
                                 confirmButtonColor: '#6366f1',
-                                confirmButtonText: 'Enter Manually'
-                            }).then(() => {
-                                if (scannerSection) scannerSection.classList.add('hidden');
-                                const manualInputSection = document.getElementById('manualInputSection');
-                                if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                confirmButtonText: 'Try Again',
+                                cancelButtonText: 'Enter Manually',
+                                cancelButtonColor: '#f59e0b'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Reset retry count and try again
+                                    window.scanRetryCount = 0;
+                                    if (scannerSection) {
+                                        const cameraCard = scannerSection.querySelector('.grid > .bg-white');
+                                        if (cameraCard) cameraCard.classList.remove('hidden');
+                                    }
+                                    startCamera();
+                                    resultsContainer.classList.add('hidden');
+                                } else {
+                                    if (scannerSection) scannerSection.classList.add('hidden');
+                                    const manualInputSection = document.getElementById('manualInputSection');
+                                    if (manualInputSection) manualInputSection.classList.remove('hidden');
+                                }
                             });
                             resultsContainer.classList.add('hidden');
                             return;
@@ -1326,6 +1647,8 @@ async function analyzeCapturedImage(imageData) {
     }
     
     try {
+        updateProgress(90, "Sending to analysis server...");
+        
         const response = await fetch(getApiUrl(API_ENDPOINTS.ANALYZE_INGREDIENTS), {
             method: 'POST',
             headers: {
@@ -1343,7 +1666,12 @@ async function analyzeCapturedImage(imageData) {
         const data = await response.json();
         const analysis = data.analysis;
         
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        updateProgress(100, "Analysis complete!");
+        
+        // Hide loading indicator after short delay to show completion
+        setTimeout(() => {
+            hideLoadingIndicator();
+        }, 500);
         
         // Generate results HTML based on analysis
         let resultsHTML = `
@@ -1463,16 +1791,21 @@ async function analyzeCapturedImage(imageData) {
         
     } catch (error) {
         console.error('Analysis error:', error);
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        hideLoadingIndicator();
         // Show error message with Try Again button
         const errorHTML = `
             <div class="text-center py-8">
                 <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i>
                 <h3 class="text-xl font-medium text-gray-700">Analysis Failed</h3>
-                <p class="text-gray-500 mt-2">Unable to analyze ingredients. Please try again.</p>
-                <button id="tryAgainBtn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
-                    <i class="fas fa-redo mr-1"></i> Try Again
-                </button>
+                <p class="text-gray-500 mt-2">Unable to analyze ingredients. Please check your connection and try again.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                    <button id="tryAgainBtn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center">
+                        <i class="fas fa-redo mr-2"></i> Try Again
+                    </button>
+                    <button id="manualInputBtn" class="border border-indigo-600 text-indigo-600 px-6 py-2 rounded-lg font-medium hover:bg-indigo-50 transition flex items-center justify-center">
+                        <i class="fas fa-keyboard mr-2"></i> Enter Manually
+                    </button>
+                </div>
             </div>
         `;
         if (resultsContainer) {
