@@ -46,6 +46,10 @@ if (backToTopBtn) {
 }
 
 if (mobileMenuBtn && mobileMenu) {
+    const MOBILE_BREAKPOINT = 768;
+
+    const isMobileViewport = () => window.innerWidth <= MOBILE_BREAKPOINT;
+
     const closeMobileMenu = () => {
         mobileMenuBtn.classList.remove('open');
         mobileMenuBtn.setAttribute('aria-expanded', 'false');
@@ -63,7 +67,7 @@ if (mobileMenuBtn && mobileMenu) {
     };
 
     mobileMenuBtn.addEventListener('click', () => {
-        if (window.innerWidth < 768) {
+        if (isMobileViewport()) {
             if (mobileMenu.classList.contains('open')) {
                 closeMobileMenu();
             } else {
@@ -91,7 +95,7 @@ if (mobileMenuBtn && mobileMenu) {
 
     // Close menu on window resize if it's open
     window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768) {
+        if (!isMobileViewport()) {
             closeMobileMenu();
         }
     });
