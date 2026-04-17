@@ -345,33 +345,43 @@ function sanitizeUser(user) {
   };
 }
 
-let testimonialsTableReady = false;
-
 function isMissingTableError(err) {
   return err && err.code === '42P01';
 }
 
-async function ensureTestimonialsTable() {
-  if (testimonialsTableReady) return;
+function isDbConnectionError(err) {
+  return !!(err && (
+    err.code === 'ECONNREFUSED' ||
+    err.code === 'ENOTFOUND' ||
+    err.code === '57P01' ||
+    err.code === '08001' ||
+    err.code === '08006'
+  ));
+}
 
-  await db.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
+function dbErrorResponse(operation, err) {
+  if (isMissingTableError(err)) {
+    return {
+      status: 503,
+      body: {
+        error: `${operation} failed: database schema is not initialized on Render. Run backend migration (npm run db:push) against the Render DATABASE_URL.`
+      }
+    };
+  }
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS public.testimonials (
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      name text NOT NULL,
-      rating int NOT NULL CHECK (rating BETWEEN 1 AND 5),
-      testimony text NOT NULL,
-      created_at timestamptz NOT NULL DEFAULT now()
-    );
-  `);
+  if (isDbConnectionError(err)) {
+    return {
+      status: 503,
+      body: {
+        error: `${operation} failed: database connection error. Check Render DATABASE_URL and DB allowlist/network settings.`
+      }
+    };
+  }
 
-  await db.query(`
-    CREATE INDEX IF NOT EXISTS idx_testimonials_created_at
-    ON public.testimonials(created_at DESC);
-  `);
-
-  testimonialsTableReady = true;
+  return {
+    status: 500,
+    body: { error: `${operation} failed due to an internal server error.` }
+  };
 }
 
 app.post('/auth/signup', async (req, res) => {
@@ -483,7 +493,8 @@ app.post('/auth/signin', async (req, res) => {
     res.json({ success: true, token, user: sanitizeUser(user) });
   } catch (err) {
     console.error('Signin error:', err);
-    res.status(500).json({ error: 'Failed to login.' });
+    const mapped = dbErrorResponse('Login', err);
+    res.status(mapped.status).json(mapped.body);
   }
 });
 
@@ -494,50 +505,33 @@ app.post('/api/testimonials', async (req, res) => {
   }
 
   try {
-    await ensureTestimonialsTable();
-    let result;
-
-    try {
-      result = await db.query(
-        'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
-        [name, rating, testimony]
-      );
-    } catch (err) {
-      if (!isMissingTableError(err)) throw err;
-      testimonialsTableReady = false;
-      await ensureTestimonialsTable();
-      result = await db.query(
-        'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
-        [name, rating, testimony]
-      );
-    }
+    const result = await db.query(
+      'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
+      [name, rating, testimony]
+    );
 
     res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
     console.error('Create testimonial error:', err);
-    res.status(500).json({ error: 'Failed to save testimonial.' });
+    const mapped = dbErrorResponse('Saving testimonial', err);
+    res.status(mapped.status).json(mapped.body);
   }
 });
 
 app.get('/api/testimonials', async (req, res) => {
   try {
-    await ensureTestimonialsTable();
-    let result;
-
-    try {
-      result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
-    } catch (err) {
-      if (!isMissingTableError(err)) throw err;
-      testimonialsTableReady = false;
-      await ensureTestimonialsTable();
-      result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
-    }
+    const result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
 
     const testimonials = result.rows.map(row => ({ ...row, _id: row.id }));
     res.json(testimonials);
   } catch (err) {
     console.error('Fetch testimonials error:', err);
-    res.status(500).json({ error: 'Failed to fetch testimonials.' });
+    if (isMissingTableError(err)) {
+      // Keep homepage usable when testimonials table has not been migrated yet.
+      return res.json([]);
+    }
+    const mapped = dbErrorResponse('Fetching testimonials', err);
+    res.status(mapped.status).json(mapped.body);
   }
 });
 
