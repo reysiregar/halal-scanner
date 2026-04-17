@@ -345,6 +345,35 @@ function sanitizeUser(user) {
   };
 }
 
+let testimonialsTableReady = false;
+
+function isMissingTableError(err) {
+  return err && err.code === '42P01';
+}
+
+async function ensureTestimonialsTable() {
+  if (testimonialsTableReady) return;
+
+  await db.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS public.testimonials (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name text NOT NULL,
+      rating int NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      testimony text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS idx_testimonials_created_at
+    ON public.testimonials(created_at DESC);
+  `);
+
+  testimonialsTableReady = true;
+}
+
 app.post('/auth/signup', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
@@ -465,10 +494,23 @@ app.post('/api/testimonials', async (req, res) => {
   }
 
   try {
-    const result = await db.query(
-      'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
-      [name, rating, testimony]
-    );
+    await ensureTestimonialsTable();
+    let result;
+
+    try {
+      result = await db.query(
+        'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
+        [name, rating, testimony]
+      );
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+      testimonialsTableReady = false;
+      await ensureTestimonialsTable();
+      result = await db.query(
+        'INSERT INTO testimonials (name, rating, testimony) VALUES ($1, $2, $3) RETURNING id',
+        [name, rating, testimony]
+      );
+    }
 
     res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
@@ -479,7 +521,18 @@ app.post('/api/testimonials', async (req, res) => {
 
 app.get('/api/testimonials', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
+    await ensureTestimonialsTable();
+    let result;
+
+    try {
+      result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+      testimonialsTableReady = false;
+      await ensureTestimonialsTable();
+      result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
+    }
+
     const testimonials = result.rows.map(row => ({ ...row, _id: row.id }));
     res.json(testimonials);
   } catch (err) {
