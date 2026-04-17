@@ -109,6 +109,12 @@ body {
     transition: background-color 0.3s;
 }
 
+html,
+body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 body.mobile-menu-open {
     overflow: hidden;
 }
@@ -214,7 +220,7 @@ body.mobile-menu-open {
     background-color: rgba(244, 239, 228, 0.94);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
@@ -227,6 +233,19 @@ body.mobile-menu-open {
 
 #mobileMenu.open {
     transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+    #mobileMenu {
+        display: flex;
+    }
+}
+
+@media (min-width: 769px) {
+    #mobileMenu,
+    #mobileMenuBackdrop {
+        display: none !important;
+    }
 }
 
 #mobileMenu nav {
@@ -287,6 +306,10 @@ body.mobile-menu-open {
     font-size: 0.95rem;
     font-weight: 600;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+#mobileMenu .mobile-menu-action.hidden {
+    display: none !important;
 }
 
 #mobileMenu .mobile-menu-action:hover {

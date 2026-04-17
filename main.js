@@ -2091,7 +2091,8 @@ let currentUser = null;
 // Check if user is logged in on page load
 function checkAuthStatus() {
     const userData = localStorage.getItem('currentUser');
-    if (userData) {
+    const token = localStorage.getItem('jwtToken');
+    if (userData && token) {
         try {
             currentUser = JSON.parse(userData);
             updateUIAfterLogin(currentUser);
@@ -2107,7 +2108,10 @@ function checkAuthStatus() {
             }
         } catch (e) {
             localStorage.removeItem('currentUser');
+            signOut();
         }
+    } else if (userData || token) {
+        signOut();
     }
 }
 
