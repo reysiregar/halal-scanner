@@ -1,6 +1,6 @@
 // Backend API configuration
 const LOCAL_API_URL = 'http://localhost:3000';
-const PRODUCTION_API_URL = 'https://mid-andreana-veez-37004fdb.koyeb.app';
+const PRODUCTION_API_URL = 'https://halal-scanner.onrender.com';
 
 function resolveApiBaseUrl() {
   const viteApiUrl = import.meta.env?.VITE_API_BASE_URL;

@@ -40,7 +40,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'https://ai-halal-scanner.vercel.app',
-  'https://mid-andreana-veez-37004fdb.koyeb.app'
+  'https://halal-scanner.onrender.com'
 ];
 
 const devOrigins = [
