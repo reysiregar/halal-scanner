@@ -5,7 +5,6 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
-const stringSimilarity = require('string-similarity');
 const { CohereClient } = require('cohere-ai');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
@@ -118,6 +117,31 @@ function isSectionHeader(str) {
   return /^[A-Z\s]+:?$/.test(str.trim()) || /^(noodles|seasoning|powder|oil|sauce|shallot|contains|produced|products|that|peanuts|crustacean|egg|dairy|fish)$/i.test(str.trim());
 }
 
+// Uses Dice coefficient over bigrams, matching the behavior previously used from string-similarity.
+function compareTwoStrings(a, b) {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  if (a.length < 2 || b.length < 2) return 0;
+
+  const first = new Map();
+  for (let i = 0; i < a.length - 1; i += 1) {
+    const bigram = a.slice(i, i + 2);
+    first.set(bigram, (first.get(bigram) || 0) + 1);
+  }
+
+  let intersectionSize = 0;
+  for (let i = 0; i < b.length - 1; i += 1) {
+    const bigram = b.slice(i, i + 2);
+    const count = first.get(bigram) || 0;
+    if (count > 0) {
+      first.set(bigram, count - 1);
+      intersectionSize += 1;
+    }
+  }
+
+  return (2 * intersectionSize) / (a.length + b.length - 2);
+}
+
 function analyzeIngredients(ingredientsList) {
   const results = {
     halal: [],
@@ -148,7 +172,7 @@ function analyzeIngredients(ingredientsList) {
       const dbNames = [dbEntry.item_name, ...(dbEntry.aliases || [])];
       dbNames.forEach(name => {
         const dbCleaned = strongNormalize(name);
-        const score = stringSimilarity.compareTwoStrings(cleaned, dbCleaned);
+        const score = compareTwoStrings(cleaned, dbCleaned);
         if (score > bestScore) {
           bestScore = score;
           bestMatch = name;
