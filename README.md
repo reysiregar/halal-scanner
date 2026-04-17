@@ -43,9 +43,12 @@ Prerequisite: Node.js 20+
 3. **Configure Environment Variables**
    - Create `.env` in `backend`:
      ```env
-         DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
+       DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
      JWT_SECRET=your_jwt_secret_here
      COHERE_API_KEY=your_cohere_api_key_here
+       PG_FORCE_IPV4=true
+       # Optional fallback if DNS resolves unreachable addresses:
+       # PGHOSTADDR=1.2.3.4
      ```
     - Apply database schema from project root:
        ```bash

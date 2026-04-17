@@ -37,10 +37,51 @@ const cohere = new CohereClient({
 });
 
 const useSsl = process.env.NODE_ENV === 'production' || DATABASE_URL.includes('supabase.co');
-const db = new Pool({
+const forcePgIpv4 = process.env.PG_FORCE_IPV4 !== 'false';
+const dbPoolConfig = {
   connectionString: DATABASE_URL,
   ssl: useSsl ? { rejectUnauthorized: false } : false
-});
+};
+
+if (forcePgIpv4) {
+  // Prevent ENETUNREACH on hosts where outbound IPv6 is not available.
+  dbPoolConfig.family = 4;
+}
+
+if (process.env.PGHOSTADDR) {
+  // Optional hard override when DNS is unstable or returns unreachable addresses.
+  dbPoolConfig.host = process.env.PGHOSTADDR;
+}
+
+let db = new Pool(dbPoolConfig);
+
+async function resolveDatabaseIpv4Host() {
+  try {
+    const parsed = new URL(DATABASE_URL);
+    const hostname = parsed.hostname;
+    if (!hostname) {
+      return null;
+    }
+
+    const resolved = await dns.promises.lookup(hostname, { family: 4 });
+    return resolved && resolved.address ? resolved.address : null;
+  } catch (err) {
+    console.warn('Could not resolve database IPv4 host:', err.message);
+    return null;
+  }
+}
+
+async function switchDbPoolHost(host) {
+  const previousDb = db;
+  const nextConfig = { ...dbPoolConfig, host };
+  db = new Pool(nextConfig);
+
+  try {
+    await previousDb.end();
+  } catch (err) {
+    console.warn('Could not cleanly close previous DB pool during host switch:', err.message);
+  }
+}
 
 const app = express();
 
@@ -360,6 +401,7 @@ function isMissingTableError(err) {
 function isDbConnectionError(err) {
   return !!(err && (
     err.code === 'ECONNREFUSED' ||
+    err.code === 'ENETUNREACH' ||
     err.code === 'ENOTFOUND' ||
     err.code === '57P01' ||
     err.code === '08001' ||
@@ -785,8 +827,35 @@ app.listen(PORT, async () => {
   try {
     await db.query('SELECT 1');
     console.log(`Server is running on port ${PORT}`);
-    console.log('PostgreSQL connection configured.');
+    console.log(`PostgreSQL connection configured (force IPv4: ${forcePgIpv4 ? 'enabled' : 'disabled'}).`);
   } catch (err) {
-    console.error('Failed to verify PostgreSQL connection on startup:', err.message);
+    if (err.code === 'ENETUNREACH' && !process.env.PGHOSTADDR) {
+      const fallbackHost = await resolveDatabaseIpv4Host();
+
+      if (fallbackHost) {
+        try {
+          await switchDbPoolHost(fallbackHost);
+          await db.query('SELECT 1');
+          console.log(`Server is running on port ${PORT}`);
+          console.log(`PostgreSQL connection configured via startup IPv4 host fallback: ${fallbackHost}`);
+          return;
+        } catch (retryErr) {
+          console.error('PostgreSQL startup fallback retry failed:', {
+            message: retryErr.message,
+            code: retryErr.code,
+            address: retryErr.address,
+            port: retryErr.port,
+            attemptedHost: fallbackHost
+          });
+        }
+      }
+    }
+
+    console.error('Failed to verify PostgreSQL connection on startup:', {
+      message: err.message,
+      code: err.code,
+      address: err.address,
+      port: err.port
+    });
   }
 });
