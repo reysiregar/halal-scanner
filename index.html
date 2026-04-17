@@ -9,68 +9,145 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
+        .vercel-nav {
+            background: rgba(244, 239, 228, 0.88);
+            border-bottom: 1px solid rgba(31, 77, 58, 0.14);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: white;
-            transition: width 0.3s ease;
+        .vercel-nav-shell {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            padding: 0.28rem;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(31, 77, 58, 0.18);
+        }
+        .nav-brand {
+            color: var(--hs-primary);
+        }
+        .nav-link {
+            color: #2f4b3e;
+            font-size: 0.93rem;
+            font-weight: 500;
+            line-height: 1;
+            padding: 0.54rem 0.88rem;
+            border-radius: 9999px;
+            transition: color 0.2s ease, background-color 0.2s ease;
         }
         .nav-link.active {
-            color: white;
-            font-weight: 600;
+            color: #ffffff;
+            font-weight: 500;
+            background-color: var(--hs-primary);
         }
-        .nav-link.active::after {
-            width: 100%;
+        .nav-link:hover {
+            color: var(--hs-primary-dark);
+            background-color: rgba(31, 77, 58, 0.1);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(31, 77, 58, 0.2);
+            padding: 0.5rem 0.95rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.8;
+            transition: all 0.2s ease;
+        }
+        .nav-action-btn i {
+            width: 1em;
+            text-align: center;
+            margin: 0 !important;
+        }
+        .desktop-only-action {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .desktop-only-action:not(.hidden) {
+                display: inline-flex;
+            }
+        }
+        .nav-action-secondary {
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--hs-primary);
+        }
+        .nav-action-secondary:hover {
+            background: #ffffff;
+        }
+        .nav-action-primary {
+            background: var(--hs-primary);
+            color: #ffffff;
+            border-color: transparent;
+        }
+        .nav-action-primary:hover {
+            background: var(--hs-primary-dark);
+        }
+        @media (max-width: 768px) {
+            .nav-action-btn {
+                padding: 0.45rem 0.7rem;
+            }
         }
     </style>
 </head>
 <body class="min-h-screen">
     <!-- Header/Navigation -->
-    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-quran text-2xl"></i>
-                    <h1 class="text-2xl font-bold">Halal Scanner</h1>
+    <header class="vercel-nav shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center space-x-2 nav-brand">
+                    <i class="fas fa-quran text-xl"></i>
+                    <h1 class="text-xl font-semibold tracking-tight">Halal Scanner</h1>
                 </div>
-                <nav class="hidden md:flex space-x-6">
-                    <a href="#" class="nav-link hover:text-gray-200 font-medium active" data-section="home">Home</a>
-                    <a href="#how-it-works" class="nav-link hover:text-gray-200 font-medium" data-section="how-it-works">How It Works</a>
-                    <a href="#about" class="nav-link hover:text-gray-200 font-medium" data-section="about">About</a>
-                    <a href="#testimonials" class="nav-link hover:text-gray-200 font-medium" data-section="testimonials">Testimoni</a>
-                    <a href="#faq" class="nav-link hover:text-gray-200 font-medium" data-section="faq">FAQ</a>
+                <nav class="hidden md:flex vercel-nav-shell">
+                    <a href="#" class="nav-link active" data-section="home">Home</a>
+                    <a href="#how-it-works" class="nav-link" data-section="how-it-works">How It Works</a>
+                    <a href="#about" class="nav-link" data-section="about">About</a>
+                    <a href="#testimonials" class="nav-link" data-section="testimonials">Testimoni</a>
+                    <a href="#faq" class="nav-link" data-section="faq">FAQ</a>
                 </nav>
-                <div id="mobileMenu" class="hidden md:hidden absolute top-16 left-0 right-0 bg-indigo-700 shadow-lg z-40">
+                <div id="mobileMenuBackdrop" class="md:hidden" aria-hidden="true"></div>
+                <div id="mobileMenu" class="md:hidden z-40">
                     <nav class="flex flex-col p-4 space-y-3">
-                        <a href="#" class="nav-link hover:text-gray-200 font-medium py-2 px-4 rounded" data-section="home">Home</a>
-                        <a href="#how-it-works" class="nav-link hover:text-gray-200 font-medium py-2 px-4 rounded" data-section="how-it-works">How It Works</a>
-                        <a href="#about" class="nav-link hover:text-gray-200 font-medium py-2 px-4 rounded" data-section="about">About</a>
-                        <a href="#testimonials" class="nav-link hover:text-gray-200 font-medium py-2 px-4 rounded" data-section="testimonials">Testimoni</a>
-                        <a href="#faq" class="nav-link hover:text-gray-200 font-medium py-2 px-4 rounded" data-section="faq">FAQ</a>
+                        <a href="#" class="nav-link active" data-section="home">Home</a>
+                        <a href="#how-it-works" class="nav-link" data-section="how-it-works">How It Works</a>
+                        <a href="#about" class="nav-link" data-section="about">About</a>
+                        <a href="#testimonials" class="nav-link" data-section="testimonials">Testimoni</a>
+                        <a href="#faq" class="nav-link" data-section="faq">FAQ</a>
+                        <div class="mobile-menu-actions">
+                            <button id="mobileDashboardBtn" class="mobile-menu-action hidden" type="button">
+                                <i class="fas fa-user"></i><span>Dashboard</span>
+                            </button>
+                            <button id="mobileSignInBtn" class="mobile-menu-action" type="button">
+                                <i class="fas fa-sign-in-alt"></i><span>Sign In</span>
+                            </button>
+                        </div>
                     </nav>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="userDashboardBtn" class="bg-white text-indigo-600 px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition hidden">
+                <div class="nav-actions">
+                    <button id="userDashboardBtn" class="nav-action-btn nav-action-secondary desktop-only-action hidden">
                         <i class="fas fa-user md:mr-2"></i><span class="hidden md:inline">Dashboard</span>
                     </button>
-                    <button id="adminDashboardBtn" class="bg-red-600 text-white px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition hidden">
+                    <button id="adminDashboardBtn" class="nav-action-btn bg-red-600 text-white hover:bg-red-700 desktop-only-action hidden">
                         <i class="fas fa-shield-alt md:mr-2"></i><span class="hidden md:inline">Admin</span>
                     </button>
-                    <button id="signInBtn" class="bg-white text-indigo-600 px-2 md:px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    <button id="signInBtn" class="nav-action-btn nav-action-primary desktop-only-action">
                         <i class="fas fa-sign-in-alt md:mr-2"></i><span class="hidden md:inline">Sign In</span>
                     </button>
-                    <button id="mobileMenuBtn" class="md:hidden" aria-label="Toggle mobile menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                    <button id="mobileMenuBtn" class="md:hidden" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobileMenu">
+                        <span class="menu-icon" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
                     </button>
                 </div>
             </div>
@@ -506,8 +583,18 @@
                 
                 // Close mobile menu if open
                 const mobileMenu = document.getElementById('mobileMenu');
-                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
+                const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+                const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+                if (mobileMenu && mobileMenu.classList.contains('open')) {
+                    mobileMenu.classList.remove('open');
+                    if (mobileMenuBtn) {
+                        mobileMenuBtn.classList.remove('open');
+                        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                    }
+                    if (mobileMenuBackdrop) {
+                        mobileMenuBackdrop.classList.remove('open');
+                    }
+                    document.body.classList.remove('mobile-menu-open');
                 }
                 
                 // Update URL hash
@@ -640,7 +727,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col items-center">
-                <p class="text-gray-400 mb-4 md:mb-0 text-center">© 2025 Halal Scanner. All rights reserved.</p>
+                <p class="text-gray-400 mb-4 md:mb-0 text-center">© 2026 Halal Scanner. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -797,94 +884,6 @@
         </div>
     </div>
 
-    <!-- User Dashboard Modal -->
-    <div id="userDashboardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800">User Dashboard</h3>
-                    <button id="closeUserDashboard" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <!-- Navigation Tabs -->
-                <div class="flex border-b border-gray-200 mb-6">
-                    <button class="tab-button active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600" data-tab="saved-results">
-                        <i class="fas fa-save mr-2"></i>Saved Results
-                    </button>
-                    <button class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="reports">
-                        <i class="fas fa-flag mr-2"></i>My Reports
-                    </button>
-                </div>
-                
-                <!-- Saved Results Tab -->
-                <div id="saved-results-tab" class="tab-content">
-                    <div class="mb-4">
-                        <h4 class="text-lg font-semibold mb-2">Saved Scan Results</h4>
-                        <p class="text-gray-600 text-sm">Your saved scan results will appear here.</p>
-                    </div>
-                    <div id="savedResultsList" class="space-y-4">
-                        <!-- Saved results will be loaded here -->
-                    </div>
-                </div>
-                
-                <!-- Reports Tab -->
-                <div id="reports-tab" class="tab-content hidden">
-                    <div class="mb-4">
-                        <h4 class="text-lg font-semibold mb-2">My Inaccuracy Reports</h4>
-                        <p class="text-gray-600 text-sm">Track the status of your submitted reports.</p>
-                    </div>
-                    <div id="userReportsList" class="space-y-4">
-                        <!-- User reports will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard Modal -->
-    <div id="adminDashboardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800">Admin Dashboard</h3>
-                    <button id="closeAdminDashboard" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <!-- Navigation Tabs -->
-                <div class="flex border-b border-gray-200 mb-6">
-                    <button class="admin-tab-button active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600" data-tab="admin-saved-results">
-                        <i class="fas fa-save mr-2"></i>All Saved Results
-                    </button>
-                    <button class="admin-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="admin-reports">
-                        <i class="fas fa-flag mr-2"></i>Inaccuracy Reports
-                    </button>
-                </div>
-                <!-- All Saved Results Tab -->
-                <div id="admin-saved-results-tab" class="admin-tab-content">
-                    <div class="mb-4">
-                        <h4 class="text-lg font-semibold mb-2">My Saved Results</h4>
-                        <p class="text-gray-600 text-sm">View and manage your saved scan results.</p>
-                    </div>
-                    <div id="adminSavedResultsList" class="space-y-4">
-                        <!-- Admin's saved results will be loaded here -->
-                    </div>
-                </div>
-                <!-- Inaccuracy Reports Tab -->
-                <div id="admin-reports-tab" class="admin-tab-content hidden">
-                    <div class="mb-6">
-                        <h4 class="text-lg font-semibold mb-4">Inaccuracy Reports</h4>
-                        </div>
-                        <div id="adminReportsList" class="space-y-4">
-                            <!-- Admin reports will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Admin Note Modal -->
     <div id="adminNoteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
@@ -923,6 +922,10 @@
             </div>
         </div>
     </div>
+
+    <button id="backToTopBtn" class="back-to-top-btn" aria-label="Back to top" title="Back to top" type="button">
+        <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.1/dist/tesseract.min.js"></script>
     <script type="module" src="main.js"></script>

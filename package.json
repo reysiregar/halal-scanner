@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "db:push": "node backend/database/push-schema.js",
+    "db:seed": "node backend/database/seed-users.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cohere-ai": "^7.17.1",

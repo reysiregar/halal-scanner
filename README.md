@@ -6,8 +6,8 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 
 ## 🛠️ Tech Stack
 - **Frontend:** HTML, Vanilla JS, CSS
-- **Backend:** Node.js, Express, MongoDB (Mongoose), JWT Auth, Cohere AI, Tesseract.js
-- **Database:** MongoDB (local or Atlas)
+- **Backend:** Node.js, Express, Supabase (PostgreSQL), JWT Auth, Cohere AI, Tesseract.js
+- **Database:** Supabase PostgreSQL
 - **UI/UX:** SweetAlert2, FontAwesome
 
 ---
@@ -26,6 +26,8 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 
 ## 🚀 Quick Start
 
+Prerequisite: Node.js 20+
+
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
@@ -41,13 +43,17 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 3. **Configure Environment Variables**
    - Create `.env` in `backend`:
      ```env
-     MONGO_URI=mongodb://localhost:27017/halal-scanner
+         DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
      JWT_SECRET=your_jwt_secret_here
      COHERE_API_KEY=your_cohere_api_key_here
      ```
+    - Apply database schema from project root:
+       ```bash
+       npm run db:push
+       ```
    - Replace `your_jwt_secret_here` with a secure secret for JWT
    - Replace `your_cohere_api_key_here` with your Cohere API key
-   - For production, use a MongoDB Atlas URI instead of localhost
+   - Use your PostgreSQL connection string in `DATABASE_URL`
 4. **Start the backend**
    ```bash
    cd backend
@@ -59,10 +65,9 @@ A modern web app to scan and analyze food ingredients for halal status, with use
 ---
 
 ## 🔑 Test Accounts
-You can generate default credentials for Admin and User using the `mongo-init.js` script.
+You can generate default credentials for Admin and User using the `backend/database/seed-users.js` script.
 ```bash
-cd backend
-node mongo-init.js
+npm run db:seed
 ```
 
 ---
@@ -107,6 +112,8 @@ node mongo-init.js
 - **SavedResult:** { user_id, result_data, created_at }
 - **Report:** { user_id, item_name, reason, status, admin_note, created_at }
 - **Testimonial:** { name, rating, testimony, created_at }
+
+All database objects are defined in `backend/database/schema.sql`.
 
 ---
 

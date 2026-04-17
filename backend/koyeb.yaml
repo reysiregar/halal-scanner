@@ -3,8 +3,12 @@ services:
     env:
       - name: PORT
         value: "3000"
-      - key: MONGO_URI
-        secret: MONGO_URI
+      - key: DATABASE_URL
+        secret: DATABASE_URL
+      - key: JWT_SECRET
+        secret: JWT_SECRET
+      - key: COHERE_API_KEY
+        secret: COHERE_API_KEY
       - name: NODE_ENV
         value: "production"
     ports:

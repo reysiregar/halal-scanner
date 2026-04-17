@@ -12,38 +12,87 @@ import { getApiUrl, API_ENDPOINTS } from './config.js';
 // Modal handling with null checks
 const signInModal = document.getElementById('signInModal');
 const signUpModal = document.getElementById('signUpModal');
+const disclaimerModal = document.getElementById('disclaimerModal');
+const closeDisclaimer = document.getElementById('closeDisclaimer');
+const acceptDisclaimer = document.getElementById('acceptDisclaimer');
+const welcomeModal = document.getElementById('welcomeModal');
+const closeWelcome = document.getElementById('closeWelcome');
+const acceptWelcome = document.getElementById('acceptWelcome');
+const declineWelcome = document.getElementById('declineWelcome');
 const closeSignIn = document.getElementById('closeSignIn');
 const closeSignUp = document.getElementById('closeSignUp');
 const showSignUp = document.getElementById('showSignUp');
 const showSignIn = document.getElementById('showSignIn');
 const signInButton = document.getElementById('signInBtn');
+const mobileSignInButton = document.getElementById('mobileSignInBtn');
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const mobileMenu = document.getElementById('mobileMenu');
+const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+const backToTopBtn = document.getElementById('backToTopBtn');
+
+if (backToTopBtn) {
+    const updateBackToTopVisibility = () => {
+        const shouldShow = window.innerWidth < 768 && window.scrollY > 360 && !(mobileMenu && mobileMenu.classList.contains('open'));
+        backToTopBtn.classList.toggle('is-visible', shouldShow);
+    };
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('scroll', updateBackToTopVisibility, { passive: true });
+    window.addEventListener('resize', updateBackToTopVisibility);
+    updateBackToTopVisibility();
+}
 
 if (mobileMenuBtn && mobileMenu) {
+    const closeMobileMenu = () => {
+        mobileMenuBtn.classList.remove('open');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenu.classList.remove('open');
+        if (mobileMenuBackdrop) mobileMenuBackdrop.classList.remove('open');
+        document.body.classList.remove('mobile-menu-open');
+    };
+
+    const openMobileMenu = () => {
+        mobileMenuBtn.classList.add('open');
+        mobileMenuBtn.setAttribute('aria-expanded', 'true');
+        mobileMenu.classList.add('open');
+        if (mobileMenuBackdrop) mobileMenuBackdrop.classList.add('open');
+        document.body.classList.add('mobile-menu-open');
+    };
+
     mobileMenuBtn.addEventListener('click', () => {
         if (window.innerWidth < 768) {
-            mobileMenuBtn.classList.toggle('open');
-            mobileMenu.classList.toggle('open');
-            document.body.classList.toggle('mobile-menu-open');
+            if (mobileMenu.classList.contains('open')) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
         }
     });
 
+    if (mobileMenuBackdrop) {
+        mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+    }
+
     // Close menu when a link is clicked
-    mobileMenu.querySelectorAll('a').forEach(link => {
+    mobileMenu.querySelectorAll('a, .mobile-menu-action').forEach(link => {
         link.addEventListener('click', () => {
-            mobileMenuBtn.classList.remove('open');
-            mobileMenu.classList.remove('open');
-            document.body.classList.remove('mobile-menu-open');
+            closeMobileMenu();
         });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileMenu.classList.contains('open')) {
+            closeMobileMenu();
+        }
     });
 
     // Close menu on window resize if it's open
     window.addEventListener('resize', () => {
         if (window.innerWidth >= 768) {
-            mobileMenuBtn.classList.remove('open');
-            mobileMenu.classList.remove('open');
-            document.body.classList.remove('mobile-menu-open');
+            closeMobileMenu();
         }
     });
 }
@@ -55,41 +104,6 @@ if (closeSignIn) {
         if (signInModal) signInModal.classList.add('hidden');
     });
 }
-
-if (closeSignUp) {
-    closeSignUp.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (signUpModal) signUpModal.classList.add('hidden');
-    });
-}
-
-if (showSignUp) {
-    showSignUp.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (signInModal) signInModal.classList.add('hidden');
-        if (signUpModal) signUpModal.classList.remove('hidden');
-    });
-}
-
-if (showSignIn) {
-    showSignIn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (signUpModal) signUpModal.classList.add('hidden');
-        if (signInModal) signInModal.classList.remove('hidden');
-    });
-}
-
-// Check if disclaimer has been accepted
-const disclaimerModal = document.getElementById('disclaimerModal');
-const closeDisclaimer = document.getElementById('closeDisclaimer');
-const acceptDisclaimer = document.getElementById('acceptDisclaimer');
-
-// Welcome modal elements (new design)
-const welcomeModal = document.getElementById('welcomeModal');
-const closeWelcome = document.getElementById('closeWelcome');
-const acceptWelcome = document.getElementById('acceptWelcome');
-const declineWelcome = document.getElementById('declineWelcome');
-
 if (!localStorage.getItem('disclaimerAccepted') && disclaimerModal) {
     disclaimerModal.classList.remove('hidden');
 }
@@ -1890,7 +1904,6 @@ function getUserNameByEmail(email) {
 const signUpForm = document.getElementById('signUpForm');
 if (signUpForm) {
     signUpForm.addEventListener('submit', function(e) {
-        console.log('[DEBUG] signUpForm submit handler triggered');
         e.preventDefault();
         
         const nameInput = document.getElementById('signUpName');
@@ -1985,7 +1998,6 @@ if (signUpForm) {
 const signInForm = document.getElementById('signInForm');
 if (signInForm) {
     signInForm.addEventListener('submit', function(e) {
-        console.log('[DEBUG] signInForm submit handler triggered');
         e.preventDefault();
         
         const emailInput = document.getElementById('signInEmail');
@@ -2083,6 +2095,16 @@ function checkAuthStatus() {
         try {
             currentUser = JSON.parse(userData);
             updateUIAfterLogin(currentUser);
+            const onHomePage = window.location.pathname.endsWith('/index.html') || window.location.pathname === '/' || window.location.pathname === '';
+            const urlParams = new URLSearchParams(window.location.search);
+            const allowHomeView = urlParams.get('stay') === '1';
+            if (onHomePage && !allowHomeView) {
+                if (currentUser.email === 'admin@halalscanner.com') {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'user-dashboard.html';
+                }
+            }
         } catch (e) {
             localStorage.removeItem('currentUser');
         }
@@ -2096,25 +2118,63 @@ function updateUIAfterLogin(user) {
     
     // Update header buttons
     const signInBtn = document.getElementById('signInBtn');
+    const mobileSignInBtn = document.getElementById('mobileSignInBtn');
     const userDashboardBtn = document.getElementById('userDashboardBtn');
+    const mobileDashboardBtn = document.getElementById('mobileDashboardBtn');
     const adminDashboardBtn = document.getElementById('adminDashboardBtn');
     
-    const signInBtnText = signInBtn.querySelector('span');
-    const signInBtnIcon = signInBtn.querySelector('i');
-    
-    if (signInBtnText) signInBtnText.textContent = 'Sign Out';
-    if (signInBtnIcon) {
-        signInBtnIcon.classList.remove('fa-sign-in-alt');
-        signInBtnIcon.classList.add('fa-sign-out-alt');
-    }
+    [signInBtn, mobileSignInBtn].forEach(btn => {
+        if (!btn) return;
+        const signInBtnText = btn.querySelector('span');
+        const signInBtnIcon = btn.querySelector('i');
+        if (signInBtnText) signInBtnText.textContent = 'Sign Out';
+        if (signInBtnIcon) {
+            signInBtnIcon.classList.remove('fa-sign-in-alt');
+            signInBtnIcon.classList.add('fa-sign-out-alt');
+        }
+    });
+
+    const userDashboardButtons = [userDashboardBtn];
+    const adminDashboardButtons = [adminDashboardBtn];
+
     if (user.email === 'admin@halalscanner.com') {
         // Admin: show only admin dashboard
-        if (adminDashboardBtn) adminDashboardBtn.classList.remove('hidden');
-        if (userDashboardBtn) userDashboardBtn.classList.add('hidden');
+        adminDashboardButtons.forEach(btn => {
+            if (btn) btn.classList.remove('hidden');
+        });
+        userDashboardButtons.forEach(btn => {
+            if (btn) btn.classList.add('hidden');
+        });
+        if (mobileDashboardBtn) {
+            const mobileDashboardBtnText = mobileDashboardBtn.querySelector('span');
+            const mobileDashboardBtnIcon = mobileDashboardBtn.querySelector('i');
+            if (mobileDashboardBtnText) mobileDashboardBtnText.textContent = 'Admin Dashboard';
+            if (mobileDashboardBtnIcon) {
+                mobileDashboardBtnIcon.classList.remove('fa-user');
+                mobileDashboardBtnIcon.classList.add('fa-shield-alt');
+            }
+            mobileDashboardBtn.dataset.target = 'admin-dashboard.html';
+            mobileDashboardBtn.classList.remove('hidden');
+        }
     } else {
         // Regular user: show only user dashboard
-        if (userDashboardBtn) userDashboardBtn.classList.remove('hidden');
-        if (adminDashboardBtn) adminDashboardBtn.classList.add('hidden');
+        userDashboardButtons.forEach(btn => {
+            if (btn) btn.classList.remove('hidden');
+        });
+        adminDashboardButtons.forEach(btn => {
+            if (btn) btn.classList.add('hidden');
+        });
+        if (mobileDashboardBtn) {
+            const mobileDashboardBtnText = mobileDashboardBtn.querySelector('span');
+            const mobileDashboardBtnIcon = mobileDashboardBtn.querySelector('i');
+            if (mobileDashboardBtnText) mobileDashboardBtnText.textContent = 'Dashboard';
+            if (mobileDashboardBtnIcon) {
+                mobileDashboardBtnIcon.classList.remove('fa-shield-alt');
+                mobileDashboardBtnIcon.classList.add('fa-user');
+            }
+            mobileDashboardBtn.dataset.target = 'user-dashboard.html';
+            mobileDashboardBtn.classList.remove('hidden');
+        }
     }
 }
 
@@ -2125,21 +2185,37 @@ function signOut() {
     localStorage.removeItem('jwtToken');
     
     const signInBtn = document.getElementById('signInBtn');
+    const mobileSignInBtn = document.getElementById('mobileSignInBtn');
     const userDashboardBtn = document.getElementById('userDashboardBtn');
+    const mobileDashboardBtn = document.getElementById('mobileDashboardBtn');
     const adminDashboardBtn = document.getElementById('adminDashboardBtn'); // Ensure admin button is also handled
-    const signInBtnText = signInBtn ? signInBtn.querySelector('span') : null;
-    const signInBtnIcon = signInBtn ? signInBtn.querySelector('i') : null;
-    
-    if (signInBtnText) signInBtnText.textContent = 'Sign In';
-    if (signInBtnIcon) {
-        signInBtnIcon.classList.remove('fa-sign-out-alt');
-        signInBtnIcon.classList.add('fa-sign-in-alt');
+
+    [signInBtn, mobileSignInBtn].forEach(btn => {
+        if (!btn) return;
+        const signInBtnText = btn.querySelector('span');
+        const signInBtnIcon = btn.querySelector('i');
+        if (signInBtnText) signInBtnText.textContent = 'Sign In';
+        if (signInBtnIcon) {
+            signInBtnIcon.classList.remove('fa-sign-out-alt');
+            signInBtnIcon.classList.add('fa-sign-in-alt');
+        }
+    });
+    [userDashboardBtn, adminDashboardBtn, mobileDashboardBtn].forEach(btn => {
+        if (btn) btn.classList.add('hidden');
+    });
+    if (mobileDashboardBtn) {
+        const mobileDashboardBtnText = mobileDashboardBtn.querySelector('span');
+        const mobileDashboardBtnIcon = mobileDashboardBtn.querySelector('i');
+        if (mobileDashboardBtnText) mobileDashboardBtnText.textContent = 'Dashboard';
+        if (mobileDashboardBtnIcon) {
+            mobileDashboardBtnIcon.classList.remove('fa-shield-alt');
+            mobileDashboardBtnIcon.classList.add('fa-user');
+        }
+        delete mobileDashboardBtn.dataset.target;
     }
-    if (userDashboardBtn) userDashboardBtn.classList.add('hidden');
-    if (adminDashboardBtn) adminDashboardBtn.classList.add('hidden');
     
     // Close any open modals
-    const modals = ['signInModal', 'signUpModal', 'reportModal', 'userDashboardModal', 'adminDashboardModal'];
+    const modals = ['signInModal', 'signUpModal', 'reportModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.add('hidden');
@@ -2148,851 +2224,71 @@ function signOut() {
 
 // Update sign in button click handler
 const signInBtn = document.getElementById('signInBtn');
-if (signInBtn) {
-    signInBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (currentUser) {
-            // Show confirmation dialog before sign out
-            Swal.fire({
-                title: 'Are you sure you want to sign out?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Sign Out',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#4f46e5',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    signOut();
-                    location.reload(); // Reload to update UI (Dashboard button hidden)
-                }
-            });
-        } else {
-            const signInModal = document.getElementById('signInModal');
-            if (signInModal) signInModal.classList.remove('hidden');
-        }
-    });
+const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+
+function handleAuthButtonClick(e) {
+    e.stopPropagation();
+    if (currentUser) {
+        // Show confirmation dialog before sign out
+        Swal.fire({
+            title: 'Are you sure you want to sign out?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#4f46e5',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                signOut();
+                location.reload(); // Reload to update UI (Dashboard button hidden)
+            }
+        });
+    } else {
+        const signInModal = document.getElementById('signInModal');
+        if (signInModal) signInModal.classList.remove('hidden');
+    }
 }
 
-// --- DASHBOARD FUNCTIONALITY ---
+[signInBtn, mobileSignInBtn].forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleAuthButtonClick(e);
+    });
+});
+
+// --- DASHBOARD NAVIGATION (MPA) ---
 const userDashboardBtn = document.getElementById('userDashboardBtn');
-const userDashboardModal = document.getElementById('userDashboardModal');
-const closeUserDashboard = document.getElementById('closeUserDashboard');
+const mobileDashboardBtn = document.getElementById('mobileDashboardBtn');
 const adminDashboardBtn = document.getElementById('adminDashboardBtn');
-const adminDashboardModal = document.getElementById('adminDashboardModal');
-const closeAdminDashboard = document.getElementById('closeAdminDashboard');
 
-if (userDashboardBtn) {
-    userDashboardBtn.addEventListener('click', (e) => {
+[userDashboardBtn].forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        // Always hide the Sign In modal if it's open
-        const signInModal = document.getElementById('signInModal');
-        if (signInModal) signInModal.classList.add('hidden');
-        if (userDashboardModal) {
-            userDashboardModal.classList.remove('hidden');
-            loadUserDashboard();
-        }
+        window.location.href = 'user-dashboard.html';
     });
-}
+});
 
-if (closeUserDashboard) {
-    closeUserDashboard.addEventListener('click', (e) => {
+[adminDashboardBtn].forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (userDashboardModal) userDashboardModal.classList.add('hidden');
-    });
-}
-
-// Admin dashboard button click handler
-if (adminDashboardBtn) {
-    adminDashboardBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Hide sign in modal if open
-        const signInModal = document.getElementById('signInModal');
-        if (signInModal) signInModal.classList.add('hidden');
-        
-        if (adminDashboardModal) {
-            adminDashboardModal.classList.remove('hidden');
-            
-            // Activate the first tab and load its content
-            const firstTab = document.querySelector('.admin-tab-button');
-            if (firstTab) {
-                firstTab.click();
-            } else {
-                // Fallback to loading admin reports if tab click fails
-                loadAdminReports();
-            }
-        }
-    });
-}
-
-// Close admin dashboard modal
-if (closeAdminDashboard) {
-    closeAdminDashboard.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (adminDashboardModal) adminDashboardModal.classList.add('hidden');
-    });
-}
-
-// Close modal when clicking outside
-if (adminDashboardModal) {
-    adminDashboardModal.addEventListener('click', (e) => {
-        if (e.target === adminDashboardModal) {
-            e.preventDefault();
-            adminDashboardModal.classList.add('hidden');
-        }
-    });
-}
-
-// Tab functionality for user dashboard
-const tabButtons = document.querySelectorAll('.tab-button');
-const tabContents = document.querySelectorAll('.tab-content');
-
-// Tab functionality for admin dashboard
-const adminTabButtons = document.querySelectorAll('.admin-tab-button');
-const adminTabContents = document.querySelectorAll('.admin-tab-content');
-
-// User dashboard tabs
-tabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetTab = button.getAttribute('data-tab');
-        
-        // Update active tab button
-        tabButtons.forEach(btn => {
-            btn.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
-            btn.classList.add('text-gray-500');
-        });
-        button.classList.add('active', 'border-indigo-500', 'text-indigo-600');
-        button.classList.remove('text-gray-500');
-        
-        // Show target tab content
-        tabContents.forEach(content => {
-            content.classList.add('hidden');
-        });
-        const targetContent = document.getElementById(`${targetTab}-tab`);
-        if (targetContent) targetContent.classList.remove('hidden');
-        
-        // Load data for the selected tab
-        if (targetTab === 'saved-results') {
-            loadSavedResults();
-        } else if (targetTab === 'reports') {
-            loadUserReports();
-        }
+        window.location.href = 'admin-dashboard.html';
     });
 });
 
-// Admin dashboard tabs
-adminTabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
+if (mobileDashboardBtn) {
+    mobileDashboardBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        const targetTab = button.getAttribute('data-tab');
-        
-        // Update active tab button
-        adminTabButtons.forEach(btn => {
-            btn.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
-            btn.classList.add('text-gray-500');
-        });
-        button.classList.add('active', 'border-indigo-500', 'text-indigo-600');
-        button.classList.remove('text-gray-500');
-        
-        // Show target tab content
-        adminTabContents.forEach(content => {
-            content.classList.add('hidden');
-        });
-        const targetContent = document.getElementById(`${targetTab}-tab`);
-        if (targetContent) targetContent.classList.remove('hidden');
-        
-        // Load data for the selected tab
-        if (targetTab === 'admin-saved-results') {
-            loadAdminSavedResults();
-        } else if (targetTab === 'admin-reports') {
-            loadAdminReports();
-        }
-    });
-});
-
-async function loadUserDashboard() {
-    await loadSavedResults();
-    await loadUserReports();
-}
-
-async function loadAdminSavedResults() {
-    if (!currentUser) return;
-    
-    try {
-        const token = localStorage.getItem('jwtToken');
-        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_SAVED_RESULTS), {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load saved results');
-        }
-        
-        const data = await response.json();
-        // The API returns { saved_results: [...] } so we need to pass data.saved_results
-        displayAdminSavedResults(data.saved_results || []);
-    } catch (error) {
-        console.error('Error loading admin saved results:', error);
-        const container = document.getElementById('adminSavedResultsList');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center py-8 text-red-500">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Failed to load saved results</p>
-                </div>
-            `;
-        }
-    }
-}
-
-function displayAdminSavedResults(results) {
-    const container = document.getElementById('adminSavedResultsList');
-    if (!container) return;
-    
-    if (!results || results.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-save text-2xl mb-2"></i>
-                <p>No saved results found</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = `
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingredients</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${results.map(result => {
-                        // Extract data from the nested result_data if it exists
-                        const resultData = result.result_data || {};
-                        const ingredients = resultData.ingredients || 'No ingredients';
-                        const overallStatus = resultData.overallStatus || 'unknown';
-                        const date = new Date(result.createdAt || result.created_at || Date.now()).toLocaleString();
-                        
-                        const statusClass = {
-                            'halal': 'bg-green-100 text-green-800',
-                            'haram': 'bg-red-100 text-red-800',
-                            'mashbooh': 'bg-yellow-100 text-yellow-800',
-                            'unknown': 'bg-gray-100 text-gray-800'
-                        }[overallStatus.toLowerCase()] || 'bg-gray-100 text-gray-800';
-                        
-                        return `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div class="font-medium">${result.user?.name || 'Unknown'}</div>
-                                    <div class="text-gray-500 text-xs">${result.user?.email || ''}</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                                    ${ingredients}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                                        ${overallStatus}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    ${date}
-                                </td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
-
-async function loadSavedResults() {
-    if (!currentUser) return;
-    
-    try {
-        const token = localStorage.getItem('jwtToken');
-        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_SAVED_RESULTS), {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            displaySavedResults(data.saved_results);
-        } else {
-            throw new Error(data.error || 'Failed to load saved results');
-        }
-    } catch (error) {
-        console.error('Error loading saved results:', error);
-        document.getElementById('savedResultsList').innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Failed to load saved results</p>
-            </div>
-        `;
-    }
-}
-
-function displaySavedResults(results) {
-    const container = document.getElementById('savedResultsList');
-    
-    if (!results || results.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-save text-2xl mb-2"></i>
-                <p>No saved results yet</p>
-                <p class="text-sm mt-2">Your saved scan results will appear here</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '';
-    results.forEach(result => {
-        // Parse the result_data if it's a string
-        const resultData = typeof result.result_data === 'string' 
-            ? JSON.parse(result.result_data) 
-            : result.result_data;
-            
-        const date = result.created_at 
-            ? new Date(result.created_at).toLocaleDateString() 
-            : 'Unknown date';
-        
-        // Create a status badge with appropriate color
-        const statusText = resultData.overallStatus || 'unknown';
-        const statusColors = {
-            halal: 'bg-green-100 text-green-800',
-            haram: 'bg-red-100 text-red-800',
-            mashbooh: 'bg-yellow-100 text-yellow-800',
-            unknown: 'bg-gray-100 text-gray-800'
-        };
-        const statusClass = statusColors[statusText] || statusColors.unknown;
-        
-        // Limit ingredients preview length
-        const ingredientsPreview = resultData.ingredients 
-            ? (resultData.ingredients.length > 100 
-                ? resultData.ingredients.substring(0, 100) + '...' 
-                : resultData.ingredients)
-            : 'No ingredients data';
-        
-        html += `
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4 hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <h5 class="font-medium text-gray-900">Scan from ${date}</h5>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">
-                                ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}
-                            </span>
-                        </div>
-                        <div class="text-sm text-gray-600">
-                            <p class="mb-2">${ingredientsPreview}</p>
-                        </div>
-                    </div>
-                    <button type="button" 
-                            class="delete-saved-result text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100"
-                            data-id="${result._id}"
-                            title="Delete this result">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-    
-    // Add delete event listeners with confirmation
-    document.querySelectorAll('.delete-saved-result').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const resultId = this.getAttribute('data-id');
-            Swal.fire({
-                title: 'Delete Saved Result?',
-                text: 'Are you sure you want to delete this saved result? This action cannot be undone.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Delete',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#4f46e5'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await deleteSavedResult(resultId);
-                }
-            });
-        });
+        e.stopPropagation();
+        const target = mobileDashboardBtn.dataset.target || (currentUser && currentUser.email === 'admin@halalscanner.com' ? 'admin-dashboard.html' : 'user-dashboard.html');
+        window.location.href = target;
     });
 }
-
-function displayUserReports(reports) {
-    const container = document.getElementById('userReportsList');
-    
-    if (!reports || reports.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-clipboard-list text-2xl mb-2"></i>
-                <p>No reports found</p>
-                <p class="text-sm mt-2">Your submitted reports will appear here</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = `
-        <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    `;
-    
-    reports.forEach(report => {
-        const date = new Date(report.createdAt).toLocaleDateString();
-        let statusBadge = '';
-        
-        switch(report.status) {
-            case 'pending':
-                statusBadge = 'bg-yellow-100 text-yellow-800';
-                break;
-            case 'in_progress':
-                statusBadge = 'bg-blue-100 text-blue-800';
-                break;
-            case 'resolved':
-                statusBadge = 'bg-green-100 text-green-800';
-                break;
-            case 'rejected':
-                statusBadge = 'bg-red-100 text-red-800';
-                break;
-            default:
-                statusBadge = 'bg-gray-100 text-gray-800';
-        }
-        
-        html += `
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <div class="flex justify-between items-start mb-2">
-                    <h4 class="font-medium">${report.item_name || 'Unnamed Item'}</h4>
-                    <span class="text-xs px-2 py-1 rounded-full ${statusBadge}">
-                        ${report.status.replace('_', ' ').toUpperCase()}
-                    </span>
-                </div>
-                <p class="text-sm text-gray-600 mb-2">${report.reason || 'No reason provided'}</p>
-                <div class="text-xs text-gray-400 flex justify-between items-center">
-                    <span>${date}</span>
-                    ${report.admin_note ? `
-                        <button class="text-blue-500 hover:underline" 
-                                onclick="document.getElementById('adminNoteText').textContent='${report.admin_note.replace(/'/g, "\\'")}'; 
-                                         document.getElementById('adminNoteModal').classList.remove('hidden');">
-                            View Note
-                        </button>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `
-            </div>
-        </div>
-    `;
-    
-    container.innerHTML = html;
-}
-
-async function loadUserReports() {
-    if (!currentUser) return;
-    
-    try {
-        const token = localStorage.getItem('jwtToken');
-        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_USER_REPORTS), {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            displayUserReports(data.reports);
-        } else {
-            throw new Error(data.error || 'Failed to load reports');
-        }
-    } catch (error) {
-        console.error('Error loading user reports:', error);
-        document.getElementById('userReportsList').innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Failed to load reports</p>
-            </div>
-        `;
-    }
-}
-
-async function deleteSavedResult(resultId) {
-    try {
-        const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_SAVED_RESULT(resultId)), {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        
-        if (response.ok) {
-            // Remove the deleted item from the UI without reloading
-            const btn = document.querySelector(`.delete-saved-result[data-id="${resultId}"]`);
-            if (btn) {
-                const card = btn.closest('.bg-gray-50, .saved-result-card');
-                if (card) card.remove();
-            }
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted',
-                text: 'Saved result deleted.',
-                timer: 3000,
-                showConfirmButton: false
-            });
-            // If no more cards, show empty state
-            const container = document.getElementById('savedResultsList');
-            if (container && container.children.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-gray-500"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results yet</p></div>`;
-            }
-        } else {
-            throw new Error('Failed to delete saved result');
-        }
-    } catch (error) {
-        console.error('Error deleting saved result:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Delete Failed',
-            text: 'Failed to delete saved result',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#ef4444'
-        });
-    }
-}
-
-async function loadAdminReports() {
-    if (!currentUser) return;
-    
-    try {
-        const token = localStorage.getItem('jwtToken');
-        const response = await fetch(getApiUrl(API_ENDPOINTS.GET_ADMIN_REPORTS), {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'user-id': currentUser.id,
-                'user-email': currentUser.email,
-                'user-name': currentUser.name
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            displayAdminReports(data.reports);
-        } else {
-            throw new Error(data.error || 'Failed to load admin reports');
-        }
-    } catch (error) {
-        console.error('Error loading admin reports:', error);
-        const adminReportsList = document.getElementById('adminReportsList');
-        if (adminReportsList) {
-            adminReportsList.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Failed to load reports: ${error.message}</p>
-                </div>
-            `;
-        }
-    }
-}
-
-function displayAdminReports(reports) {
-    const container = document.getElementById('adminReportsList');
-    
-    if (!reports || reports.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-flag text-2xl mb-2"></i>
-                <p>No reports to review</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '';
-    reports.forEach(report => {
-        const date = new Date(report.created_at).toLocaleDateString();
-        const statusColor = {
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'solved': 'bg-green-100 text-green-800',
-            'rejected': 'bg-red-100 text-red-800'
-        }[report.status] || 'bg-gray-100 text-gray-800';
-        
-        html += `
-            <div class="bg-white border rounded-lg p-4">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h5 class="font-medium">${report.item_name}</h5>
-                        <p class="text-sm text-gray-600">Reported by: ${report.user_name} (${report.user_email})</p>
-                    </div>
-                    <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColor}">
-                        ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                    </span>
-                </div>
-                <p class="text-sm text-gray-600 mb-3">${report.reason}</p>
-                <div class="text-xs text-gray-500 mb-3">Submitted: ${date}</div>
-                
-                <div class="flex space-x-2">
-                    <button class="update-report-status bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700" 
-                            data-id="${report.id}" data-status="solved">
-                        Mark Solved
-                    </button>
-                    <button class="update-report-status bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700" 
-                            data-id="${report.id}" data-status="rejected">
-                        Reject
-                    </button>
-                    <button class="add-admin-note bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700" 
-                            data-id="${report.id}">
-                        Add Note
-                    </button>
-                    <button class="delete-admin-report bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300" 
-                            data-id="${report.id}" data-status="${report.status}">
-                        Delete
-                    </button>
-                </div>
-                
-                ${report.admin_note ? `
-                    <div class="mt-3 p-2 bg-blue-50 rounded text-sm">
-                        <strong>Admin Note:</strong> ${report.admin_note}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-    
-    // Add event listeners for admin actions
-    document.querySelectorAll('.update-report-status').forEach(button => {
-        button.addEventListener('click', async function() {
-            const reportId = this.getAttribute('data-id');
-            const status = this.getAttribute('data-status');
-            await updateReportStatus(reportId, status);
-        });
-    });
-    
-    document.querySelectorAll('.add-admin-note').forEach(button => {
-        button.addEventListener('click', function() {
-            const reportId = this.getAttribute('data-id');
-            addAdminNote(reportId);
-        });
-    });
-
-    // Delete report (admin)
-    document.querySelectorAll('.delete-admin-report').forEach(button => {
-        button.addEventListener('click', async function() {
-            const reportId = this.getAttribute('data-id');
-            const status = this.getAttribute('data-status');
-            if (status === 'pending') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Action Required',
-                    text: 'You must review the report (mark solved or reject) before deleting.',
-                    confirmButtonColor: '#f59e42'
-                });
-                return;
-            }
-            const confirmed = await customConfirm('Are you sure you want to delete this report?');
-            if (confirmed) {
-                try {
-                    const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_REPORT) + `/${reportId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'user-id': currentUser.id,
-                            'user-email': currentUser.email,
-                            'user-name': currentUser.name
-                        }
-                    });
-                    if (response.ok) {
-                        activateAdminReportsTab();
-                        loadAdminReports();
-                    } else {
-                        const data = await response.json();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Delete Failed',
-                            text: data.error || 'Failed to delete report',
-                            confirmButtonColor: '#ef4444'
-                        });
-                    }
-                } catch (err) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Delete Failed',
-                        text: 'Failed to delete report',
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            }
-        });
-    });
-}
-
-async function updateReportStatus(reportId, status, adminNote) {
-    try {
-        if (!reportId) {
-            throw new Error('Report ID is required');
-        }
-        
-        const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            throw new Error('Not authenticated');
-        }
-
-        // Ensure currentUser is defined
-        const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (!currentUser || !currentUser.id) {
-            throw new Error('User information is missing');
-        }
-        
-        const body = { 
-            status: status,
-            admin_note: adminNote || '' // Always include admin_note, even if empty
-        };
-        
-        // Construct the URL with the report ID
-        const baseUrl = getApiUrl(API_ENDPOINTS.UPDATE_REPORT_STATUS);
-        const url = new URL(`${baseUrl}/${reportId}`);
-        
-        console.log('Updating report status:', { 
-            url: url.toString(),
-            reportId,
-            status,
-            hasAdminNote: !!adminNote,
-            body: body
-        });
-        
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'user-id': currentUser.id,
-                'user-email': currentUser.email || '',
-                'user-name': currentUser.name || ''
-            },
-            body: JSON.stringify(body)
-        });
-
-        const responseData = await response.json().catch(() => ({}));
-        
-        if (response.ok) {
-            activateAdminReportsTab();
-            loadAdminReports(); // Reload the list
-            return { success: true };
-        } else {
-            console.error('Server response error:', {
-                status: response.status,
-                statusText: response.statusText,
-                response: responseData
-            });
-            throw new Error(responseData.message || 'Failed to update report status');
-        }
-    } catch (error) {
-        console.error('Error updating report status:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Update Failed',
-            text: 'Failed to update report status',
-            confirmButtonColor: '#ef4444'
-        });
-    }
-}
-
-// --- ADMIN NOTE MODAL FUNCTIONALITY ---
-let currentReportId = null;
-
-function addAdminNote(reportId) {
-    currentReportId = reportId;
-    const adminNoteModal = document.getElementById('adminNoteModal');
-    const adminNoteText = document.getElementById('adminNoteText');
-    
-    if (adminNoteModal && adminNoteText) {
-        adminNoteText.value = ''; // Clear previous note
-        adminNoteModal.classList.remove('hidden');
-        adminNoteText.focus(); // Focus on the textarea
-    }
-}
-
-// Admin Note Modal Event Listeners
-document.addEventListener('DOMContentLoaded', function() {
-    const adminNoteModal = document.getElementById('adminNoteModal');
-    const closeAdminNoteModal = document.getElementById('closeAdminNoteModal');
-    const cancelAdminNote = document.getElementById('cancelAdminNote');
-    const adminNoteForm = document.getElementById('adminNoteForm');
-    const adminNoteText = document.getElementById('adminNoteText');
-    
-    // Close modal with X button
-    if (closeAdminNoteModal) {
-        closeAdminNoteModal.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (adminNoteModal) adminNoteModal.classList.add('hidden');
-        });
-    }
-    
-    // Close modal with Cancel button
-    if (cancelAdminNote) {
-        cancelAdminNote.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (adminNoteModal) adminNoteModal.classList.add('hidden');
-        });
-    }
-    
-    // Close modal when clicking outside
-    if (adminNoteModal) {
-        adminNoteModal.addEventListener('click', function(e) {
-            if (e.target === adminNoteModal) {
-                e.preventDefault();
-                adminNoteModal.classList.add('hidden');
-            }
-        });
-    }
-    
-    // Handle form submission
-    if (adminNoteForm) {
-        adminNoteForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const note = adminNoteText.value.trim();
-            if (note && currentReportId) {
-                updateReportStatus(currentReportId, 'solved', note);
-                adminNoteModal.classList.add('hidden');
-                adminNoteForm.reset();
-            }
-        });
-    }
-    
-    // Handle Escape key to close modal
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && adminNoteModal && !adminNoteModal.classList.contains('hidden')) {
-            adminNoteModal.classList.add('hidden');
-        }
-    });
-});
 
 // --- SAVE RESULTS FUNCTIONALITY ---
 function addSaveResultsFunctionality() {
@@ -3073,9 +2369,7 @@ function addSaveResultsFunctionality() {
                         timer: 3000,
                         showConfirmButton: false
                     });
-                    if (document.getElementById('userDashboardModal') && !document.getElementById('userDashboardModal').classList.contains('hidden')) {
-                        loadSavedResults();
-                    }
+                    // Dashboard refresh is handled in dedicated MPA dashboard pages.
                 } else {
                     throw new Error(data.error || 'Failed to save results');
                 }
@@ -3146,7 +2440,6 @@ if (closeReportModal) {
 
 if (reportForm) {
     reportForm.addEventListener('submit', async function(e) {
-        console.log('[DEBUG] reportForm submit handler triggered');
         e.preventDefault();
         
         if (!currentUser) {
@@ -3197,10 +2490,7 @@ if (reportForm) {
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#4f46e5'
                 });
-                // Optionally, update the dashboard if it's open
-                if (document.getElementById('userDashboardModal') && !document.getElementById('userDashboardModal').classList.contains('hidden')) {
-                    loadUserReports();
-                }
+                // Dashboard refresh is handled in dedicated MPA dashboard pages.
             } else {
                 throw new Error(data.error || 'Failed to submit report');
             }
@@ -3657,25 +2947,6 @@ function customConfirm(message) {
         document.addEventListener('keydown', onKey);
     });
 }
-
-// Helper to activate the Inaccuracy Reports tab in admin dashboard
-function activateAdminReportsTab() {
-    const tabBtn = document.querySelector('.admin-tab-button[data-tab="admin-reports"]');
-    const tabContent = document.getElementById('admin-reports-tab');
-    const allTabBtns = document.querySelectorAll('.admin-tab-button');
-    const allTabContents = document.querySelectorAll('.admin-tab-content');
-    if (tabBtn && tabContent) {
-        allTabBtns.forEach(btn => btn.classList.remove('active', 'border-b-2', 'border-indigo-500', 'text-indigo-600'));
-        tabBtn.classList.add('active', 'border-b-2', 'border-indigo-500', 'text-indigo-600');
-        allTabContents.forEach(c => c.classList.add('hidden'));
-        tabContent.classList.remove('hidden');
-    }
-}
-
-// --- GLOBAL DEBUG: Log before page reload ---
-window.addEventListener('beforeunload', () => {
-  console.log('[DEBUG] Page is about to reload');
-});
 
 // --- HELPER: Prevent default and stop propagation for event ---
 function preventDefaultAndStop(e) {

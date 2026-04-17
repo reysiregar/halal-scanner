@@ -1,7 +1,28 @@
 // Backend API configuration
-// Use environment variable if available, otherwise fallback to production URL
-const DEFAULT_API_URL = 'https://mid-andreana-veez-37004fdb.koyeb.app';
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || DEFAULT_API_URL;
+const LOCAL_API_URL = 'http://localhost:3000';
+const PRODUCTION_API_URL = 'https://mid-andreana-veez-37004fdb.koyeb.app';
+
+function resolveApiBaseUrl() {
+  const viteApiUrl = import.meta.env?.VITE_API_BASE_URL;
+
+  // Optional runtime override for quick testing in browser devtools:
+  // localStorage.setItem('API_BASE_URL', 'http://localhost:3000')
+  let runtimeApiUrl;
+  try {
+    runtimeApiUrl = globalThis.localStorage?.getItem('API_BASE_URL');
+  } catch (_err) {
+    runtimeApiUrl = null;
+  }
+
+  if (runtimeApiUrl) return runtimeApiUrl;
+  if (viteApiUrl) return viteApiUrl;
+
+  const hostname = globalThis.location?.hostname || '';
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+  return isLocalHost ? LOCAL_API_URL : PRODUCTION_API_URL;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 // API endpoints
 export const API_ENDPOINTS = {

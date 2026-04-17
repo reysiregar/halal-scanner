@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Halal Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-[#f4efe4] dashboard-body">
+    <header class="sticky top-0 z-40 border-b border-[#1f4d3a]/20 bg-[#f4efe4]/90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between dashboard-header-inner">
+            <a href="index.html" class="flex items-center gap-2 text-[#1f4d3a] font-semibold text-xl">
+                <i class="fas fa-quran"></i>
+                <span>Halal Scanner</span>
+            </a>
+            <div class="flex items-center gap-2 dashboard-header-actions">
+                <button id="backHomeBtn" class="px-4 py-2 rounded-full border border-[#1f4d3a]/30 text-[#1f4d3a] hover:bg-white dashboard-header-btn dashboard-home-btn" aria-label="Back Home" title="Back Home">
+                    <i class="fas fa-home" aria-hidden="true"></i>
+                    <span class="sr-only">Back Home</span>
+                </button>
+                <button id="signOutBtn" class="px-4 py-2 rounded-full bg-[#1f4d3a] text-white hover:bg-[#17382b] dashboard-header-btn dashboard-signout-btn" aria-label="Sign Out" title="Sign Out">
+                    <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
+                    <span class="dashboard-signout-label">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-10 dashboard-main">
+        <div class="mb-8 dashboard-intro">
+            <p class="text-sm uppercase tracking-[0.2em] font-semibold text-[#1f4d3a]">Private Area</p>
+            <h1 class="text-3xl font-bold text-gray-900 mt-2">Admin Dashboard</h1>
+            <p id="dashboardGreeting" class="text-gray-600 mt-2">Review user scans and process inaccuracy reports.</p>
+        </div>
+
+        <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8 dashboard-panel">
+            <div class="flex border-b border-gray-200 mb-6 dashboard-tabs" role="tablist" aria-label="Admin dashboard sections">
+                <button class="admin-tab-button dashboard-tab-trigger active px-4 py-2 text-sm font-medium text-indigo-600" data-tab="admin-saved-results">
+                    <i class="fas fa-save mr-2"></i>All Saved Results
+                </button>
+                <button class="admin-tab-button dashboard-tab-trigger px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="admin-reports">
+                    <i class="fas fa-flag mr-2"></i>Inaccuracy Reports
+                </button>
+            </div>
+
+            <div id="admin-saved-results-tab" class="admin-tab-content">
+                <div id="adminSavedResultsList" class="space-y-4 dashboard-results-list"></div>
+            </div>
+
+            <div id="admin-reports-tab" class="admin-tab-content hidden">
+                <div id="adminReportsList" class="space-y-4 dashboard-results-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>
