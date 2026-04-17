@@ -1,4 +1,12 @@
 require('dotenv').config();
+const dns = require('dns');
+
+// Render and similar platforms may not have reliable IPv6 egress; prefer IPv4 when both records exist.
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (err) {
+  console.warn('Could not set DNS result order to ipv4first:', err.message);
+}
 
 const express = require('express');
 const cors = require('cors');
