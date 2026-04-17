@@ -1154,3 +1154,19 @@ section[id] {
         line-clamp: 4;
     }
 }
+
+/* Mobile Header Sticky Positioning */
+@media (max-width: 768px) {
+    header.vercel-nav {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 50 !important;
+        width: 100% !important;
+    }
+    
+    body {
+        padding-top: 3.5rem;
+    }
+}
