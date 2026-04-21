@@ -1895,6 +1895,31 @@ function validateInput(input, type) {
     }
 }
 
+function getSubmitButton(form) {
+    return form ? form.querySelector('button[type="submit"]') : null;
+}
+
+function setSubmitButtonLoading(form, isLoading, loadingText) {
+    const submitBtn = getSubmitButton(form);
+    if (!submitBtn) return;
+
+    if (!submitBtn.dataset.originalHtml) {
+        submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+    }
+
+    if (isLoading) {
+        submitBtn.dataset.loading = 'true';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin" aria-hidden="true" style="margin-right:0.45rem;"></i>${loadingText}`;
+    } else {
+        submitBtn.dataset.loading = 'false';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = submitBtn.dataset.originalHtml;
+    }
+}
+
 // Helper to save user to localStorage
 function saveUserToLocal(email, name) {
     let users = [];
@@ -1921,6 +1946,9 @@ const signUpForm = document.getElementById('signUpForm');
 if (signUpForm) {
     signUpForm.addEventListener('submit', function(e) {
         e.preventDefault();
+
+        const submitBtn = getSubmitButton(signUpForm);
+        if (submitBtn && submitBtn.dataset.loading === 'true') return;
         
         const nameInput = document.getElementById('signUpName');
         const emailInput = document.getElementById('signUpEmail');
@@ -1964,6 +1992,8 @@ if (signUpForm) {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
+        setSubmitButtonLoading(signUpForm, true, 'Creating Account...');
+
         // Use backend API for sign-up
         fetch(getApiUrl(API_ENDPOINTS.SIGN_UP), {
             method: 'POST',
@@ -2006,6 +2036,9 @@ if (signUpForm) {
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#ef4444'
             });
+        })
+        .finally(() => {
+            setSubmitButtonLoading(signUpForm, false);
         });
     });
 }
@@ -2015,6 +2048,9 @@ const signInForm = document.getElementById('signInForm');
 if (signInForm) {
     signInForm.addEventListener('submit', function(e) {
         e.preventDefault();
+
+        const submitBtn = getSubmitButton(signInForm);
+        if (submitBtn && submitBtn.dataset.loading === 'true') return;
         
         const emailInput = document.getElementById('signInEmail');
         const passwordInput = document.getElementById('signInPassword');
@@ -2050,6 +2086,8 @@ if (signInForm) {
         
         const email = emailInput.value.trim();
         const password = passwordInput.value;
+
+        setSubmitButtonLoading(signInForm, true, 'Signing In...');
 
         // Use backend API for sign-in
         fetch(getApiUrl(API_ENDPOINTS.SIGN_IN), {
@@ -2097,6 +2135,9 @@ if (signInForm) {
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#ef4444'
             });
+        })
+        .finally(() => {
+            setSubmitButtonLoading(signInForm, false);
         });
     });
 }
@@ -2695,6 +2736,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reviewForm) {
         reviewForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            const submitBtn = getSubmitButton(reviewForm);
+            if (submitBtn && submitBtn.dataset.loading === 'true') return;
+
             if (!nameInput.value.trim() || !ratingInput.value || !testimonyInput.value.trim()) {
                 Swal.fire({
                     icon: 'warning',
@@ -2704,6 +2748,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 return;
             }
+
+            setSubmitButtonLoading(reviewForm, true, 'Submitting...');
+
             try {
                 const response = await fetchTestimonialsEndpoint({
                     method: 'POST',
@@ -2757,6 +2804,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: 'Failed to submit review.',
                     confirmButtonColor: '#4f46e5'
                 });
+            } finally {
+                setSubmitButtonLoading(reviewForm, false);
             }
         });
     }
