@@ -2748,23 +2748,30 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add a class to the carousel for better styling
             testimonialsCarousel.classList.add('testimonials-carousel');
             
-            testimonialsCarousel.innerHTML = testimonials.map(t => `
-                <div class="testimonial-card bg-white p-4 rounded-xl shadow-md snap-center flex-shrink-0 relative overflow-hidden">
-                    <div class="flex flex-col items-center text-center relative z-10">
-                        <div class="avatar-sm mb-2">
-                            <span class="avatar-initials">${t.name ? t.name.charAt(0).toUpperCase() : 'A'}</span>
+            testimonialsCarousel.innerHTML = testimonials.map(t => {
+                const initials = t.name ? t.name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : 'A';
+                const safeName = t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous';
+                const safeTestimony = t.testimony.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const fullStars = Math.floor(t.rating);
+                const halfStar = t.rating % 1 >= 0.5;
+                const emptyStars = 5 - Math.ceil(t.rating);
+                const starsHtml =
+                    '<i class="fas fa-star"></i>'.repeat(fullStars) +
+                    (halfStar ? '<i class="fas fa-star-half-alt"></i>' : '') +
+                    '<i class="far fa-star"></i>'.repeat(emptyStars);
+                return `
+                <div class="testimonial-card snap-center flex-shrink-0">
+                    <div class="tc-header">
+                        <div class="tc-avatar">${initials}</div>
+                        <div class="tc-meta">
+                            <span class="tc-name">${safeName}</span>
+                            ${t.role ? `<span class="tc-role">${t.role.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>` : ''}
+                            <div class="tc-stars">${starsHtml}</div>
                         </div>
-                        <h4 class="testimonial-name">${t.name ? t.name.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Anonymous'}</h4>
-                        ${t.role ? `<p class=\"testimonial-role\">${t.role}</p>` : ''}
-                        <div class="testimonial-stars">
-                            ${'<i class=\"fas fa-star\"></i>'.repeat(Math.floor(t.rating))}
-                            ${t.rating % 1 >= 0.5 ? '<i class=\"fas fa-star-half-alt\"></i>' : ''}
-                            ${'<i class=\"far fa-star\"></i>'.repeat(5 - Math.ceil(t.rating))}
-                        </div>
-                        <p class="testimonial-text mt-2">${t.testimony.replace(/"/g, '&quot;')}</p>
                     </div>
-                </div>
-            `).join('');
+                    <blockquote class="tc-quote">${safeTestimony}</blockquote>
+                </div>`;
+            }).join('');
         } catch (err) {
             console.error('Error loading testimonials:', err);
             testimonialsCarousel.innerHTML = `

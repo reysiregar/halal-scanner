@@ -1,12 +1,9 @@
 // Backend API configuration
-const LOCAL_API_URL = 'http://localhost:3000';
-const PRODUCTION_API_URL = 'https://halal-scanner.onrender.com';
+const LOCAL_API_URL = '';
 
 function resolveApiBaseUrl() {
-  const viteApiUrl = import.meta.env?.VITE_API_BASE_URL;
-
   // Optional runtime override for quick testing in browser devtools:
-  // localStorage.setItem('API_BASE_URL', 'http://localhost:3000')
+  // localStorage.setItem('API_BASE_URL', 'http://localhost:5000')
   let runtimeApiUrl;
   try {
     runtimeApiUrl = globalThis.localStorage?.getItem('API_BASE_URL');
@@ -15,11 +12,9 @@ function resolveApiBaseUrl() {
   }
 
   if (runtimeApiUrl) return runtimeApiUrl;
-  if (viteApiUrl) return viteApiUrl;
 
-  const hostname = globalThis.location?.hostname || '';
-  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-  return isLocalHost ? LOCAL_API_URL : PRODUCTION_API_URL;
+  // Use relative URLs so it works through Replit's proxy
+  return LOCAL_API_URL;
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -44,15 +39,15 @@ export const API_ENDPOINTS = {
 export function getApiUrl(endpoint) {
   try {
     // Ensure the API base URL doesn't end with a slash
-    const baseUrl = API_BASE_URL.endsWith('/') 
-      ? API_BASE_URL.slice(0, -1) 
+    const baseUrl = API_BASE_URL.endsWith('/')
+      ? API_BASE_URL.slice(0, -1)
       : API_BASE_URL;
-      
+
     // Ensure the endpoint starts with a slash
-    const normalizedEndpoint = endpoint.startsWith('/') 
-      ? endpoint 
+    const normalizedEndpoint = endpoint.startsWith('/')
+      ? endpoint
       : `/${endpoint}`;
-      
+
     return `${baseUrl}${normalizedEndpoint}`;
   } catch (error) {
     console.error('Error constructing API URL:', error);
