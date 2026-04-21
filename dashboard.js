@@ -75,7 +75,7 @@ function renderUserSavedResults(results) {
   if (!container) return;
 
   if (!results || results.length === 0) {
-    container.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results yet</p></div>';
+    container.innerHTML = '<div class="dashboard-empty-state"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results yet</p></div>';
     return;
   }
 
@@ -83,12 +83,7 @@ function renderUserSavedResults(results) {
   container.innerHTML = results.map((result) => {
     const resultData = typeof result.result_data === 'string' ? JSON.parse(result.result_data) : (result.result_data || {});
     const status = (resultData.overallStatus || 'unknown').toLowerCase();
-    const statusClass = {
-      halal: 'bg-green-100 text-green-800',
-      haram: 'bg-red-100 text-red-800',
-      mashbooh: 'bg-yellow-100 text-yellow-800',
-      unknown: 'bg-gray-100 text-gray-800'
-    }[status] || 'bg-gray-100 text-gray-800';
+    const statusClass = `status-${status}`;
 
     if (isMobile) {
       return `
@@ -108,16 +103,16 @@ function renderUserSavedResults(results) {
     }
 
     return `
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+      <div class="saved-result-card">
         <div class="flex justify-between items-start gap-3">
           <div>
             <div class="flex items-center gap-2 mb-2">
-              <h5 class="font-medium text-gray-900">Scan Result</h5>
-              <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${status}</span>
+              <h5 class="dashboard-card-title">Scan Result</h5>
+              <span class="dashboard-status-pill ${statusClass}">${status}</span>
             </div>
-            <p class="text-sm text-gray-600">${resultData.ingredients || 'No ingredients captured'}</p>
+            <p class="dashboard-card-text">${resultData.ingredients || 'No ingredients captured'}</p>
           </div>
-          <button class="delete-saved-result text-gray-400 hover:text-red-600" data-id="${result._id || result.id}"><i class="fas fa-trash"></i></button>
+          <button class="delete-saved-result dashboard-delete-btn" data-id="${result._id || result.id}"><i class="fas fa-trash"></i></button>
         </div>
       </div>
     `;
@@ -187,7 +182,7 @@ function renderAdminSavedResults(results) {
   if (!container) return;
 
   if (!results || results.length === 0) {
-    container.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results found</p></div>';
+    container.innerHTML = '<div class="dashboard-empty-state"><i class="fas fa-save text-2xl mb-2"></i><p>No saved results found</p></div>';
     return;
   }
 
@@ -209,7 +204,7 @@ function renderAdminSavedResults(results) {
               </div>
               <div class="mt-2">
                 <p class="label">Status</p>
-                <span class="status-pill">${status}</span>
+                <span class="status-pill status-${status}">${status}</span>
               </div>
             </article>
           `;
@@ -220,23 +215,24 @@ function renderAdminSavedResults(results) {
   }
 
   container.innerHTML = `
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div class="overflow-x-auto admin-saved-table-wrap">
+      <table class="min-w-full admin-saved-table">
+        <thead>
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ingredients</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-4 py-2 text-left text-xs font-medium uppercase">User</th>
+            <th class="px-4 py-2 text-left text-xs font-medium uppercase">Ingredients</th>
+            <th class="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-100">
+        <tbody>
           ${results.map((result) => {
             const data = typeof result.result_data === 'string' ? JSON.parse(result.result_data) : (result.result_data || {});
+            const status = (data.overallStatus || 'unknown').toLowerCase();
             return `
               <tr>
-                <td class="px-4 py-3 text-sm text-gray-700">${result.user?.name || result.user_name || 'Unknown'}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${data.ingredients || '-'}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">${data.overallStatus || 'unknown'}</td>
+                <td class="px-4 py-3 text-sm">${result.user?.name || result.user_name || 'Unknown'}</td>
+                <td class="px-4 py-3 text-sm">${data.ingredients || '-'}</td>
+                <td class="px-4 py-3 text-sm"><span class="dashboard-status-pill status-${status}">${status}</span></td>
               </tr>
             `;
           }).join('')}

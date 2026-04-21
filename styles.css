@@ -484,6 +484,67 @@ body { padding-top: 4.9rem; }
 }
 
 /* ============================================================
+   ANALYSIS RESULT THEMING (dark mode)
+   Keep JS-generated utility classes readable inside result areas.
+   ============================================================ */
+#resultsContainer .bg-green-50,
+#uploadResultsContainer .bg-green-50 {
+    background-color: rgba(22,163,74,0.16) !important;
+    border: 1px solid rgba(34,197,94,0.35);
+}
+
+#resultsContainer .bg-red-50,
+#uploadResultsContainer .bg-red-50 {
+    background-color: rgba(220,38,38,0.16) !important;
+    border: 1px solid rgba(248,113,113,0.35);
+}
+
+#resultsContainer .bg-yellow-50,
+#uploadResultsContainer .bg-yellow-50 {
+    background-color: rgba(217,119,6,0.16) !important;
+    border: 1px solid rgba(251,191,36,0.35);
+}
+
+#resultsContainer .bg-gray-50,
+#uploadResultsContainer .bg-gray-50 {
+    background-color: rgba(82,82,91,0.2) !important;
+    border: 1px solid rgba(161,161,170,0.28);
+}
+
+#resultsContainer .bg-blue-50,
+#uploadResultsContainer .bg-blue-50 {
+    background-color: rgba(37,99,235,0.14) !important;
+    border: 1px solid rgba(96,165,250,0.3);
+}
+
+#resultsContainer h4,
+#uploadResultsContainer h4 {
+    color: var(--text-1);
+}
+
+#resultsContainer .text-gray-600,
+#uploadResultsContainer .text-gray-600,
+#resultsContainer .text-gray-500,
+#uploadResultsContainer .text-gray-500 {
+    color: var(--text-2) !important;
+}
+
+#resultsContainer .text-gray-400,
+#uploadResultsContainer .text-gray-400 {
+    color: var(--text-3) !important;
+}
+
+#resultsContainer .text-indigo-600,
+#uploadResultsContainer .text-indigo-600 {
+    color: #93c5fd !important;
+}
+
+#resultsContainer .text-indigo-600:hover,
+#uploadResultsContainer .text-indigo-600:hover {
+    color: #bfdbfe !important;
+}
+
+/* ============================================================
    CAMERA / SCANNER
    ============================================================ */
 .camera-preview {
@@ -1228,11 +1289,108 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 
 .saved-result-card {
-    background-color: var(--bg-muted);
+    background-color: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 1rem;
     margin-bottom: 1rem;
+}
+
+.saved-result-card:hover {
+    border-color: var(--border-hi);
+}
+
+.dashboard-empty-state {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-3);
+}
+
+.dashboard-card-title {
+    font-weight: 600;
+    color: var(--text-1);
+}
+
+.dashboard-card-text {
+    font-size: 0.875rem;
+    color: var(--text-2);
+}
+
+.dashboard-delete-btn {
+    color: var(--text-3);
+    transition: color 0.18s;
+}
+
+.dashboard-delete-btn:hover {
+    color: #f87171;
+}
+
+.dashboard-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+.status-pill.status-halal,
+.dashboard-status-pill.status-halal {
+    background-color: rgba(22,163,74,0.16);
+    border-color: rgba(34,197,94,0.35);
+    color: #86efac;
+}
+
+.status-pill.status-haram,
+.dashboard-status-pill.status-haram {
+    background-color: rgba(220,38,38,0.16);
+    border-color: rgba(248,113,113,0.35);
+    color: #fca5a5;
+}
+
+.status-pill.status-mashbooh,
+.dashboard-status-pill.status-mashbooh {
+    background-color: rgba(217,119,6,0.16);
+    border-color: rgba(251,191,36,0.35);
+    color: #fcd34d;
+}
+
+.status-pill.status-unknown,
+.dashboard-status-pill.status-unknown {
+    background-color: rgba(82,82,91,0.2);
+    border-color: rgba(161,161,170,0.3);
+    color: #d4d4d8;
+}
+
+.admin-saved-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-subtle);
+}
+
+.admin-saved-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-saved-table thead {
+    background: rgba(255,255,255,0.04);
+}
+
+.admin-saved-table th {
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+}
+
+.admin-saved-table tbody tr {
+    border-top: 1px solid var(--border);
+}
+
+.admin-saved-table td {
+    color: var(--text-2);
 }
 
 .admin-saved-mobile-card {

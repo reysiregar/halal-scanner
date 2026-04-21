@@ -647,6 +647,30 @@
         </div>
     </div>
 
+    <!-- Report Inaccuracy Modal -->
+    <div id="reportModal" class="fixed inset-0 flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle" style="background:rgba(0,0,0,0.65);">
+        <div style="background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:16px;max-width:520px;width:calc(100% - 2rem);padding:1.75rem;max-height:90vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+                <h3 id="reportModalTitle" style="font-size:1.1rem;font-weight:700;color:#f4f4f5;">Report Inaccuracy</h3>
+                <button id="closeReportModal" aria-label="Close report form" style="color:#71717a;background:transparent;border:none;cursor:pointer;font-size:1rem;" onmouseover="this.style.color='#f4f4f5'" onmouseout="this.style.color='#71717a'"><i class="fas fa-times" aria-hidden="true"></i></button>
+            </div>
+            <form id="reportForm" autocomplete="on" novalidate>
+                <div style="margin-bottom:1rem;">
+                    <label for="reportItemName" style="display:block;font-size:0.8rem;font-weight:600;color:#a1a1aa;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;">Item / Ingredient</label>
+                    <input id="reportItemName" name="item_name" type="text" placeholder="e.g., Gelatin" required style="width:100%;padding:0.65rem 0.85rem;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.04);color:#f4f4f5;font-size:0.9rem;outline:none;transition:border-color 0.18s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(34,197,94,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                </div>
+                <div style="margin-bottom:1.25rem;">
+                    <label for="reportReason" style="display:block;font-size:0.8rem;font-weight:600;color:#a1a1aa;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;">Reason</label>
+                    <textarea id="reportReason" name="reason" rows="4" placeholder="Tell us what seems inaccurate and why..." required style="width:100%;padding:0.65rem 0.85rem;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.04);color:#f4f4f5;font-size:0.9rem;resize:vertical;outline:none;transition:border-color 0.18s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(34,197,94,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:0.6rem;">
+                    <button type="button" id="cancelReportModal" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#f4f4f5;padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancel</button>
+                    <button type="submit" style="background:#22c55e;color:#09090b;padding:0.6rem 1.1rem;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;border:none;transition:background 0.18s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Sign In Modal -->
     <div id="signInModal" class="fixed inset-0 flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="signInModalTitle" style="background:rgba(0,0,0,0.65);">
         <div style="background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:16px;max-width:400px;width:calc(100% - 2rem);padding:2rem;">
@@ -764,7 +788,7 @@
         // Escape key closes any open modal
         document.addEventListener('keydown', function(e) {
             if (e.key !== 'Escape') return;
-            ['welcomeModal','disclaimerModal','signInModal','signUpModal'].forEach(id => {
+            ['welcomeModal','disclaimerModal','signInModal','signUpModal','reportModal'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 const hidden = el.classList.contains('hidden') || el.style.display === 'none';
@@ -777,7 +801,7 @@
 
         // Attach open/close hooks once DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            ['disclaimerModal','signInModal','signUpModal','welcomeModal'].forEach(id => {
+            ['disclaimerModal','signInModal','signUpModal','welcomeModal','reportModal'].forEach(id => {
                 const modal = document.getElementById(id);
                 if (!modal) return;
 

@@ -479,7 +479,7 @@ if (testAnalysisBtn) {
                         <p class="text-sm text-gray-600">${statusDescription}</p>
                     </div>
                     <div class="mt-6 flex justify-between items-center">
-                        <button type="button" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                             <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                         </button>
                         <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
@@ -1257,7 +1257,7 @@ async function analyzeUploadedImage() {
                     <p class="text-sm text-gray-600">${statusDescription}</p>
                 </div>
                 <div class="mt-6 flex justify-between items-center">
-                    <button type="button" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                         <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                     </button>
                     <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
@@ -1828,7 +1828,7 @@ async function analyzeCapturedImage(imageData) {
                     <p class="text-sm text-gray-600">${statusDescription}</p>
                 </div>
                 <div class="mt-6 flex justify-between items-center">
-                    <button type="button" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                         <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                     </button>
                     <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
@@ -2475,7 +2475,11 @@ function addSaveResultsFunctionality() {
 function addReportInaccuracyFunctionality() {
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
-        if (btn && btn.textContent.includes('Report Inaccuracy')) {
+        const isReportButton = btn && (
+            btn.dataset.action === 'report-inaccuracy' ||
+            btn.textContent.includes('Report Inaccuracy')
+        );
+        if (isReportButton) {
             e.preventDefault();
             e.stopPropagation();
             if (!currentUser) {
@@ -2495,18 +2499,40 @@ function addReportInaccuracyFunctionality() {
                 });
                 return;
             }
-            const resultsContainer = btn.closest('.bg-white') || btn.closest('.results-container');
+
+            const resultsContainer =
+                btn.closest('#resultsContainer') ||
+                btn.closest('#uploadResultsContainer') ||
+                btn.closest('.results-container') ||
+                btn.closest('.bg-white');
+
             if (resultsContainer) {
-                const itemNameElement = resultsContainer.querySelector('h3, h4, h5');
+                const itemNameElement =
+                    resultsContainer.querySelector('.space-y-3 > div h4') ||
+                    resultsContainer.querySelector('h4, h5, h3');
                 if (itemNameElement) {
                     const reportItemName = document.getElementById('reportItemName');
                     if (reportItemName) {
-                        reportItemName.value = itemNameElement.textContent.replace('Analysis Results', '').trim();
+                        reportItemName.value = itemNameElement.textContent
+                            .replace('Analysis Results', '')
+                            .replace('Overall Product Status:', '')
+                            .trim();
                     }
                 }
             }
+
             const reportModal = document.getElementById('reportModal');
-            if (reportModal) reportModal.classList.remove('hidden');
+            if (reportModal) {
+                reportModal.classList.remove('hidden');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Report Form Unavailable',
+                    text: 'The report form is missing on this page. Please refresh and try again.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
         }
     });
 }
@@ -2514,10 +2540,18 @@ function addReportInaccuracyFunctionality() {
 // --- REPORT MODAL FUNCTIONALITY ---
 const reportModal = document.getElementById('reportModal');
 const closeReportModal = document.getElementById('closeReportModal');
+const cancelReportModal = document.getElementById('cancelReportModal');
 const reportForm = document.getElementById('reportForm');
 
 if (closeReportModal) {
     closeReportModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (reportModal) reportModal.classList.add('hidden');
+    });
+}
+
+if (cancelReportModal) {
+    cancelReportModal.addEventListener('click', (e) => {
         e.preventDefault();
         if (reportModal) reportModal.classList.add('hidden');
     });
