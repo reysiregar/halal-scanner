@@ -366,9 +366,11 @@ function wireUserTabs() {
       tabButtons.forEach((b) => {
         b.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
         b.classList.add('text-gray-500');
+        b.setAttribute('aria-selected', 'false');
       });
       button.classList.add('active', 'border-indigo-500', 'text-indigo-600');
       button.classList.remove('text-gray-500');
+      button.setAttribute('aria-selected', 'true');
 
       tabContents.forEach((c) => c.classList.add('hidden'));
       const targetContent = document.getElementById(`${target}-tab`);
@@ -393,9 +395,11 @@ function wireAdminTabs() {
       tabButtons.forEach((b) => {
         b.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
         b.classList.add('text-gray-500');
+        b.setAttribute('aria-selected', 'false');
       });
       button.classList.add('active', 'border-indigo-500', 'text-indigo-600');
       button.classList.remove('text-gray-500');
+      button.setAttribute('aria-selected', 'true');
 
       tabContents.forEach((c) => c.classList.add('hidden'));
       const targetContent = document.getElementById(`${target}-tab`);

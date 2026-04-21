@@ -162,16 +162,28 @@ if (declineWelcome) {
     });
 }
 
-// Toggle FAQ answers
-const faqButtons = document.querySelectorAll('#faqSection button');
+// Toggle FAQ answers — uses CSS-driven max-height animation via .faq-open class
+const faqButtons = document.querySelectorAll('.faq-question');
 if (faqButtons.length > 0) {
     faqButtons.forEach(button => {
         button.addEventListener('click', function() {
             const answer = this.nextElementSibling;
-            const icon = this.querySelector('i');
-            
-            if (answer) answer.classList.toggle('hidden');
-            if (icon) icon.classList.toggle('rotate-180');
+            if (!answer || !answer.classList.contains('faq-answer')) return;
+
+            const isOpen = answer.classList.contains('faq-open');
+
+            // Close any other open answer
+            document.querySelectorAll('.faq-answer.faq-open').forEach(openAns => {
+                if (openAns !== answer) {
+                    openAns.classList.remove('faq-open');
+                    const openBtn = openAns.previousElementSibling;
+                    if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Toggle this one
+            answer.classList.toggle('faq-open', !isOpen);
+            this.setAttribute('aria-expanded', String(!isOpen));
         });
     });
 }

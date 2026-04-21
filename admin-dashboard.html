@@ -3,24 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin control panel for Halal Scanner — review all user scans and process inaccuracy reports.">
+    <meta name="theme-color" content="#09090b">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
     <title>Admin Dashboard - Halal Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="min-h-screen bg-[#f4efe4] dashboard-body">
-    <header class="sticky top-0 z-40 border-b border-[#1f4d3a]/20 bg-[#f4efe4]/90 backdrop-blur-md">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between dashboard-header-inner">
-            <a href="index.html" class="flex items-center gap-2 text-[#1f4d3a] font-semibold text-xl">
-                <i class="fas fa-quran"></i>
+<body class="min-h-screen dashboard-body">
+
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="sticky top-0 z-40" style="background:rgba(9,9,11,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div class="container mx-auto px-5 py-3 flex items-center justify-between dashboard-header-inner">
+            <a href="index.html" style="display:flex;align-items:center;gap:0.5rem;color:#f4f4f5;font-weight:600;font-size:1rem;text-decoration:none;">
+                <i class="fas fa-leaf" aria-hidden="true" style="color:#22c55e;"></i>
                 <span>Halal Scanner</span>
             </a>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.72rem;font-weight:600;color:#f87171;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.2);border-radius:9999px;padding:0.25rem 0.65rem;">
+                    <i class="fas fa-shield-alt" aria-hidden="true" style="font-size:0.65rem;"></i>
+                    <span>Admin</span>
+                </span>
+            </div>
             <div class="flex items-center gap-2 dashboard-header-actions">
-                <button id="backHomeBtn" class="px-4 py-2 rounded-full border border-[#1f4d3a]/30 text-[#1f4d3a] hover:bg-white dashboard-header-btn dashboard-home-btn" aria-label="Back Home" title="Back Home">
+                <button id="backHomeBtn" style="display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.5rem 0.85rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);color:#a1a1aa;background:rgba(255,255,255,0.04);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.18s;" onmouseover="this.style.color='#f4f4f5';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.color='#a1a1aa';this.style.borderColor='rgba(255,255,255,0.1)'" class="dashboard-header-btn dashboard-home-btn" aria-label="Back Home" title="Back Home">
                     <i class="fas fa-home" aria-hidden="true"></i>
                     <span class="sr-only">Back Home</span>
                 </button>
-                <button id="signOutBtn" class="px-4 py-2 rounded-full bg-[#1f4d3a] text-white hover:bg-[#17382b] dashboard-header-btn dashboard-signout-btn" aria-label="Sign Out" title="Sign Out">
+                <button id="signOutBtn" style="display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.5rem 0.9rem;border-radius:8px;border:1px solid rgba(220,38,38,0.3);color:#f87171;background:rgba(220,38,38,0.08);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.18s;" onmouseover="this.style.background='rgba(220,38,38,0.15)';this.style.borderColor='rgba(220,38,38,0.5)'" onmouseout="this.style.background='rgba(220,38,38,0.08)';this.style.borderColor='rgba(220,38,38,0.3)'" class="dashboard-header-btn dashboard-signout-btn" aria-label="Sign Out" title="Sign Out">
                     <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
                     <span class="dashboard-signout-label">Sign Out</span>
                 </button>
@@ -28,29 +45,41 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-10 dashboard-main">
+    <main id="main-content" class="container mx-auto px-5 py-10 dashboard-main">
         <div class="mb-8 dashboard-intro">
-            <p class="text-sm uppercase tracking-[0.2em] font-semibold text-[#1f4d3a]">Private Area</p>
-            <h1 class="text-3xl font-bold text-gray-900 mt-2">Admin Dashboard</h1>
-            <p id="dashboardGreeting" class="text-gray-600 mt-2">Review user scans and process inaccuracy reports.</p>
+            <p style="font-size:0.72rem;font-weight:700;color:#f87171;letter-spacing:0.15em;text-transform:uppercase;">Admin Area</p>
+            <h1 style="font-size:1.8rem;font-weight:700;color:#f4f4f5;margin-top:0.4rem;letter-spacing:-0.01em;">Admin Dashboard</h1>
+            <p id="dashboardGreeting" style="font-size:0.9rem;color:#71717a;margin-top:0.4rem;">Review user scans and process inaccuracy reports.</p>
         </div>
 
-        <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8 dashboard-panel">
-            <div class="flex border-b border-gray-200 mb-6 dashboard-tabs" role="tablist" aria-label="Admin dashboard sections">
-                <button class="admin-tab-button dashboard-tab-trigger active px-4 py-2 text-sm font-medium text-indigo-600" data-tab="admin-saved-results">
-                    <i class="fas fa-save mr-2"></i>All Saved Results
+        <section style="background:#111113;border:1px solid rgba(255,255,255,0.08);border-radius:16px;" class="p-6 md:p-8 dashboard-panel">
+            <div class="flex dashboard-tabs mb-6" role="tablist" aria-label="Admin dashboard sections" style="gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:0.75rem;">
+                <button class="admin-tab-button dashboard-tab-trigger active px-4 py-2 text-sm font-medium"
+                    role="tab"
+                    id="admin-tab-saved"
+                    aria-selected="true"
+                    aria-controls="admin-saved-results-tab"
+                    data-tab="admin-saved-results"
+                    style="color:#09090b;">
+                    <i class="fas fa-save mr-2" aria-hidden="true"></i>All Saved Results
                 </button>
-                <button class="admin-tab-button dashboard-tab-trigger px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="admin-reports">
-                    <i class="fas fa-flag mr-2"></i>Inaccuracy Reports
+                <button class="admin-tab-button dashboard-tab-trigger px-4 py-2 text-sm font-medium"
+                    role="tab"
+                    id="admin-tab-reports"
+                    aria-selected="false"
+                    aria-controls="admin-reports-tab"
+                    data-tab="admin-reports"
+                    style="color:#71717a;">
+                    <i class="fas fa-flag mr-2" aria-hidden="true"></i>Inaccuracy Reports
                 </button>
             </div>
 
-            <div id="admin-saved-results-tab" class="admin-tab-content">
-                <div id="adminSavedResultsList" class="space-y-4 dashboard-results-list"></div>
+            <div id="admin-saved-results-tab" class="admin-tab-content" role="tabpanel" aria-labelledby="admin-tab-saved" tabindex="0">
+                <div id="adminSavedResultsList" class="space-y-4 dashboard-results-list" aria-live="polite" aria-label="All user saved scan results"></div>
             </div>
 
-            <div id="admin-reports-tab" class="admin-tab-content hidden">
-                <div id="adminReportsList" class="space-y-4 dashboard-results-list"></div>
+            <div id="admin-reports-tab" class="admin-tab-content hidden" role="tabpanel" aria-labelledby="admin-tab-reports" tabindex="0">
+                <div id="adminReportsList" class="space-y-4 dashboard-results-list" aria-live="polite" aria-label="Inaccuracy reports list"></div>
             </div>
         </section>
     </main>
