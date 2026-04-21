@@ -1135,9 +1135,21 @@ section[id] { scroll-margin-top: 5rem; }
 }
 .form-textarea { resize: vertical; min-height: 100px; }
 
-button:focus, input:focus, a:focus {
+button:focus-visible, input:focus-visible, a:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+/* Prevent iOS/Safari tap highlight flash on icon-style controls. */
+.faq-question,
+#closeScanner,
+#closeUploadAnalysis,
+#closeSignIn,
+#closeSignUp,
+#closeDisclaimer,
+#closeWelcome,
+.hs-icon-button {
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* ============================================================
