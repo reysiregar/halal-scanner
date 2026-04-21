@@ -18,7 +18,7 @@ const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!JWT_SECRET) {
@@ -85,38 +85,8 @@ async function switchDbPoolHost(host) {
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://ai-halal-scanner.vercel.app',
-  'https://halal-scanner.onrender.com'
-];
-
-const devOrigins = [
-  'http://localhost:3000',
-  'http://localhost:8080',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:8080',
-  'http://127.0.0.1:5500'
-];
-
-const allAllowedOrigins = [...new Set([...allowedOrigins, ...devOrigins])];
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    const isAllowed = allAllowedOrigins.some(allowedOrigin => {
-      return origin === allowedOrigin || origin.startsWith(allowedOrigin.replace('*', ''));
-    });
-
-    if (!isAllowed) {
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}.`;
-      console.warn(msg);
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'user-id', 'user-email', 'user-name'],
@@ -126,14 +96,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to Halal Scanner API',
-    status: 'operational',
-    documentation: 'https://github.com/reysiregar/halal-scanner',
-    version: '1.0.0'
-  });
-});
+// Serve static frontend files from the project root
+const frontendPath = path.join(__dirname, '..');
+app.use(express.static(frontendPath));
 
 app.get('/health', (req, res) => {
   res.json({ ok: true, timestamp: new Date().toISOString() });
@@ -155,7 +120,7 @@ function strongNormalize(str) {
     .replace(/\d+[.,]?\d*\s*g\b/gi, '')
     .replace(/\d+[%]?/g, '')
     .replace(/[^a-zA-Z\s]/g, '')
-    .replace(/\b(powder|extract|concentrate|solids|flavor|flavour|creamer|oil|syrup|juice|color|colour|seasoning|starch|milk|sugar|water|salt|cream|coffee|non\-dairy|dairy|artificial|natural|modified|autolyzed|caseinate|acid|hydroxide|disodium|monosodium|calcium|sodium|tomato|onion|brown|corn|vegetable|yeast|maltodextrin|citric|spices|solids|solids|solids|solids)\b/gi, '')
+    .replace(/\b(powdered|concentrated|artificial|natural|modified|autolyzed|hydrogenated|partially|refined|unrefined|organic|non\-dairy|dehydrated|reconstituted|emulsified|raw|cooked|roasted|toasted|ground)\b/gi, '')
     .replace(/\s+/g, ' ')
     .replace(/s\b/g, '')
     .trim()
@@ -234,22 +199,28 @@ function analyzeIngredients(ingredientsList) {
       });
     });
 
-    let categoryFallback = null;
-    let categoryDbEntry = null;
-    if (!bestDbEntry && !partialDbEntry) {
-      const categories = [
-        'meat', 'animal', 'dairy', 'sweetener', 'flavor', 'oil', 'seafood', 'enzyme', 'beverage', 'seasoning', 'condiment', 'gelling', 'humectant', 'color', 'glazing', 'dough', 'fats', 'additive', 'acid', 'preservative', 'emulsifier', 'thickener', 'stabilizer', 'antioxidant', 'vitamin', 'mineral', 'protein', 'carbohydrate', 'fiber', 'fruit', 'vegetable', 'grain', 'nut', 'seed', 'spice', 'herb', 'extract', 'powder', 'concentrate', 'starch', 'gum', 'lecithin', 'yeast', 'casein', 'pectin', 'agar', 'xanthan', 'pectin', 'sorbitol', 'mannitol', 'aspartame', 'sucralose', 'saccharin', 'maltodextrin', 'fructose', 'glucose', 'honey', 'molasses', 'syrup', 'vinegar', 'mustard', 'cocoa', 'chocolate', 'flavour', 'colour', 'juice', 'concentrate', 'fiber', 'fibre', 'seed', 'nut', 'sesame', 'sunflower', 'canola', 'rapeseed', 'palm', 'coconut', 'olive', 'soybean', 'peanut', 'almond', 'cashew', 'hazelnut', 'walnut', 'pistachio', 'macadamia', 'brazil', 'pecan', 'pine', 'chestnut', 'date', 'raisin', 'apricot', 'fig', 'prune', 'plum', 'apple', 'banana', 'orange', 'lemon', 'lime', 'grape', 'berry', 'strawberry', 'blueberry', 'raspberry', 'blackberry', 'cranberry', 'melon', 'watermelon', 'cantaloupe', 'honeydew', 'mango', 'papaya', 'pineapple', 'kiwi', 'guava', 'passion', 'dragon', 'lychee', 'longan', 'rambutan', 'durian', 'jackfruit', 'soursop', 'starfruit', 'carambola', 'tamarind', 'avocado', 'olive', 'artichoke', 'asparagus', 'beet', 'broccoli', 'brussels', 'cabbage', 'carrot', 'cauliflower', 'celery', 'chard', 'chicory', 'collard', 'corn', 'cress', 'cucumber', 'dandelion', 'edamame', 'eggplant', 'endive', 'fennel', 'garlic', 'ginger', 'horseradish', 'jicama', 'kale', 'kohlrabi', 'leek', 'lettuce', 'mushroom', 'okra', 'onion', 'parsnip', 'pea', 'pepper', 'potato', 'pumpkin', 'radish', 'rutabaga', 'shallot', 'spinach', 'squash', 'sweet', 'tomato', 'turnip', 'yam', 'zucchini'
-      ];
-      for (const dbEntry of haramIngredientsArr) {
-        if (dbEntry.category && categories.some(cat => dbEntry.category.toLowerCase().includes(cat))) {
-          categoryFallback = dbEntry.item_name;
-          categoryDbEntry = dbEntry;
-          break;
-        }
+    // Substring (partial) matches are usually more reliable than mid-range fuzzy matches.
+    // Only let a fuzzy match outrank a substring match when it is very confident.
+    if (partialDbEntry && bestScore < 0.7) {
+      const entry = {
+        ingredient: ingredient,
+        matched_name: partialMatch,
+        status: partialDbEntry.status,
+        category: partialDbEntry.category
+      };
+      if (/haram/i.test(partialDbEntry.status)) {
+        results.haram.push(entry);
+      } else if (/mushbooh|mashbooh/i.test(partialDbEntry.status)) {
+        results.mashbooh.push(entry);
+      } else if (/halal/i.test(partialDbEntry.status)) {
+        results.halal.push(entry);
+      } else {
+        results.unknown.push(entry);
       }
+      return;
     }
 
-    if (bestScore >= 0.5 && bestDbEntry) {
+    if (bestScore >= 0.4 && bestDbEntry) {
       const entry = {
         ingredient: ingredient,
         matched_name: bestMatch,
@@ -281,22 +252,15 @@ function analyzeIngredients(ingredientsList) {
       } else {
         results.unknown.push(entry);
       }
-    } else if (categoryDbEntry) {
-      const entry = {
+    } else if (bestScore >= 0.3 && bestDbEntry && /haram|mushbooh|mashbooh/i.test(bestDbEntry.status)) {
+      // Lower-confidence match to a Haram/Mashbooh ingredient — flag as Mashbooh (caution) rather than swallow it as Unknown.
+      results.mashbooh.push({
         ingredient: ingredient,
-        matched_name: categoryFallback,
-        status: categoryDbEntry.status,
-        category: categoryDbEntry.category
-      };
-      if (/haram/i.test(categoryDbEntry.status)) {
-        results.haram.push(entry);
-      } else if (/mushbooh|mashbooh/i.test(categoryDbEntry.status)) {
-        results.mashbooh.push(entry);
-      } else if (/halal/i.test(categoryDbEntry.status)) {
-        results.halal.push(entry);
-      } else {
-        results.unknown.push(entry);
-      }
+        matched_name: bestMatch,
+        status: 'Mashbooh',
+        category: bestDbEntry.category,
+        explanation: `Possible match for ${bestMatch} (${bestDbEntry.status}) — verify before consuming.`
+      });
     } else {
       let explanation = 'Not found in database';
       if (bestScore > 0.3 && bestDbEntry) {
@@ -306,12 +270,20 @@ function analyzeIngredients(ingredientsList) {
     }
   });
 
-  if (results.haram.length > 0) {
+  const totalClassified = results.halal.length + results.haram.length + results.mashbooh.length + results.unknown.length;
+
+  if (totalClassified === 0) {
+    // No ingredients could be parsed at all — refuse to claim halal.
+    results.overallStatus = 'unknown';
+  } else if (results.haram.length > 0) {
     results.overallStatus = 'haram';
   } else if (results.mashbooh.length > 0) {
     results.overallStatus = 'mashbooh';
-  } else if (results.unknown.length > 0) {
+  } else if (results.unknown.length > 0 && results.halal.length === 0) {
     results.overallStatus = 'unknown';
+  } else if (results.unknown.length > 0) {
+    // Mostly recognized but some unknowns — be cautious.
+    results.overallStatus = 'mashbooh';
   }
 
   return results;
@@ -610,15 +582,14 @@ app.post('/extract-ingredients-ai', async (req, res) => {
 
     const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., contains milk, gluten-free, and, or, with, from, of, the, a, an, etc.). If an ingredient contains parentheses, include the content but remove the parentheses symbols from the output. Remove all symbols except dash. Text: ${ocrText}`;
 
-    const response = await cohere.generate({
-      model: 'command',
-      prompt: prompt,
-      max_tokens: 100,
-      temperature: 0.2,
-      stop_sequences: ['\n']
+    const response = await cohere.chat({
+      model: 'command-r-08-2024',
+      message: prompt,
+      maxTokens: 500,
+      temperature: 0.2
     });
 
-    let cleaned = response.generations[0].text.trim();
+    let cleaned = (response.text || '').trim();
     cleaned = cleaned
       .replace(/[()]/g, '')
       .replace(/(^|[\s,/\\-])((and|or|with|from|of|the|a|an|may contain|contains|produced|allergen|products that|and\/or|and-or|or\/and|andor|orand))[\s,/\\-]+/gi, '$1')
