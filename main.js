@@ -108,6 +108,30 @@ if (closeSignIn) {
         if (signInModal) signInModal.classList.add('hidden');
     });
 }
+
+if (closeSignUp) {
+    closeSignUp.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (signUpModal) signUpModal.classList.add('hidden');
+    });
+}
+
+if (showSignUp) {
+    showSignUp.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (signInModal) signInModal.classList.add('hidden');
+        if (signUpModal) signUpModal.classList.remove('hidden');
+    });
+}
+
+if (showSignIn) {
+    showSignIn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (signUpModal) signUpModal.classList.add('hidden');
+        if (signInModal) signInModal.classList.remove('hidden');
+    });
+}
+
 if (!localStorage.getItem('disclaimerAccepted') && disclaimerModal) {
     disclaimerModal.classList.remove('hidden');
 }
