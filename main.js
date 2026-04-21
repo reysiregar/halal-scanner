@@ -2672,6 +2672,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const testimonialEndpoints = Array.from(new Set([
+        API_ENDPOINTS.GET_TESTIMONIALS,
+        '/api/testimonials'
+    ]));
+
+    async function fetchTestimonialsEndpoint(options = {}) {
+        let lastResponse = null;
+
+        for (const endpoint of testimonialEndpoints) {
+            const response = await fetch(getApiUrl(endpoint), options);
+            lastResponse = response;
+
+            // Try fallback endpoint only when the route is missing.
+            if (response.status !== 404) return response;
+        }
+
+        return lastResponse;
+    }
+
     // Handle review form submit
     if (reviewForm) {
         reviewForm.addEventListener('submit', async function(e) {
@@ -2686,7 +2705,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             try {
-                const response = await fetch(getApiUrl(API_ENDPOINTS.GET_TESTIMONIALS), {
+                const response = await fetchTestimonialsEndpoint({
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2695,7 +2714,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         testimony: testimonyInput.value.trim()
                     })
                 });
-                const data = await response.json();
+
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await response.json()
+                    : { success: false, error: `Server returned ${response.status}.` };
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Request failed with status ${response.status}`);
+                }
+
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
@@ -2738,7 +2766,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!testimonialsCarousel) return;
         testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400 py-8">Loading testimonials...</div>';
         try {
-            const response = await fetch(getApiUrl(API_ENDPOINTS.GET_TESTIMONIALS));
+            const response = await fetchTestimonialsEndpoint();
+            if (!response || !response.ok) {
+                throw new Error(`Request failed with status ${response ? response.status : 'unknown'}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                throw new Error('Server did not return JSON for testimonials endpoint.');
+            }
+
             const testimonials = await response.json();
             if (!Array.isArray(testimonials) || testimonials.length === 0) {
                 testimonialsCarousel.innerHTML = '<div class="text-center text-gray-400 py-8">No testimonials yet. Be the first to review!</div>';
@@ -2780,10 +2817,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-exclamation-circle text-2xl"></i>
                     </div>
                     <p class="text-red-400">Failed to load testimonials.</p>
-                    <button onclick="loadTestimonials()" class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <button id="retryLoadTestimonials" type="button" class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                         <i class="fas fa-sync-alt mr-1"></i> Try again
                     </button>
                 </div>`;
+
+            const retryBtn = document.getElementById('retryLoadTestimonials');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    loadTestimonials();
+                });
+            }
         }
     }
 

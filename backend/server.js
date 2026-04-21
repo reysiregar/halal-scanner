@@ -520,7 +520,7 @@ app.post('/auth/signin', async (req, res) => {
   }
 });
 
-app.post('/api/testimonials', async (req, res) => {
+app.post(['/api/testimonials', '/testimonials'], async (req, res) => {
   const { name, rating, testimony } = req.body;
   if (!name || !rating || !testimony) {
     return res.status(400).json({ error: 'Name, rating, and testimony are required.' });
@@ -540,7 +540,7 @@ app.post('/api/testimonials', async (req, res) => {
   }
 });
 
-app.get('/api/testimonials', async (req, res) => {
+app.get(['/api/testimonials', '/testimonials'], async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
 
