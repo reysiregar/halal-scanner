@@ -1242,24 +1242,17 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .hs-alert-overlay.is-visible { opacity: 1; }
 
 .hs-alert-card {
-    width: min(420px, calc(100vw - 2rem));
+    width: min(380px, calc(100vw - 2rem));
     background: #111113;
     border: 1px solid var(--border-mid);
     border-radius: 14px;
     box-shadow: 0 26px 80px rgba(0,0,0,0.55);
-    padding: 1.1rem 1.1rem 1rem;
-    text-align: center;
+    padding: 1rem;
+    text-align: left;
 }
 
 .hs-alert-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.7rem;
-    font-size: 1.1rem;
+    display: none;
 }
 
 .hs-alert-icon-success { background: rgba(34,197,94,0.16); color: #86efac; }
@@ -1271,24 +1264,25 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .hs-alert-title {
     margin: 0;
     color: var(--text-1);
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.15;
 }
 
 .hs-alert-body {
-    margin-top: 0.6rem;
+    margin-top: 0.7rem;
     color: var(--text-2);
-    font-size: 0.9rem;
-    line-height: 1.55;
-    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
 }
 
 .hs-alert-body p { margin: 0; }
 
 .hs-alert-actions {
-    margin-top: 0.95rem;
+    margin-top: 1.05rem;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 0.5rem;
 }
 
@@ -1297,11 +1291,25 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     background: rgba(255,255,255,0.04);
     color: var(--text-1);
     border-radius: 8px;
-    padding: 0.52rem 0.9rem;
-    font-size: 0.82rem;
+    padding: 0.56rem 1.1rem;
+    font-size: 0.86rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.16s ease;
+}
+
+@media (max-width: 768px) {
+    .hs-alert-card {
+        width: min(360px, calc(100vw - 1.2rem));
+    }
+
+    .hs-alert-title {
+        font-size: 1.25rem;
+    }
+
+    .hs-alert-body {
+        font-size: 0.95rem;
+    }
 }
 
 .hs-alert-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--border-hi); }
@@ -1385,8 +1393,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 
 @media (max-width: 768px) {
     .hs-toast-root {
-        top: auto;
-        bottom: 0.9rem;
+        top: 5.4rem;
+        bottom: auto;
         left: 0.75rem;
         right: 0.75rem;
         width: auto;

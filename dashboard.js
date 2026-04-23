@@ -14,20 +14,17 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-function showDashboardConfirm(message, title = 'Please Confirm') {
+function showDashboardConfirm(message, title = 'Please Confirm', confirmButtonText = 'Yes') {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'hs-alert-overlay';
     overlay.innerHTML = `
       <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
-        <div class="hs-alert-icon hs-alert-icon-warning">
-          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-        </div>
         <h3 class="hs-alert-title">${escapeHtml(title)}</h3>
         <div class="hs-alert-body"><p>${escapeHtml(message)}</p></div>
         <div class="hs-alert-actions">
           <button type="button" class="hs-alert-btn hs-alert-cancel">Cancel</button>
-          <button type="button" class="hs-alert-btn hs-alert-confirm">Yes</button>
+          <button type="button" class="hs-alert-btn hs-alert-confirm">${escapeHtml(confirmButtonText)}</button>
         </div>
       </div>
     `;
@@ -105,7 +102,7 @@ function wireHeaderActions() {
 
   if (signOutBtn) {
     signOutBtn.addEventListener('click', async () => {
-      const confirmed = await showDashboardConfirm('Are you sure want to sign out?', 'Sign Out');
+      const confirmed = await showDashboardConfirm('Are you sure you want to sign out of your account?', 'Logout', 'Logout');
       if (!confirmed) return;
 
       sessionStorage.removeItem('currentUser');
@@ -230,7 +227,7 @@ function renderUserSavedResults(results) {
   container.querySelectorAll('.delete-saved-result').forEach((button) => {
     button.addEventListener('click', async () => {
       const id = button.getAttribute('data-id');
-      const confirmed = await showDashboardConfirm('Delete this saved result?', 'Delete Saved Result');
+      const confirmed = await showDashboardConfirm('Delete this saved result?', 'Delete Saved Result', 'Delete');
       if (!confirmed) return;
       await fetchJson(API_ENDPOINTS.DELETE_SAVED_RESULT(id), { method: 'DELETE' });
       await loadUserSavedResults();

@@ -92,7 +92,6 @@ function showAlert(options = {}) {
     } = options;
 
     return new Promise((resolve) => {
-        const iconClass = NOTIFICATION_ICON_MAP[icon] || NOTIFICATION_ICON_MAP.info;
         const safeTitle = escapeHtml(title);
         const safeText = escapeHtml(text);
         const safeConfirmText = escapeHtml(confirmButtonText);
@@ -101,9 +100,6 @@ function showAlert(options = {}) {
         overlay.className = 'hs-alert-overlay';
         overlay.innerHTML = `
             <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
-                <div class="hs-alert-icon hs-alert-icon-${icon}">
-                    <i class="fas ${iconClass}" aria-hidden="true"></i>
-                </div>
                 <h3 class="hs-alert-title">${safeTitle}</h3>
                 <div class="hs-alert-body">${html || `<p>${safeText}</p>`}</div>
                 <div class="hs-alert-actions">
@@ -1045,9 +1041,9 @@ if (captureBtn) {
             });
             return;
         }
-    // Hide the camera card (which includes camera preview and Capture/Switch buttons)
-    const cameraCard = video.closest('.bg-white');
-    if (cameraCard) cameraCard.classList.add('hidden');
+        // Hide the camera card (which includes camera preview and Capture/Switch buttons)
+        const cameraCard = document.getElementById('cameraCard');
+        if (cameraCard) cameraCard.classList.add('hidden');
         stopCamera();
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -1634,15 +1630,12 @@ async function analyzeCapturedImage(imageData) {
             setTimeout(() => {
                 const tryAgainBtn = document.getElementById('tryAgainBtn');
                 const manualInputBtn = document.getElementById('manualInputBtn');
-                const scannerSection = document.getElementById('scannerSection');
                 
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        if (scannerSection) {
-                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
-                            if (cameraCard) cameraCard.classList.remove('hidden');
-                        }
+                        const cameraCard = document.getElementById('cameraCard');
+                        if (cameraCard) cameraCard.classList.remove('hidden');
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -1651,6 +1644,7 @@ async function analyzeCapturedImage(imageData) {
                 if (manualInputBtn) {
                     manualInputBtn.onclick = function() {
                         // Hide scanner and show manual input
+                        const scannerSection = document.getElementById('scannerSection');
                         if (scannerSection) {
                             scannerSection.classList.add('hidden');
                         }
@@ -1704,10 +1698,8 @@ async function analyzeCapturedImage(imageData) {
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        if (scannerSection) {
-                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
-                            if (cameraCard) cameraCard.classList.remove('hidden');
-                        }
+                        const cameraCard = document.getElementById('cameraCard');
+                        if (cameraCard) cameraCard.classList.remove('hidden');
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -1716,6 +1708,7 @@ async function analyzeCapturedImage(imageData) {
                 if (manualInputBtn) {
                     manualInputBtn.onclick = function() {
                         // Hide scanner and show manual input
+                        const scannerSection = document.getElementById('scannerSection');
                         if (scannerSection) {
                             scannerSection.classList.add('hidden');
                         }
@@ -1806,10 +1799,8 @@ async function analyzeCapturedImage(imageData) {
                                 if (result.isConfirmed) {
                                     // Reset retry count and try again
                                     window.scanRetryCount = 0;
-                                    if (scannerSection) {
-                                        const cameraCard = scannerSection.querySelector('.grid > .bg-white');
-                                        if (cameraCard) cameraCard.classList.remove('hidden');
-                                    }
+                                    const cameraCard = document.getElementById('cameraCard');
+                                    if (cameraCard) cameraCard.classList.remove('hidden');
                                     startCamera();
                                     resultsContainer.classList.add('hidden');
                                 } else {
@@ -1822,10 +1813,8 @@ async function analyzeCapturedImage(imageData) {
                             return;
                         }
                         // Show the camera card again
-                        if (scannerSection) {
-                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
-                            if (cameraCard) cameraCard.classList.remove('hidden');
-                        }
+                        const cameraCard = document.getElementById('cameraCard');
+                        if (cameraCard) cameraCard.classList.remove('hidden');
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -2020,10 +2009,8 @@ async function analyzeCapturedImage(imageData) {
                 if (tryAgainBtn) {
                     tryAgainBtn.onclick = function() {
                         // Show the camera card again
-                        if (scannerSection) {
-                            const cameraCard = scannerSection.querySelector('.grid > .bg-white');
-                            if (cameraCard) cameraCard.classList.remove('hidden');
-                        }
+                        const cameraCard = document.getElementById('cameraCard');
+                        if (cameraCard) cameraCard.classList.remove('hidden');
                         startCamera();
                         resultsContainer.classList.add('hidden');
                     };
@@ -2477,10 +2464,11 @@ function handleAuthButtonClick(e) {
     if (currentUser) {
         // Show confirmation dialog before sign out
         showAlert({
-            title: 'Are you sure you want to sign out?',
+            title: 'Logout',
+            text: 'Are you sure you want to sign out of your account?',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, Sign Out',
+            confirmButtonText: 'Logout',
             cancelButtonText: 'Cancel',
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#4f46e5',
