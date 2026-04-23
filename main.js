@@ -9,6 +9,152 @@ document.addEventListener('DOMContentLoaded', function() {
 // Import configuration
 import { getApiUrl, API_ENDPOINTS } from './config.js';
 
+const NOTIFICATION_ICON_MAP = {
+    success: 'fa-circle-check',
+    error: 'fa-circle-xmark',
+    warning: 'fa-triangle-exclamation',
+    info: 'fa-circle-info',
+    question: 'fa-circle-question'
+};
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getOrCreateToastRoot() {
+    let root = document.getElementById('hsToastRoot');
+    if (!root) {
+        root = document.createElement('div');
+        root.id = 'hsToastRoot';
+        root.className = 'hs-toast-root';
+        document.body.appendChild(root);
+    }
+    return root;
+}
+
+function showToast(options = {}) {
+    const {
+        type = 'info',
+        title = 'Notice',
+        text = '',
+        timer = 3200
+    } = options;
+
+    const root = getOrCreateToastRoot();
+    const iconClass = NOTIFICATION_ICON_MAP[type] || NOTIFICATION_ICON_MAP.info;
+    const safeTitle = escapeHtml(title);
+    const safeText = escapeHtml(text);
+    const toast = document.createElement('div');
+    toast.className = `hs-toast hs-toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas ${iconClass}" aria-hidden="true"></i>
+        <div class="hs-toast-content">
+            <p class="hs-toast-title">${safeTitle}</p>
+            ${text ? `<p class="hs-toast-text">${safeText}</p>` : ''}
+        </div>
+        <button type="button" class="hs-toast-close" aria-label="Close notification">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+        </button>
+    `;
+
+    root.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+
+    const closeToast = () => {
+        toast.classList.remove('is-visible');
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 180);
+    };
+
+    const closeBtn = toast.querySelector('.hs-toast-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeToast);
+    if (timer > 0) setTimeout(closeToast, timer);
+}
+
+function showAlert(options = {}) {
+    const {
+        icon = 'info',
+        title = 'Notice',
+        text = '',
+        html = '',
+        confirmButtonText = 'OK',
+        cancelButtonText = 'Cancel',
+        showCancelButton = false,
+        showConfirmButton = true,
+        allowOutsideClick = true,
+        timer
+    } = options;
+
+    return new Promise((resolve) => {
+        const iconClass = NOTIFICATION_ICON_MAP[icon] || NOTIFICATION_ICON_MAP.info;
+        const safeTitle = escapeHtml(title);
+        const safeText = escapeHtml(text);
+        const safeConfirmText = escapeHtml(confirmButtonText);
+        const safeCancelText = escapeHtml(cancelButtonText);
+        const overlay = document.createElement('div');
+        overlay.className = 'hs-alert-overlay';
+        overlay.innerHTML = `
+            <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
+                <div class="hs-alert-icon hs-alert-icon-${icon}">
+                    <i class="fas ${iconClass}" aria-hidden="true"></i>
+                </div>
+                <h3 class="hs-alert-title">${safeTitle}</h3>
+                <div class="hs-alert-body">${html || `<p>${safeText}</p>`}</div>
+                <div class="hs-alert-actions">
+                    ${showCancelButton ? `<button type="button" class="hs-alert-btn hs-alert-cancel">${safeCancelText}</button>` : ''}
+                    ${showConfirmButton ? `<button type="button" class="hs-alert-btn hs-alert-confirm">${safeConfirmText}</button>` : ''}
+                </div>
+            </div>
+        `;
+
+        let isClosed = false;
+        const close = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            document.removeEventListener('keydown', onEsc);
+            overlay.classList.remove('is-visible');
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                resolve(result);
+            }, 140);
+        };
+
+        const onEsc = (event) => {
+            if (event.key === 'Escape') {
+                close({ isConfirmed: false, isDismissed: true });
+            }
+        };
+
+        const confirmBtn = overlay.querySelector('.hs-alert-confirm');
+        const cancelBtn = overlay.querySelector('.hs-alert-cancel');
+
+        if (confirmBtn) confirmBtn.addEventListener('click', () => close({ isConfirmed: true, isDismissed: false }));
+        if (cancelBtn) cancelBtn.addEventListener('click', () => close({ isConfirmed: false, isDismissed: true }));
+
+        if (allowOutsideClick) {
+            overlay.addEventListener('click', (event) => {
+                if (event.target === overlay) {
+                    close({ isConfirmed: false, isDismissed: true });
+                }
+            });
+        }
+
+        document.addEventListener('keydown', onEsc);
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('is-visible'));
+
+        if (typeof timer === 'number' && timer > 0) {
+            setTimeout(() => close({ isConfirmed: false, isDismissed: true, isTimedOut: true }), timer);
+        }
+    });
+}
+
 // Modal handling with null checks
 const signInModal = document.getElementById('signInModal');
 const signUpModal = document.getElementById('signUpModal');
@@ -223,7 +369,7 @@ if (startLiveScan) {
     startLiveScan.addEventListener('click', function(e) {
         e.preventDefault();
         if (!isMobileDevice()) {
-            Swal.fire({
+            showAlert({
                 icon: 'info',
                 title: 'Mobile Only Feature',
                 text: 'This feature can only be used in Mobile phone.',
@@ -293,7 +439,7 @@ if (imageUpload) {
             
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Invalid File',
                     text: 'Please select a valid image file.',
@@ -304,7 +450,7 @@ if (imageUpload) {
             
             // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'File Too Large',
                     text: 'File size must be less than 5MB.',
@@ -347,7 +493,7 @@ if (testAnalysisBtn) {
     testAnalysisBtn.addEventListener('click', async function() {
         const manualIngredients = document.getElementById('manualIngredients');
         if (!manualIngredients || !manualIngredients.value.trim()) {
-            Swal.fire({
+            showAlert({
                 icon: 'warning',
                 title: 'No Ingredients Entered',
                 text: 'Please enter some ingredients to analyze.',
@@ -531,13 +677,7 @@ function cleanupCamera() {
     // Reset enhanced camera state
     currentMediaTrack = null;
     isFlashlightOn = false;
-    
-    // Reset flashlight button state
-    const flashlightBtn = document.getElementById('flashlightBtn');
-    if (flashlightBtn) {
-        flashlightBtn.classList.remove('flashlight-on');
-        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
-    }
+    updateFlashlightButtonState();
 }
 
 // Cleanup on page unload and page hide
@@ -754,7 +894,7 @@ function showPlayButton(video) {
 
 // Show camera error message
 function showCameraError(message) {
-    Swal.fire({
+    showAlert({
         icon: 'error',
         title: 'Camera Access Error',
         text: message,
@@ -783,6 +923,18 @@ if (switchCamera) {
 let isFlashlightOn = false;
 let currentMediaTrack = null;
 
+function updateFlashlightButtonState() {
+    const flashlightBtn = document.getElementById('flashlightBtn');
+    if (!flashlightBtn) return;
+
+    flashlightBtn.classList.toggle('flashlight-on', isFlashlightOn);
+    flashlightBtn.setAttribute('aria-pressed', String(isFlashlightOn));
+    flashlightBtn.title = isFlashlightOn ? 'Turn flashlight off' : 'Turn flashlight on';
+    flashlightBtn.innerHTML = isFlashlightOn
+        ? '<i class="fas fa-bolt-lightning" aria-hidden="true"></i><span>Flash Off</span>'
+        : '<i class="fas fa-bolt" aria-hidden="true"></i><span>Flash On</span>';
+}
+
 // Flashlight toggle functionality
 const flashlightBtn = document.getElementById('flashlightBtn');
 if (flashlightBtn) {
@@ -801,17 +953,8 @@ async function toggleFlashlight() {
                 await currentMediaTrack.applyConstraints({
                     advanced: [{ torch: isFlashlightOn }]
                 });
-                
-                const flashlightBtn = document.getElementById('flashlightBtn');
-                if (flashlightBtn) {
-                    if (isFlashlightOn) {
-                        flashlightBtn.classList.add('flashlight-on');
-                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> On';
-                    } else {
-                        flashlightBtn.classList.remove('flashlight-on');
-                        flashlightBtn.innerHTML = '<i class="fas fa-flashlight mr-2"></i> Flash';
-                    }
-                }
+
+                updateFlashlightButtonState();
             } else {
                 console.log('Flashlight not supported on this device');
             }
@@ -894,7 +1037,7 @@ if (captureBtn) {
         e.preventDefault();
         const video = document.getElementById('cameraFeed');
         if (!video || !video.srcObject) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Camera Not Ready',
                 text: 'Camera is not ready. Please wait a moment and try again.',
@@ -1585,7 +1728,11 @@ async function analyzeCapturedImage(imageData) {
                                 manualInputSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             }
                         } else {
-                            alert('Manual input section not found. Please contact support or refresh the page.');
+                            showAlert({
+                                icon: 'warning',
+                                title: 'Manual Input Unavailable',
+                                text: 'Manual input section not found. Please refresh the page and try again.'
+                            });
                         }
                         resultsContainer.classList.add('hidden');
                     };
@@ -1634,7 +1781,7 @@ async function analyzeCapturedImage(imageData) {
                         scanRetryCount++;
                         window.scanRetryCount = scanRetryCount;
                         if (scanRetryCount >= 3) {
-                            Swal.fire({
+                            showAlert({
                                 icon: 'info',
                                 title: 'Scanning Tips',
                                 html: `
@@ -2002,7 +2149,7 @@ if (signUpForm) {
         }
         
         if (hasError) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Form Validation Error',
                 text: 'Please fix the errors in the form before submitting.',
@@ -2029,7 +2176,7 @@ if (signUpForm) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Sign Up Failed',
                     text: data.error,
@@ -2037,23 +2184,18 @@ if (signUpForm) {
                     confirmButtonColor: '#ef4444'
                 });
             } else {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Account Created Successfully!',
-                    text: 'Your account has been created. Please sign in to continue.',
-                    confirmButtonText: 'Sign In',
-                    confirmButtonColor: '#4f46e5',
-                    showCancelButton: false,
-                    allowOutsideClick: false
-                }).then((result) => {
-                    if (signUpModal) signUpModal.classList.add('hidden');
-                    if (signInModal) signInModal.classList.remove('hidden');
-                    signUpForm.reset();
+                showToast({
+                    type: 'success',
+                    title: 'Account Created',
+                    text: 'Your account has been created. Please sign in.'
                 });
+                if (signUpModal) signUpModal.classList.add('hidden');
+                if (signInModal) signInModal.classList.remove('hidden');
+                signUpForm.reset();
             }
         })
         .catch(error => {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Sign Up Error',
                 text: 'An error occurred during sign up. Please try again.',
@@ -2098,7 +2240,7 @@ if (signInForm) {
         }
         
         if (hasError) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Form Validation Error',
                 text: 'Please fix the errors in the form before submitting.',
@@ -2124,7 +2266,7 @@ if (signInForm) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Sign In Failed',
                     text: data.error,
@@ -2134,25 +2276,19 @@ if (signInForm) {
             } else {
                 const user = data.user;
                 const token = data.token;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                localStorage.setItem('jwtToken', token);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Welcome Back!',
-                    text: `Hello ${user.name}, you have been successfully signed in.`,
-                    confirmButtonText: 'Continue',
-                    confirmButtonColor: '#4f46e5',
-                    showCancelButton: false,
-                    allowOutsideClick: false
-                }).then((result) => {
-                    if (signInModal) signInModal.classList.add('hidden');
-                    updateUIAfterLogin(user);
-                    signInForm.reset();
+                setStoredAuth(user, token);
+                showToast({
+                    type: 'success',
+                    title: `Welcome back, ${user.name}`,
+                    text: 'Signed in successfully.'
                 });
+                if (signInModal) signInModal.classList.add('hidden');
+                updateUIAfterLogin(user);
+                signInForm.reset();
             }
         })
         .catch(error => {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Sign In Error',
                 text: 'An error occurred during sign in. Please try again.',
@@ -2168,27 +2304,52 @@ if (signInForm) {
 
 // --- USER AUTHENTICATION STATE MANAGEMENT ---
 let currentUser = null;
+const AUTH_USER_KEY = 'currentUser';
+const AUTH_TOKEN_KEY = 'jwtToken';
+
+function getStoredAuth() {
+    return {
+        userData: sessionStorage.getItem(AUTH_USER_KEY),
+        token: sessionStorage.getItem(AUTH_TOKEN_KEY)
+    };
+}
+
+function setStoredAuth(user, token) {
+    if (user) {
+        sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    }
+    if (token) {
+        sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+    }
+
+    // Remove legacy persistent auth values.
+    localStorage.removeItem(AUTH_USER_KEY);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+function clearStoredAuth() {
+    sessionStorage.removeItem(AUTH_USER_KEY);
+    sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+}
 
 // Check if user is logged in on page load
 function checkAuthStatus() {
-    const userData = localStorage.getItem('currentUser');
-    const token = localStorage.getItem('jwtToken');
+    const { userData, token } = getStoredAuth();
+
+    // Clear old persistent sessions if present from earlier versions.
+    if (!userData && !token) {
+        localStorage.removeItem(AUTH_USER_KEY);
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+
     if (userData && token) {
         try {
             currentUser = JSON.parse(userData);
             updateUIAfterLogin(currentUser);
-            const onHomePage = window.location.pathname.endsWith('/index.html') || window.location.pathname === '/' || window.location.pathname === '';
-            const urlParams = new URLSearchParams(window.location.search);
-            const allowHomeView = urlParams.get('stay') === '1';
-            if (onHomePage && !allowHomeView) {
-                if (currentUser.email === 'admin@halalscanner.com') {
-                    window.location.href = 'admin-dashboard.html';
-                } else {
-                    window.location.href = 'user-dashboard.html';
-                }
-            }
         } catch (e) {
-            localStorage.removeItem('currentUser');
+            clearStoredAuth();
             signOut();
         }
     } else if (userData || token) {
@@ -2199,7 +2360,8 @@ function checkAuthStatus() {
 // Update UI after login
 function updateUIAfterLogin(user) {
     currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    const { token } = getStoredAuth();
+    setStoredAuth(user, token);
     
     // Update header buttons
     const signInBtn = document.getElementById('signInBtn');
@@ -2266,8 +2428,7 @@ function updateUIAfterLogin(user) {
 // Sign out functionality
 function signOut() {
     currentUser = null;
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('jwtToken');
+    clearStoredAuth();
     
     const signInBtn = document.getElementById('signInBtn');
     const mobileSignInBtn = document.getElementById('mobileSignInBtn');
@@ -2315,7 +2476,7 @@ function handleAuthButtonClick(e) {
     e.stopPropagation();
     if (currentUser) {
         // Show confirmation dialog before sign out
-        Swal.fire({
+        showAlert({
             title: 'Are you sure you want to sign out?',
             icon: 'warning',
             showCancelButton: true,
@@ -2384,7 +2545,7 @@ function addSaveResultsFunctionality() {
             e.preventDefault();
             e.stopPropagation();
             if (!currentUser) {
-                Swal.fire({
+                showAlert({
                     icon: 'warning',
                     title: 'Sign In Required',
                     text: 'You need to sign in or create an account to save scan results.',
@@ -2403,7 +2564,7 @@ function addSaveResultsFunctionality() {
             // Use the latest scan analysis for saving
             const analysis = window.latestScanAnalysis;
             if (!analysis) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'No Analysis Data',
                     text: 'No scan analysis found. Please scan and analyze ingredients first.',
@@ -2438,7 +2599,7 @@ function addSaveResultsFunctionality() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                        'Authorization': `Bearer ${getJwtToken()}`,
                         'user-id': currentUser.id,
                         'user-email': currentUser.email,
                         'user-name': currentUser.name
@@ -2447,7 +2608,7 @@ function addSaveResultsFunctionality() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    Swal.fire({
+                    showAlert({
                         icon: 'success',
                         title: 'Results Saved',
                         text: 'Your scan results have been saved successfully.',
@@ -2459,7 +2620,7 @@ function addSaveResultsFunctionality() {
                     throw new Error(data.error || 'Failed to save results');
                 }
             } catch (error) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Save Failed',
                     text: error.message,
@@ -2483,7 +2644,7 @@ function addReportInaccuracyFunctionality() {
             e.preventDefault();
             e.stopPropagation();
             if (!currentUser) {
-                Swal.fire({
+                showAlert({
                     icon: 'warning',
                     title: 'Sign In Required',
                     text: 'You need to sign in to submit a report.',
@@ -2525,7 +2686,7 @@ function addReportInaccuracyFunctionality() {
             if (reportModal) {
                 reportModal.classList.remove('hidden');
             } else {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Report Form Unavailable',
                     text: 'The report form is missing on this page. Please refresh and try again.',
@@ -2562,7 +2723,7 @@ if (reportForm) {
         e.preventDefault();
         
         if (!currentUser) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Authentication Required',
                 text: 'You need to sign in to submit a report.',
@@ -2576,7 +2737,7 @@ if (reportForm) {
         const reason = document.getElementById('reportReason').value.trim();
         
         if (!itemName || !reason) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Form Error',
                 text: 'Please fill in all required fields.',
@@ -2591,7 +2752,7 @@ if (reportForm) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                    'Authorization': `Bearer ${getJwtToken()}`,
                     'user-id': currentUser.id,
                     'user-email': currentUser.email,
                     'user-name': currentUser.name
@@ -2602,7 +2763,7 @@ if (reportForm) {
             const data = await response.json();
             
             if (response.ok) {
-                Swal.fire({
+                showAlert({
                     icon: 'success',
                     title: 'Report Submitted',
                     text: 'Your report has been submitted successfully.',
@@ -2614,7 +2775,7 @@ if (reportForm) {
                 throw new Error(data.error || 'Failed to submit report');
             }
         } catch (error) {
-            Swal.fire({
+            showAlert({
                 icon: 'error',
                 title: 'Submission Failed',
                 text: error.message,
@@ -2798,7 +2959,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitBtn && submitBtn.dataset.loading === 'true') return;
 
             if (!nameInput.value.trim() || !ratingInput.value || !testimonyInput.value.trim()) {
-                Swal.fire({
+                showAlert({
                     icon: 'warning',
                     title: 'Incomplete Form',
                     text: 'Please enter your name, select a star rating, and fill in your testimony.',
@@ -2830,7 +2991,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (data.success) {
-                    Swal.fire({
+                    showAlert({
                         icon: 'success',
                         title: 'Thank you!',
                         text: 'Your review has been submitted.',
@@ -2848,7 +3009,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     loadTestimonials();
                 } else {
-                    Swal.fire({
+                    showAlert({
                         icon: 'error',
                         title: 'Error',
                         text: data.error || 'Failed to submit review.',
@@ -2856,7 +3017,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             } catch (err) {
-                Swal.fire({
+                showAlert({
                     icon: 'error',
                     title: 'Error',
                     text: 'Failed to submit review.',
@@ -3082,19 +3243,28 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Placeholder: get current user (simulate backend logic)
 function getCurrentUserFrontend() {
-    // Try to get from localStorage/session or fallback to guest
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-        return { id: parseInt(userId) };
+    const { userData } = getStoredAuth();
+    if (!userData) {
+        return null;
     }
-    return null; // guest
+
+    try {
+        const parsed = JSON.parse(userData);
+        if (parsed && parsed.id) {
+            return { id: parseInt(parsed.id, 10) };
+        }
+    } catch (error) {
+        // Ignore parse errors and fall through to guest.
+    }
+
+    return null;
 }
 
 
 
 // Helper to get JWT token
 function getJwtToken() {
-    return localStorage.getItem('jwtToken') || '';
+    return sessionStorage.getItem(AUTH_TOKEN_KEY) || '';
 }
 
 // --- CUSTOM CONFIRM MODAL FUNCTIONALITY ---

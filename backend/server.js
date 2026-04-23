@@ -18,6 +18,7 @@ const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -511,7 +512,7 @@ app.post('/auth/signin', async (req, res) => {
       is_admin: user.is_admin
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     res.json({ success: true, token, user: sanitizeUser(user) });
   } catch (err) {
     console.error('Signin error:', err);

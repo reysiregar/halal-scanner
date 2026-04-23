@@ -7,6 +7,8 @@ services:
         secret: DATABASE_URL
       - key: JWT_SECRET
         secret: JWT_SECRET
+      - key: JWT_EXPIRES_IN
+        secret: JWT_EXPIRES_IN
       - key: COHERE_API_KEY
         secret: COHERE_API_KEY
       - name: NODE_ENV

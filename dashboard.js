@@ -1,9 +1,68 @@
 import { getApiUrl, API_ENDPOINTS } from './config.js';
 
-const currentUserRaw = localStorage.getItem('currentUser');
-const token = localStorage.getItem('jwtToken');
+const currentUserRaw = sessionStorage.getItem('currentUser');
+const token = sessionStorage.getItem('jwtToken');
 const currentUser = currentUserRaw ? JSON.parse(currentUserRaw) : null;
 const isAdminPage = window.location.pathname.endsWith('/admin-dashboard.html') || window.location.pathname.endsWith('admin-dashboard.html');
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showDashboardConfirm(message, title = 'Please Confirm') {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'hs-alert-overlay';
+    overlay.innerHTML = `
+      <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
+        <div class="hs-alert-icon hs-alert-icon-warning">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+        </div>
+        <h3 class="hs-alert-title">${escapeHtml(title)}</h3>
+        <div class="hs-alert-body"><p>${escapeHtml(message)}</p></div>
+        <div class="hs-alert-actions">
+          <button type="button" class="hs-alert-btn hs-alert-cancel">Cancel</button>
+          <button type="button" class="hs-alert-btn hs-alert-confirm">Yes</button>
+        </div>
+      </div>
+    `;
+
+    let isClosed = false;
+    const close = (result) => {
+      if (isClosed) return;
+      isClosed = true;
+      document.removeEventListener('keydown', onEsc);
+      overlay.classList.remove('is-visible');
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        resolve(result);
+      }, 140);
+    };
+
+    const onEsc = (event) => {
+      if (event.key === 'Escape') close(false);
+    };
+
+    const confirmBtn = overlay.querySelector('.hs-alert-confirm');
+    const cancelBtn = overlay.querySelector('.hs-alert-cancel');
+
+    if (confirmBtn) confirmBtn.addEventListener('click', () => close(true));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => close(false));
+
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) close(false);
+    });
+
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('is-visible'));
+  });
+}
 
 function redirectToHome() {
   window.location.href = 'index.html?stay=1';
@@ -45,7 +104,12 @@ function wireHeaderActions() {
   }
 
   if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
+    signOutBtn.addEventListener('click', async () => {
+      const confirmed = await showDashboardConfirm('Are you sure want to sign out?', 'Sign Out');
+      if (!confirmed) return;
+
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('jwtToken');
       localStorage.removeItem('currentUser');
       localStorage.removeItem('jwtToken');
       redirectToHome();
@@ -68,6 +132,51 @@ async function fetchJson(endpoint, options = {}) {
   }
 
   return data;
+}
+
+function buildSkeletonCards(count = 3) {
+  return Array.from({ length: count }).map(() => `
+    <div class="dashboard-skeleton-card">
+      <div class="dashboard-skeleton-line w-24"></div>
+      <div class="dashboard-skeleton-line w-full"></div>
+      <div class="dashboard-skeleton-line w-3\/4"></div>
+    </div>
+  `).join('');
+}
+
+function buildSkeletonRows(count = 5) {
+  return Array.from({ length: count }).map(() => `
+    <tr>
+      <td class="px-4 py-3"><div class="dashboard-skeleton-line w-28"></div></td>
+      <td class="px-4 py-3"><div class="dashboard-skeleton-line w-full"></div></td>
+      <td class="px-4 py-3"><div class="dashboard-skeleton-line w-16"></div></td>
+    </tr>
+  `).join('');
+}
+
+function renderDashboardSkeleton(containerId, type) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (type === 'table') {
+    container.innerHTML = `
+      <div class="overflow-x-auto admin-saved-table-wrap">
+        <table class="min-w-full admin-saved-table dashboard-skeleton-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium uppercase">User</th>
+              <th class="px-4 py-2 text-left text-xs font-medium uppercase">Ingredients</th>
+              <th class="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+            </tr>
+          </thead>
+          <tbody>${buildSkeletonRows(5)}</tbody>
+        </table>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `<div class="dashboard-skeleton-list" aria-hidden="true">${buildSkeletonCards(3)}</div>`;
 }
 
 function renderUserSavedResults(results) {
@@ -121,7 +230,8 @@ function renderUserSavedResults(results) {
   container.querySelectorAll('.delete-saved-result').forEach((button) => {
     button.addEventListener('click', async () => {
       const id = button.getAttribute('data-id');
-      if (!confirm('Delete this saved result?')) return;
+      const confirmed = await showDashboardConfirm('Delete this saved result?', 'Delete Saved Result');
+      if (!confirmed) return;
       await fetchJson(API_ENDPOINTS.DELETE_SAVED_RESULT(id), { method: 'DELETE' });
       await loadUserSavedResults();
     });
@@ -333,21 +443,25 @@ function renderAdminReports(reports) {
 }
 
 async function loadUserSavedResults() {
+  renderDashboardSkeleton('savedResultsList', 'cards');
   const data = await fetchJson(API_ENDPOINTS.GET_SAVED_RESULTS);
   renderUserSavedResults(data.saved_results || []);
 }
 
 async function loadUserReports() {
+  renderDashboardSkeleton('userReportsList', 'cards');
   const data = await fetchJson(API_ENDPOINTS.GET_USER_REPORTS);
   renderUserReports(data.reports || []);
 }
 
 async function loadAdminSavedResults() {
+  renderDashboardSkeleton('adminSavedResultsList', window.innerWidth < 768 ? 'cards' : 'table');
   const data = await fetchJson(API_ENDPOINTS.GET_SAVED_RESULTS);
   renderAdminSavedResults(data.saved_results || []);
 }
 
 async function loadAdminReports() {
+  renderDashboardSkeleton('adminReportsList', 'cards');
   const data = await fetchJson(API_ENDPOINTS.GET_ADMIN_REPORTS);
   renderAdminReports(data.reports || []);
 }

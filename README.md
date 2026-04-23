@@ -45,6 +45,7 @@ Prerequisite: Node.js 20+
      ```env
        DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
      JWT_SECRET=your_jwt_secret_here
+       JWT_EXPIRES_IN=12h
      COHERE_API_KEY=your_cohere_api_key_here
        PG_FORCE_IPV4=true
        # Optional fallback if DNS resolves unreachable addresses:
@@ -55,6 +56,7 @@ Prerequisite: Node.js 20+
        npm run db:push
        ```
    - Replace `your_jwt_secret_here` with a secure secret for JWT
+   - `JWT_EXPIRES_IN` controls token TTL (examples: `8h`, `12h`, `1d`)
    - Replace `your_cohere_api_key_here` with your Cohere API key
    - Use your PostgreSQL connection string in `DATABASE_URL`
 4. **Start the backend**
