@@ -157,6 +157,117 @@ function compareTwoStrings(a, b) {
   return (2 * intersectionSize) / (a.length + b.length - 2);
 }
 
+const SOURCE_SIGNAL_PATTERNS = [
+  { key: 'pork', patterns: [/\bpork\b/i, /\bporcine\b/i, /\bswine\b/i, /\bpig\b/i, /\blard\b/i, /\bbacon\b/i] },
+  { key: 'beef', patterns: [/\bbeef\b/i, /\bbovine\b/i, /\bcattle\b/i, /\bcow\b/i, /\bcalf\b/i, /\bveal\b/i] },
+  { key: 'fish', patterns: [/\bfish\b/i, /\bseafood\b/i, /\bmarine\b/i, /\bshrimp\b/i, /\bprawn\b/i, /\bcrab\b/i, /\blobster\b/i, /\bclam\b/i, /\bmussel\b/i, /\boyster\b/i, /\bsquid\b/i, /\bcuttlefish\b/i] },
+  { key: 'plant', patterns: [/\bplant\b/i, /\bvegetable\b/i, /\bbotanical\b/i, /\bvegetal\b/i, /\bsoy\b/i, /\bsunflower\b/i, /\bpalm\b/i, /\bcoconut\b/i, /\bcanola\b/i, /\bcorn\b/i, /\bwheat\b/i, /\brice\b/i, /\bcassava\b/i, /\btapioca\b/i, /\boat\b/i] },
+  { key: 'dairy', patterns: [/\bmilk\b/i, /\bwhey\b/i, /\bcasein\b/i, /\bcaseinate\b/i, /\bcheese\b/i, /\brennet\b/i] },
+  { key: 'microbial', patterns: [/\bmicrobial\b/i, /\bferment/i, /\bbacterial\b/i, /\bfungal\b/i, /\byeast\b/i] },
+  { key: 'synthetic', patterns: [/\bsynthetic\b/i, /\bartificial\b/i, /\blab\b/i, /\bchemical\b/i, /\bsolvent\b/i] },
+  { key: 'animal', patterns: [/\banimal\b/i] }
+];
+
+function detectSourceSignals(text) {
+  const signals = new Set();
+  const normalizedText = String(text || '').toLowerCase();
+
+  SOURCE_SIGNAL_PATTERNS.forEach(group => {
+    if (group.patterns.some(pattern => pattern.test(normalizedText))) {
+      signals.add(group.key);
+    }
+  });
+
+  return signals;
+}
+
+function getSourceWeight(signal) {
+  switch (signal) {
+    case 'pork':
+    case 'beef':
+    case 'fish':
+      return 0.18;
+    case 'plant':
+    case 'dairy':
+    case 'microbial':
+      return 0.14;
+    case 'synthetic':
+      return 0.12;
+    case 'animal':
+      return 0.08;
+    default:
+      return 0;
+  }
+}
+
+function computeSourceAlignmentScore(inputSignals, candidateSignals) {
+  if (!inputSignals.size && !candidateSignals.size) return 0;
+
+  let score = 0;
+  let matches = 0;
+  let conflicts = 0;
+
+  inputSignals.forEach(signal => {
+    if (candidateSignals.has(signal)) {
+      score += getSourceWeight(signal);
+      matches += 1;
+      return;
+    }
+
+    const conflictingSpecificSignals = (signal === 'plant' || signal === 'dairy' || signal === 'microbial' || signal === 'synthetic')
+      ? ['pork', 'beef', 'fish', 'animal']
+      : (signal === 'animal' ? ['plant', 'dairy', 'microbial', 'synthetic'] : []);
+
+    if (conflictingSpecificSignals.some(conflict => candidateSignals.has(conflict))) {
+      score -= 0.09;
+      conflicts += 1;
+    }
+  });
+
+  if (inputSignals.size > 0 && matches === 0 && candidateSignals.size === 0) {
+    score -= 0.05;
+  }
+
+  if (inputSignals.size > 0 && candidateSignals.size > 0 && matches === 0 && conflicts === 0) {
+    score -= 0.03;
+  }
+
+  return score;
+}
+
+function getEntrySourceSignals(dbEntry, name) {
+  const signals = detectSourceSignals(`${name || ''} ${dbEntry.source || ''} ${dbEntry.category || ''}`);
+  const itemName = String(dbEntry.item_name || '').toLowerCase();
+
+  if (/\be\d{3,4}\b/i.test(itemName)) {
+    // E-numbers often need the descriptive name more than the code, so keep the name-derived signals.
+  }
+
+  return signals;
+}
+
+const MASHBOOH_STATUS_REGEX = /mushbooh|mashbooh|doubtful|uncertain|syubhat|shubha/i;
+
+function normalizeIngredientStatus(status) {
+  const normalized = String(status || '').trim().toLowerCase();
+  if (/haram/.test(normalized)) return 'haram';
+  if (MASHBOOH_STATUS_REGEX.test(normalized)) return 'mashbooh';
+  if (/halal/.test(normalized)) return 'halal';
+  return 'unknown';
+}
+
+function pushIngredientByStatus(results, statusKey, entry) {
+  if (statusKey === 'haram') {
+    results.haram.push(entry);
+  } else if (statusKey === 'mashbooh') {
+    results.mashbooh.push(entry);
+  } else if (statusKey === 'halal') {
+    results.halal.push(entry);
+  } else {
+    results.unknown.push(entry);
+  }
+}
+
 function analyzeIngredients(ingredientsList) {
   const results = {
     halal: [],
@@ -177,9 +288,14 @@ function analyzeIngredients(ingredientsList) {
     if (!cleaned || seen.has(cleaned)) return;
     seen.add(cleaned);
 
+    const inputSourceSignals = detectSourceSignals(ingredient);
+
     let bestScore = 0;
     let bestMatch = null;
     let bestDbEntry = null;
+    let secondBestScore = 0;
+    let secondBestMatch = null;
+    let secondBestDbEntry = null;
     let partialMatch = null;
     let partialDbEntry = null;
 
@@ -187,11 +303,19 @@ function analyzeIngredients(ingredientsList) {
       const dbNames = [dbEntry.item_name, ...(dbEntry.aliases || [])];
       dbNames.forEach(name => {
         const dbCleaned = strongNormalize(name);
-        const score = compareTwoStrings(cleaned, dbCleaned);
+        const sourceScore = computeSourceAlignmentScore(inputSourceSignals, getEntrySourceSignals(dbEntry, name));
+        const score = compareTwoStrings(cleaned, dbCleaned) + sourceScore;
         if (score > bestScore) {
+          secondBestScore = bestScore;
+          secondBestMatch = bestMatch;
+          secondBestDbEntry = bestDbEntry;
           bestScore = score;
           bestMatch = name;
           bestDbEntry = dbEntry;
+        } else if (score > secondBestScore) {
+          secondBestScore = score;
+          secondBestMatch = name;
+          secondBestDbEntry = dbEntry;
         }
         if ((dbCleaned && cleaned && (dbCleaned.includes(cleaned) || cleaned.includes(dbCleaned))) && (!partialMatch || dbCleaned.length < partialMatch.length)) {
           partialMatch = name;
@@ -203,57 +327,56 @@ function analyzeIngredients(ingredientsList) {
     // Substring (partial) matches are usually more reliable than mid-range fuzzy matches.
     // Only let a fuzzy match outrank a substring match when it is very confident.
     if (partialDbEntry && bestScore < 0.7) {
+      const statusKey = normalizeIngredientStatus(partialDbEntry.status);
       const entry = {
         ingredient: ingredient,
         matched_name: partialMatch,
         status: partialDbEntry.status,
         category: partialDbEntry.category
       };
-      if (/haram/i.test(partialDbEntry.status)) {
-        results.haram.push(entry);
-      } else if (/mushbooh|mashbooh/i.test(partialDbEntry.status)) {
-        results.mashbooh.push(entry);
-      } else if (/halal/i.test(partialDbEntry.status)) {
-        results.halal.push(entry);
-      } else {
-        results.unknown.push(entry);
-      }
+      pushIngredientByStatus(results, statusKey, entry);
       return;
     }
 
-    if (bestScore >= 0.4 && bestDbEntry) {
+    if (bestScore >= 0.5 && bestDbEntry) {
+      const primaryStatus = normalizeIngredientStatus(bestDbEntry.status);
+      const secondaryStatus = secondBestDbEntry ? normalizeIngredientStatus(secondBestDbEntry.status) : 'unknown';
+
+      // If two close fuzzy candidates disagree and one is cautionary, avoid overconfident verdicts.
+      if (
+        secondBestDbEntry &&
+        secondBestScore >= 0.5 &&
+        secondaryStatus !== primaryStatus &&
+        (bestScore - secondBestScore) <= 0.06 &&
+        (primaryStatus === 'haram' || primaryStatus === 'mashbooh' || secondaryStatus === 'haram' || secondaryStatus === 'mashbooh')
+      ) {
+        results.mashbooh.push({
+          ingredient,
+          matched_name: `${bestMatch} / ${secondBestMatch}`,
+          status: 'Mashbooh',
+          category: bestDbEntry.category || secondBestDbEntry.category,
+          explanation: `Ambiguous match between ${bestMatch} (${bestDbEntry.status}) and ${secondBestMatch} (${secondBestDbEntry.status}); verify source and certification.`
+        });
+        return;
+      }
+
       const entry = {
         ingredient: ingredient,
         matched_name: bestMatch,
         status: bestDbEntry.status,
         category: bestDbEntry.category
       };
-      if (/haram/i.test(bestDbEntry.status)) {
-        results.haram.push(entry);
-      } else if (/mushbooh|mashbooh/i.test(bestDbEntry.status)) {
-        results.mashbooh.push(entry);
-      } else if (/halal/i.test(bestDbEntry.status)) {
-        results.halal.push(entry);
-      } else {
-        results.unknown.push(entry);
-      }
+      pushIngredientByStatus(results, primaryStatus, entry);
     } else if (partialDbEntry) {
+      const statusKey = normalizeIngredientStatus(partialDbEntry.status);
       const entry = {
         ingredient: ingredient,
         matched_name: partialMatch,
         status: partialDbEntry.status,
         category: partialDbEntry.category
       };
-      if (/haram/i.test(partialDbEntry.status)) {
-        results.haram.push(entry);
-      } else if (/mushbooh|mashbooh/i.test(partialDbEntry.status)) {
-        results.mashbooh.push(entry);
-      } else if (/halal/i.test(partialDbEntry.status)) {
-        results.halal.push(entry);
-      } else {
-        results.unknown.push(entry);
-      }
-    } else if (bestScore >= 0.3 && bestDbEntry && /haram|mushbooh|mashbooh/i.test(bestDbEntry.status)) {
+      pushIngredientByStatus(results, statusKey, entry);
+    } else if (bestScore >= 0.35 && bestDbEntry && /haram|mushbooh|mashbooh|doubtful|uncertain/i.test(bestDbEntry.status)) {
       // Lower-confidence match to a Haram/Mashbooh ingredient — flag as Mashbooh (caution) rather than swallow it as Unknown.
       results.mashbooh.push({
         ingredient: ingredient,
@@ -680,6 +803,26 @@ app.put('/admin/reports/:id', authenticateJWT(true), async (req, res) => {
   }
 
   try {
+    // Fetch current report to check its status
+    const currentReportResult = await db.query(
+      'SELECT status FROM reports WHERE id = $1 LIMIT 1',
+      [id]
+    );
+
+    if (currentReportResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Report not found' });
+    }
+
+    const currentStatus = currentReportResult.rows[0].status;
+
+    // Prevent status changes for finalized (non-pending) reports
+    if (currentStatus !== 'pending' && status !== currentStatus) {
+      return res.status(400).json({ 
+        error: 'Cannot change status of a finalized report. Reports with status "solved" or "rejected" are permanent.' 
+      });
+    }
+
+    // Update with the current or new status
     const updateResult = await db.query(
       'UPDATE reports SET status = $1, admin_note = $2 WHERE id = $3 RETURNING id',
       [status, admin_note || null, id]

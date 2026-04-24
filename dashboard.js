@@ -61,6 +61,136 @@ function showDashboardConfirm(message, title = 'Please Confirm', confirmButtonTe
   });
 }
 
+function showDashboardInputDialog({
+  title = 'Add Note',
+  message = 'Enter your note below:',
+  confirmButtonText = 'Save',
+  placeholder = 'Type your note...',
+  initialValue = ''
+} = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'hs-alert-overlay';
+    overlay.innerHTML = `
+      <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
+        <h3 class="hs-alert-title">${escapeHtml(title)}</h3>
+        <div class="hs-alert-body">
+          <p>${escapeHtml(message)}</p>
+          <textarea class="hs-alert-textarea" rows="4" placeholder="${escapeHtml(placeholder)}">${escapeHtml(initialValue)}</textarea>
+          <p class="hs-alert-error" aria-live="polite"></p>
+        </div>
+        <div class="hs-alert-actions">
+          <button type="button" class="hs-alert-btn hs-alert-cancel">Cancel</button>
+          <button type="button" class="hs-alert-btn hs-alert-confirm">${escapeHtml(confirmButtonText)}</button>
+        </div>
+      </div>
+    `;
+
+    let isClosed = false;
+    const close = (result) => {
+      if (isClosed) return;
+      isClosed = true;
+      document.removeEventListener('keydown', onEsc);
+      overlay.classList.remove('is-visible');
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        resolve(result);
+      }, 140);
+    };
+
+    const onEsc = (event) => {
+      if (event.key === 'Escape') close(null);
+    };
+
+    const textarea = overlay.querySelector('.hs-alert-textarea');
+    const errorText = overlay.querySelector('.hs-alert-error');
+    const confirmBtn = overlay.querySelector('.hs-alert-confirm');
+    const cancelBtn = overlay.querySelector('.hs-alert-cancel');
+
+    const submit = () => {
+      const value = (textarea?.value || '').trim();
+      if (!value) {
+        if (errorText) errorText.textContent = 'Note cannot be empty.';
+        textarea?.focus();
+        return;
+      }
+      close(value);
+    };
+
+    if (confirmBtn) confirmBtn.addEventListener('click', submit);
+    if (cancelBtn) cancelBtn.addEventListener('click', () => close(null));
+    if (textarea) {
+      textarea.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+          event.preventDefault();
+          submit();
+        }
+      });
+      textarea.addEventListener('input', () => {
+        if (errorText) errorText.textContent = '';
+      });
+    }
+
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) close(null);
+    });
+
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => {
+      overlay.classList.add('is-visible');
+      textarea?.focus();
+      textarea?.setSelectionRange(textarea.value.length, textarea.value.length);
+    });
+  });
+}
+
+function showDashboardAlert(message, title = 'Notice', buttonText = 'OK') {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'hs-alert-overlay';
+    overlay.innerHTML = `
+      <div class="hs-alert-card" role="dialog" aria-modal="true" aria-live="polite">
+        <h3 class="hs-alert-title">${escapeHtml(title)}</h3>
+        <div class="hs-alert-body"><p>${escapeHtml(message)}</p></div>
+        <div class="hs-alert-actions">
+          <button type="button" class="hs-alert-btn hs-alert-confirm">${escapeHtml(buttonText)}</button>
+        </div>
+      </div>
+    `;
+
+    let isClosed = false;
+    const close = () => {
+      if (isClosed) return;
+      isClosed = true;
+      document.removeEventListener('keydown', onEsc);
+      overlay.classList.remove('is-visible');
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        resolve();
+      }, 140);
+    };
+
+    const onEsc = (event) => {
+      if (event.key === 'Escape') close();
+    };
+
+    const okBtn = overlay.querySelector('.hs-alert-confirm');
+    if (okBtn) okBtn.addEventListener('click', close);
+
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) close();
+    });
+
+    document.addEventListener('keydown', onEsc);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => {
+      overlay.classList.add('is-visible');
+      okBtn?.focus();
+    });
+  });
+}
+
 function redirectToHome() {
   window.location.href = 'index.html?stay=1';
 }
@@ -373,7 +503,7 @@ function renderAdminReports(reports) {
             <div class="min-w-0">
               <p class="label">Reported item</p>
               <p class="value font-medium">${report.item_name}</p>
-              <p class="value text-sm text-gray-500">${report.user_name || 'Unknown user'} ${report.user_email ? `(${report.user_email})` : ''}</p>
+              <p class="dashboard-report-meta">${report.user_name || 'Unknown user'} ${report.user_email ? `(${report.user_email})` : ''}</p>
             </div>
             <span class="status-pill ${statusClass}">${report.status}</span>
           </div>
@@ -381,11 +511,17 @@ function renderAdminReports(reports) {
             <p class="label">Reason</p>
             <p class="value">${report.reason}</p>
           </div>
-          <div class="mt-3 flex flex-col gap-2">
-            <button class="report-status px-3 py-2 rounded bg-green-600 text-white text-sm" data-id="${report.id}" data-status="solved">Solve</button>
-            <button class="report-status px-3 py-2 rounded bg-red-600 text-white text-sm" data-id="${report.id}" data-status="rejected">Reject</button>
-            <button class="report-note px-3 py-2 rounded bg-blue-600 text-white text-sm" data-id="${report.id}">Add Note</button>
-          </div>
+          ${report.status === 'pending' ? `
+            <div class="dashboard-report-actions">
+              <button type="button" class="report-status dashboard-report-action bg-green-600 text-white" data-id="${report.id}" data-status="solved">Solve</button>
+              <button type="button" class="report-status dashboard-report-action bg-red-600 text-white" data-id="${report.id}" data-status="rejected">Reject</button>
+              <button type="button" class="report-note dashboard-report-action action-note bg-blue-600 text-white" data-id="${report.id}">Add Note</button>
+            </div>
+          ` : `
+            <div class="dashboard-report-actions">
+              <button type="button" class="report-note dashboard-report-action action-note bg-blue-600 text-white" data-id="${report.id}">Add Note</button>
+            </div>
+          `}
           ${report.admin_note ? `<p class="text-sm text-blue-700 mt-2"><strong>Note:</strong> ${report.admin_note}</p>` : ''}
         </article>
       `;
@@ -401,42 +537,88 @@ function renderAdminReports(reports) {
           <span class="text-xs px-2 py-1 rounded-full ${statusClass}">${report.status}</span>
         </div>
         <p class="text-sm text-gray-600 mb-3">${report.reason}</p>
-        <div class="flex flex-wrap gap-2">
-          <button class="report-status px-3 py-1 rounded bg-green-600 text-white text-sm" data-id="${report.id}" data-status="solved">Solve</button>
-          <button class="report-status px-3 py-1 rounded bg-red-600 text-white text-sm" data-id="${report.id}" data-status="rejected">Reject</button>
-          <button class="report-note px-3 py-1 rounded bg-blue-600 text-white text-sm" data-id="${report.id}">Add Note</button>
-        </div>
+        ${report.status === 'pending' ? `
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="report-status px-3 py-1 rounded bg-green-600 text-white text-sm" data-id="${report.id}" data-status="solved">Solve</button>
+            <button type="button" class="report-status px-3 py-1 rounded bg-red-600 text-white text-sm" data-id="${report.id}" data-status="rejected">Reject</button>
+            <button type="button" class="report-note px-3 py-1 rounded bg-blue-600 text-white text-sm" data-id="${report.id}">Add Note</button>
+          </div>
+        ` : `
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="report-note px-3 py-1 rounded bg-blue-600 text-white text-sm" data-id="${report.id}">Add Note</button>
+          </div>
+        `}
         ${report.admin_note ? `<p class="text-sm text-blue-700 mt-2"><strong>Note:</strong> ${report.admin_note}</p>` : ''}
       </div>
     `;
   }).join('');
 
-  container.querySelectorAll('.report-status').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const id = button.getAttribute('data-id');
-      const status = button.getAttribute('data-status');
-      await fetchJson(API_ENDPOINTS.UPDATE_REPORT_STATUS(id), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      await loadAdminReports();
-    });
-  });
+  container.onclick = async (event) => {
+    const statusButton = event.target.closest('.report-status');
+    const noteButton = event.target.closest('.report-note');
+    const actionButton = statusButton || noteButton;
+    if (!actionButton) return;
 
-  container.querySelectorAll('.report-note').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const id = button.getAttribute('data-id');
-      const note = prompt('Enter admin note:');
+    event.preventDefault();
+
+    const id = actionButton.getAttribute('data-id');
+    if (!id) {
+      await showDashboardAlert('Invalid report ID. Please refresh and try again.', 'Action Error');
+      return;
+    }
+
+    try {
+      actionButton.disabled = true;
+
+      if (statusButton) {
+        const status = statusButton.getAttribute('data-status');
+        const actionLabel = status === 'solved' ? 'Solve' : 'Reject';
+        const confirmed = await showDashboardConfirm(
+          `Are you sure you want to ${actionLabel.toLowerCase()} this report?`,
+          `${actionLabel} Report`,
+          actionLabel
+        );
+        if (!confirmed) return;
+
+        await fetchJson(API_ENDPOINTS.UPDATE_REPORT_STATUS(id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        await loadAdminReports();
+        return;
+      }
+
+      const currentStatus = (event.target.closest('.admin-saved-mobile-card') || event.target.closest('.bg-white'))?.querySelector('.status-pill')?.textContent?.trim() || 'pending';
+      const isPending = currentStatus === 'pending';
+
+      const note = await showDashboardInputDialog({
+        title: 'Add Admin Note',
+        message: isPending ? 'Write a note for this report. Saving will mark it as solved.' : 'Add a note to this report (status will not change).',
+        confirmButtonText: 'Save Note',
+        placeholder: 'Enter admin note...'
+      });
       if (!note) return;
+
+      const payload = { admin_note: note };
+      if (isPending) {
+        payload.status = 'solved';
+      } else {
+        payload.status = currentStatus;
+      }
+
       await fetchJson(API_ENDPOINTS.UPDATE_REPORT_STATUS(id), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'solved', admin_note: note })
+        body: JSON.stringify(payload)
       });
       await loadAdminReports();
-    });
-  });
+    } catch (error) {
+      await showDashboardAlert(error.message || 'Failed to update report', 'Update Failed');
+    } finally {
+      actionButton.disabled = false;
+    }
+  };
 }
 
 async function loadUserSavedResults() {
@@ -536,7 +718,7 @@ async function init() {
   }
 }
 
-init().catch((error) => {
+init().catch(async (error) => {
   console.error(error);
-  alert(error.message || 'Failed to load dashboard');
+  await showDashboardAlert(error.message || 'Failed to load dashboard', 'Dashboard Error');
 });

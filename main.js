@@ -26,6 +26,19 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function getHalalAuthenticityTipsHtml() {
+    return `
+        <div class="bg-emerald-50 p-4 rounded-lg mt-3">
+            <h4 class="font-medium mb-2">Steps to Ensure Halal Authenticity:</h4>
+            <ol class="list-decimal pl-5 space-y-1 text-sm text-gray-700">
+                <li><strong>Check the Halal Logo:</strong> Look for an official logo (such as the Indonesian Ulema Council (MUI) or a recognized institution).</li>
+                <li><strong>Check the Ingredients:</strong> Avoid ingredients with unknown animal origin.</li>
+                <li><strong>Look for the Plant-Based Label:</strong> Ensure the ingredients are botanical/vegetable.</li>
+            </ol>
+        </div>
+    `;
+}
+
 function getOrCreateToastRoot() {
     let root = document.getElementById('hsToastRoot');
     if (!root) {
@@ -619,6 +632,7 @@ if (testAnalysisBtn) {
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <h4 class="font-medium mb-2">Ingredients Status: <span class="${statusColor}">${statusText}</span></h4>
                         <p class="text-sm text-gray-600">${statusDescription}</p>
+                        ${getHalalAuthenticityTipsHtml()}
                     </div>
                     <div class="mt-6 flex justify-between items-center">
                         <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
@@ -1423,6 +1437,7 @@ async function analyzeUploadedImage() {
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h4 class="font-medium mb-2">Overall Product Status: <span class="${statusColor}">${statusText}</span></h4>
                     <p class="text-sm text-gray-600">${statusDescription}</p>
+                    ${getHalalAuthenticityTipsHtml()}
                 </div>
                 <div class="mt-6 flex justify-between items-center">
                     <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
@@ -1996,6 +2011,7 @@ async function analyzeCapturedImage(imageData) {
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h4 class="font-medium mb-2">Overall Product Status: <span class="${statusColor}">${statusText}</span></h4>
                     <p class="text-sm text-gray-600">${statusDescription}</p>
+                    ${getHalalAuthenticityTipsHtml()}
                 </div>
                 <div class="mt-6 flex justify-between items-center">
                     <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
