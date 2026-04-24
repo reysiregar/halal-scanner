@@ -28,13 +28,13 @@ function escapeHtml(value) {
 
 function getHalalAuthenticityTipsHtml() {
     return `
-        <div class="bg-emerald-50 p-4 rounded-lg mt-3">
-            <h4 class="font-medium mb-2">Steps to Ensure Halal Authenticity:</h4>
-            <ol class="list-decimal pl-5 space-y-1 text-sm text-gray-700">
-                <li><strong>Check the Halal Logo:</strong> Look for an official logo (such as the Indonesian Ulema Council (MUI) or a recognized institution).</li>
-                <li><strong>Check the Ingredients:</strong> Avoid ingredients with unknown animal origin.</li>
-                <li><strong>Look for the Plant-Based Label:</strong> Ensure the ingredients are botanical/vegetable.</li>
-            </ol>
+        <div class="halal-authenticity-tips mt-3">
+            <h4 class="font-medium mb-2">Quick Halal Checks</h4>
+            <ul class="quick-halal-checks text-sm">
+                <li><strong>Logo:</strong> look for an official halal mark.</li>
+                <li><strong>Ingredients:</strong> avoid unclear animal-based sources.</li>
+                <li><strong>Plant-based:</strong> prefer botanical or vegetable ingredients.</li>
+            </ul>
         </div>
     `;
 }
@@ -634,11 +634,11 @@ if (testAnalysisBtn) {
                         <p class="text-sm text-gray-600">${statusDescription}</p>
                         ${getHalalAuthenticityTipsHtml()}
                     </div>
-                    <div class="mt-6 flex justify-between items-center">
-                        <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    <div class="scan-result-actions scan-result-actions--two mt-6">
+                        <button type="button" data-action="report-inaccuracy" class="scan-result-action scan-result-action-report px-4 py-2 rounded-lg text-sm font-medium">
                             <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                         </button>
-                        <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
+                        <button type="button" class="scan-result-action scan-result-action-save bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
                             <i class="fas fa-save mr-1"></i> Save Results
                         </button>
                     </div>
@@ -1262,13 +1262,8 @@ async function analyzeUploadedImage() {
     if (uploadResultsContainer) uploadResultsContainer.classList.add('hidden');
 
     try {
-        // Run OCR on the image
-        const result = await window.Tesseract.recognize(
-            uploadedImagePreview.src,
-            'eng',
-            { logger: m => {/* Optionally log progress */} }
-        );
-        const ocrText = result.data.text;
+        const ocrResult = await runOCRWithEnhancements(uploadedImagePreview.src);
+        const ocrText = ocrResult.text;
         // --- NEW: Check for empty OCR result ---
         if (!ocrText || ocrText.trim().length === 0) {
             if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
@@ -1348,11 +1343,21 @@ async function analyzeUploadedImage() {
         const data = await response.json();
         const analysis = data.analysis;
         if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
+        const confidenceScore = Number.isFinite(ocrResult.confidence) ? Math.round(ocrResult.confidence) : null;
+        const confidenceLabel = confidenceScore === null ? 'N/A' : `${confidenceScore}%`;
+        const confidenceClass = confidenceScore === null
+            ? 'text-gray-500'
+            : (confidenceScore >= 75 ? 'text-green-600' : (confidenceScore >= 60 ? 'text-yellow-600' : 'text-red-600'));
+        const extractionHint = `OCR variant: ${ocrResult.variant}, mode: ${ocrResult.config}`;
         // Generate results HTML based on analysis (reuse previous logic)
         let resultsHTML = `
             <div>
                 <h3 class="text-xl font-bold mb-4">Analysis Results</h3>
-                <div class="space-y-3 mb-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <p class="text-xs ${confidenceClass}"><strong>OCR Confidence:</strong> ${confidenceLabel}</p>
+                    <p class="text-xs text-gray-500 mt-1">${extractionHint}</p>
+                </div>
+                <div class="scan-results-list space-y-3 mb-6">
         `;
         analysis.halal.forEach(item => {
             resultsHTML += `
@@ -1439,11 +1444,11 @@ async function analyzeUploadedImage() {
                     <p class="text-sm text-gray-600">${statusDescription}</p>
                     ${getHalalAuthenticityTipsHtml()}
                 </div>
-                <div class="mt-6 flex justify-between items-center">
-                    <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                <div class="scan-result-actions scan-result-actions--two mt-6">
+                        <button type="button" data-action="report-inaccuracy" class="scan-result-action scan-result-action-report px-4 py-2 rounded-lg text-sm font-medium">
                         <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                     </button>
-                    <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
+                    <button type="button" class="scan-result-action scan-result-action-save bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
                         <i class="fas fa-save mr-1"></i> Save Results
                     </button>
                 </div>
@@ -1485,48 +1490,201 @@ function updateProgress(percent, status) {
     }
 }
 
+const OCR_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.:;()/%&-\\n\\r ';
+const OCR_CONFIGS = [
+    {
+        name: 'block-text',
+        tessedit_pageseg_mode: 6,
+        tessedit_ocr_engine_mode: 1,
+        preserve_interword_spaces: '1',
+        tessedit_char_whitelist: OCR_CHAR_WHITELIST
+    },
+    {
+        name: 'sparse-text',
+        tessedit_pageseg_mode: 11,
+        tessedit_ocr_engine_mode: 1,
+        preserve_interword_spaces: '1',
+        tessedit_char_whitelist: OCR_CHAR_WHITELIST
+    }
+];
+
+function getSafeImageScale(width, height) {
+    const largestSide = Math.max(width, height);
+    if (largestSide <= 1600) return 1.7;
+    if (largestSide <= 2200) return 1.3;
+    return 1;
+}
+
+function scoreOcrCandidate(text, confidence) {
+    const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return -1000;
+
+    const separators = (cleaned.match(/[,;:]/g) || []).length;
+    const words = cleaned.split(/\s+/).filter(Boolean).length;
+    let score = Number(confidence || 0);
+
+    if (isLikelyIngredientList(text)) score += 22;
+    score += Math.min(separators, 14);
+    score += Math.min(Math.floor(words / 3), 12);
+
+    if (words < 4) score -= 16;
+    if (cleaned.length < 18) score -= 12;
+
+    return score;
+}
+
 // Enhanced preprocess image before OCR
-async function preprocessImageForOCR(imageData) {
+async function preprocessImageForOCR(imageData, mode = 'threshold') {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        
-        // Add timeout to prevent hanging
+
         const timeout = setTimeout(() => {
             reject(new Error('Image preprocessing timed out'));
-        }, 10000); // 10 second timeout
-        
+        }, 12000);
+
         img.onload = function() {
+            clearTimeout(timeout);
+
+            const scale = getSafeImageScale(img.width, img.height);
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Set canvas dimensions
-            canvas.width = img.width;
-            canvas.height = img.height;
-            
-            // Apply preprocessing
-            ctx.drawImage(img, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            // Convert to grayscale and enhance contrast
-            for (let i = 0; i < data.length; i += 4) {
-                // Convert to grayscale using luminance formula
-                const avg = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11);
-                // Apply contrast
-                const factor = 1.5;
-                const newValue = (avg - 128) * factor + 128;
-                const pixel = Math.max(0, Math.min(255, newValue));
-                
-                data[i] = pixel;     // R
-                data[i + 1] = pixel; // G
-                data[i + 2] = pixel; // B
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            if (mode === 'original') {
+                resolve(canvas.toDataURL('image/jpeg', 0.98));
+                return;
             }
-            
-            ctx.putImageData(imageData, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg'));
+
+            const bitmap = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = bitmap.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                let pixel = gray;
+
+                if (mode === 'contrast') {
+                    pixel = (gray - 128) * 1.7 + 128;
+                } else if (mode === 'threshold') {
+                    const boosted = (gray - 128) * 1.45 + 128;
+                    pixel = boosted > 150 ? 255 : 0;
+                }
+
+                const normalized = Math.max(0, Math.min(255, pixel));
+                data[i] = normalized;
+                data[i + 1] = normalized;
+                data[i + 2] = normalized;
+            }
+
+            ctx.putImageData(bitmap, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg', 0.98));
         };
+
+        img.onerror = function() {
+            clearTimeout(timeout);
+            reject(new Error('Failed to load image for OCR preprocessing'));
+        };
+
         img.src = imageData;
     });
+}
+
+async function buildOcrImageVariants(imageData) {
+    const variants = [
+        { name: 'threshold', mode: 'threshold' },
+        { name: 'contrast', mode: 'contrast' },
+        { name: 'original', mode: 'original' }
+    ];
+
+    const processed = [];
+    for (const variant of variants) {
+        try {
+            const src = await preprocessImageForOCR(imageData, variant.mode);
+            processed.push({ name: variant.name, src });
+        } catch (error) {
+            console.warn(`Preprocessing failed for ${variant.name}:`, error);
+        }
+    }
+
+    if (processed.length === 0) {
+        throw new Error('Unable to preprocess image for OCR');
+    }
+
+    return processed;
+}
+
+async function runOCRWithEnhancements(imageData, options = {}) {
+    const {
+        language = 'eng',
+        timeoutMs = 25000,
+        onProgress
+    } = options;
+
+    const variants = await buildOcrImageVariants(imageData);
+    const totalAttempts = variants.length * OCR_CONFIGS.length;
+    let attemptIndex = 0;
+    let bestResult = null;
+
+    for (const variant of variants) {
+        for (const config of OCR_CONFIGS) {
+            attemptIndex += 1;
+
+            if (typeof onProgress === 'function') {
+                onProgress({ phase: 'attempt', attemptIndex, totalAttempts, variant: variant.name, config: config.name });
+            }
+
+            try {
+                const recognizePromise = window.Tesseract.recognize(variant.src, language, {
+                    ...config,
+                    logger: message => {
+                        if (typeof onProgress === 'function' && message.status === 'recognizing text' && typeof message.progress === 'number') {
+                            onProgress({
+                                phase: 'recognizing',
+                                attemptIndex,
+                                totalAttempts,
+                                variant: variant.name,
+                                config: config.name,
+                                progress: message.progress
+                            });
+                        }
+                    }
+                });
+
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('OCR operation timed out')), timeoutMs);
+                });
+
+                const result = await Promise.race([recognizePromise, timeoutPromise]);
+                const text = (result.data && result.data.text) ? result.data.text : '';
+                const confidence = Number(result.data && result.data.confidence ? result.data.confidence : 0);
+                const score = scoreOcrCandidate(text, confidence);
+
+                if (!bestResult || score > bestResult.score) {
+                    bestResult = {
+                        text,
+                        confidence,
+                        score,
+                        variant: variant.name,
+                        config: config.name
+                    };
+                }
+
+                if (confidence >= 88 && isLikelyIngredientList(text)) {
+                    return bestResult;
+                }
+            } catch (attemptError) {
+                console.warn(`OCR failed for ${variant.name}/${config.name}:`, attemptError);
+            }
+        }
+    }
+
+    if (!bestResult) {
+        throw new Error('OCR could not recognize text from this image');
+    }
+
+    return bestResult;
 }
 
 // Real AI analysis for captured image
@@ -1558,89 +1716,38 @@ async function analyzeCapturedImage(imageData) {
     
     try {
         updateProgress(10, "Preprocessing image...");
-        
-        // Preprocess image first with timeout
-        const processedImage = await preprocessImageForOCR(imageData);
-        
-        updateProgress(30, "Running OCR analysis...");
-        
-        let result;
-        let ocrAttempt = 1;
-        const maxAttempts = 2;
-        
-        // Try OCR with different configurations for better accuracy
-        while (ocrAttempt <= maxAttempts) {
-            try {
-                const ocrConfig = ocrAttempt === 1 ? {
-                    // First attempt: Standard configuration
-                    tessedit_pageseg_mode: 6,
-                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.-()%& ',
-                    preserve_interword_spaces: '1',
-                    tessedit_ocr_engine_mode: 2
-                } : {
-                    // Second attempt: More permissive configuration
-                    tessedit_pageseg_mode: 8, // Treat the image as a single word
-                    tessedit_ocr_engine_mode: 1, // Neural nets LSTM only
-                    tessedit_do_invert: '1' // Try inverting the image
-                };
-                
-                updateProgress(30 + (ocrAttempt - 1) * 20, `OCR analysis (attempt ${ocrAttempt})...`);
-                
-                // Add timeout for OCR operation
-                const ocrPromise = window.Tesseract.recognize(
-                    processedImage,
-                    'eng',
-                    { 
-                        logger: m => {
-                            console.log(m);
-                            if (m.status === 'recognizing text' && m.progress) {
-                                const baseProgress = 30 + (ocrAttempt - 1) * 20;
-                                const ocrProgress = Math.round(baseProgress + (m.progress * 20));
-                                updateProgress(ocrProgress, `Recognizing text (attempt ${ocrAttempt})...`);
-                            }
-                        },
-                        ...ocrConfig
-                    }
-                );
-                
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('OCR operation timed out')), 30000); // 30 second timeout
-                });
-                
-                result = await Promise.race([ocrPromise, timeoutPromise]);
-                
-                // Check if we got good results
-                if (result.data.text.trim().length > 10 && result.data.confidence > 50) {
-                    break; // Good result, stop trying
-                }
-                
-                ocrAttempt++;
-            } catch (attemptError) {
-                console.error(`OCR attempt ${ocrAttempt} failed:`, attemptError);
-                ocrAttempt++;
-                
-                // If this was the last attempt, throw the error
-                if (ocrAttempt > maxAttempts) {
-                    throw attemptError;
+        updateProgress(12, "Preparing OCR image variants...");
+
+        const result = await runOCRWithEnhancements(imageData, {
+            timeoutMs: 25000,
+            onProgress: ({ phase, attemptIndex, totalAttempts, progress, variant }) => {
+                const base = 24;
+                const span = 54;
+                if (phase === 'attempt') {
+                    const pct = Math.round(base + ((attemptIndex - 1) / Math.max(1, totalAttempts)) * span);
+                    updateProgress(pct, `OCR attempt ${attemptIndex}/${totalAttempts} (${variant})...`);
+                } else if (phase === 'recognizing' && typeof progress === 'number') {
+                    const eachAttemptSpan = span / Math.max(1, totalAttempts);
+                    const pct = Math.round(base + ((attemptIndex - 1) * eachAttemptSpan) + (progress * eachAttemptSpan));
+                    updateProgress(Math.min(82, pct), `Recognizing text (${variant})...`);
                 }
             }
-        }
-        
-        ocrText = result.data.text;
-        
+        });
+
+        ocrText = result.text;
+
         // Check OCR confidence level for better user feedback
-        const confidence = Number(result.data.confidence || 0);
+        const confidence = Number(result.confidence || 0);
         ocrConfidence = confidence;
-        console.log(`OCR Confidence: ${confidence}%`);
-        
         if (confidence < 60) {
-            updateProgress(85, "Low confidence detected, verifying...");
             console.warn(`Low OCR confidence: ${confidence}%. Text may need verification.`);
+            updateProgress(84, "Low confidence detected, verifying...");
         } else {
-            updateProgress(85, "High confidence text detected!");
+            updateProgress(84, "High confidence text detected!");
         }
-        updateProgress(80, "Analyzing ingredients...");
         
+        updateProgress(88, "Analyzing ingredients...");
+
     } catch (err) {
         console.error('OCR Error:', err);
         hideLoadingIndicator();
@@ -1911,12 +2018,15 @@ async function analyzeCapturedImage(imageData) {
             <div>
                 <h3 class="text-xl font-bold mb-4">Analysis Results</h3>
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-gray-700 mb-1"><strong>Analyzed Ingredients:</strong> ${escapeHtml(cleanedIngredientsForAnalysis)}</p>
+                    <div class="text-sm text-gray-700 mb-2">
+                        <p class="font-semibold mb-1">Analyzed Ingredients:</p>
+                        <div class="scanned-ingredients-box">${escapeHtml(cleanedIngredientsForAnalysis)}</div>
+                    </div>
                     <p class="text-xs text-gray-500">Cleanup: ${cleanupMethod}</p>
                     <p class="text-xs ${confidenceClass}"><strong>OCR Confidence:</strong> ${confidenceLabel}</p>
                     <p class="text-xs text-gray-500 mt-1">${confidenceHint}</p>
                 </div>
-                <div class="space-y-3 mb-6">
+                <div class="scan-results-list space-y-3 mb-6">
         `;
         
         // Add halal ingredients
@@ -2013,18 +2123,16 @@ async function analyzeCapturedImage(imageData) {
                     <p class="text-sm text-gray-600">${statusDescription}</p>
                     ${getHalalAuthenticityTipsHtml()}
                 </div>
-                <div class="mt-6 flex justify-between items-center">
-                    <button type="button" data-action="report-inaccuracy" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                <div class="scan-result-actions scan-result-actions--three mt-6">
+                        <button type="button" data-action="report-inaccuracy" class="scan-result-action scan-result-action-report px-4 py-2 rounded-lg text-sm font-medium">
                         <i class="fas fa-flag mr-1"></i> Report Inaccuracy
                     </button>
-                    <div class="flex items-center gap-2">
-                        <button type="button" id="scanAgainBtn" class="border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50">
-                            <i class="fas fa-camera mr-1"></i> Scan Again
-                        </button>
-                        <button type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-                            <i class="fas fa-save mr-1"></i> Save Results
-                        </button>
-                    </div>
+                    <button type="button" id="scanAgainBtn" class="scan-result-action border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50">
+                        <i class="fas fa-camera mr-1"></i> Scan Again
+                    </button>
+                    <button type="button" class="scan-result-action scan-result-action-save bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
+                        <i class="fas fa-save mr-1"></i> Save Results
+                    </button>
                 </div>
             </div>
         `;
