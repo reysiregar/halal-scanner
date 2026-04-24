@@ -132,6 +132,165 @@ function isSectionHeader(str) {
   return /^[A-Z\s]+:?$/.test(str.trim()) || /^(noodles|seasoning|powder|oil|sauce|shallot|contains|produced|products|that|peanuts|crustacean|egg|dairy|fish)$/i.test(str.trim());
 }
 
+const OCR_INGREDIENT_INDICATORS = [
+  'ingredient', 'ingredients', 'contains', 'bahan', 'komposisi', 'material'
+];
+
+const OCR_INGREDIENT_KEYWORDS = [
+  'salt', 'sugar', 'oil', 'flour', 'starch', 'protein', 'extract', 'spice',
+  'seasoning', 'acid', 'gum', 'lecithin', 'yeast', 'enzyme', 'whey', 'milk',
+  'egg', 'soy', 'corn', 'wheat', 'gluten', 'dextrose', 'maltodextrin',
+  'glucose', 'fructose', 'syrup', 'vinegar', 'cocoa', 'chocolate', 'caramel',
+  'citrate', 'phosphate', 'benzoate', 'sorbate', 'carbonate', 'carrageenan',
+  'xanthan', 'pectin', 'casein', 'powder', 'onion', 'garlic', 'pepper',
+  'flavor', 'flavour', 'preservative', 'emulsifier', 'colour', 'color'
+];
+
+function hasUsableOcrSignal(text) {
+  if (!text || typeof text !== 'string') return false;
+
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (normalized.length < 12) return false;
+
+  const alphaTokens = normalized.toLowerCase().match(/[a-z]{2,}/g) || [];
+  if (alphaTokens.length < 3) return false;
+
+  const uniqueTokenRatio = new Set(alphaTokens).size / alphaTokens.length;
+  if (alphaTokens.length >= 6 && uniqueTokenRatio < 0.28) return false;
+
+  return true;
+}
+
+function isLikelyIngredientOcrText(text) {
+  if (!hasUsableOcrSignal(text)) return false;
+
+  const normalized = String(text || '').toLowerCase();
+  const firstLines = normalized.split(/\n|\r/).slice(0, 5).join(' ');
+
+  const hasIndicator = OCR_INGREDIENT_INDICATORS.some(indicator => firstLines.includes(indicator));
+  const keywordCount = OCR_INGREDIENT_KEYWORDS.reduce((count, keyword) => (
+    count + (normalized.includes(keyword) ? 1 : 0)
+  ), 0);
+  const separatorCount = (normalized.match(/[,;]|\band\b/gi) || []).length;
+  const eNumberCount = (normalized.match(/\be\d{3}[a-z]?\b/gi) || []).length;
+  const hasQuantityIndicators = /(\d+%|\d+\s*(g|mg|ml|oz|kg|l)\b)/i.test(normalized);
+
+  if (hasIndicator) return true;
+  if (keywordCount >= 2 && separatorCount >= 1) return true;
+  if (keywordCount >= 3) return true;
+  if (eNumberCount >= 2) return true;
+  if (eNumberCount >= 1 && (separatorCount >= 1 || keywordCount >= 1)) return true;
+  if (hasQuantityIndicators && keywordCount >= 2) return true;
+
+  return false;
+}
+
+function isPlausibleIngredientListText(ingredientText) {
+  if (!ingredientText || typeof ingredientText !== 'string') return false;
+
+  const items = ingredientText
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  if (items.length >= 2) return true;
+  if (items.length === 1) return items[0].split(/\s+/).length >= 2;
+  return false;
+}
+
+function splitIngredientItems(value) {
+  return String(value || '')
+    .split(/[,;\n\r]/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeIngredientForSimilarity(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[()]/g, ' ')
+    .replace(/0/g, 'o')
+    .replace(/1/g, 'l')
+    .replace(/3/g, 'e')
+    .replace(/5/g, 's')
+    .replace(/8/g, 'b')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function computeTokenOverlapScore(a, b) {
+  const aTokens = normalizeIngredientForSimilarity(a).split(/\s+/).filter(Boolean);
+  const bTokens = normalizeIngredientForSimilarity(b).split(/\s+/).filter(Boolean);
+  if (!aTokens.length || !bTokens.length) return 0;
+
+  const bSet = new Set(bTokens);
+  const overlap = aTokens.filter(token => bSet.has(token)).length;
+  return overlap / aTokens.length;
+}
+
+function getBestOcrCandidateMatch(aiItem, ocrCandidates) {
+  const aiNorm = normalizeIngredientForSimilarity(aiItem);
+  let best = { score: 0, candidate: '' };
+
+  ocrCandidates.forEach(candidate => {
+    const candidateNorm = normalizeIngredientForSimilarity(candidate);
+    if (!candidateNorm) return;
+
+    let score = compareTwoStrings(aiNorm, candidateNorm);
+    if (candidateNorm.includes(aiNorm) || aiNorm.includes(candidateNorm)) {
+      score = Math.max(score, 0.76);
+    }
+
+    const tokenOverlap = computeTokenOverlapScore(aiNorm, candidateNorm);
+    score = Math.max(score, tokenOverlap * 0.86);
+
+    if (score > best.score) {
+      best = { score, candidate };
+    }
+  });
+
+  return best;
+}
+
+function groundAiIngredientListToOcr(aiIngredientList, ocrText) {
+  const aiItems = splitIngredientItems(aiIngredientList);
+  if (!aiItems.length) return '';
+
+  const ocrCandidates = splitIngredientItems(ocrText);
+  const normalizedOcrText = normalizeIngredientForSimilarity(ocrText);
+  const grounded = [];
+  const seen = new Set();
+
+  aiItems.forEach(aiItem => {
+    const aiNorm = normalizeIngredientForSimilarity(aiItem);
+    if (!aiNorm) return;
+
+    const directEvidence = normalizedOcrText.includes(aiNorm);
+    const bestMatch = getBestOcrCandidateMatch(aiItem, ocrCandidates);
+    const hasGrounding = directEvidence || bestMatch.score >= 0.58;
+    if (!hasGrounding) return;
+
+    const canonical = aiItem.replace(/\s+/g, ' ').trim();
+    const canonicalKey = canonical.toLowerCase();
+    if (!canonical || seen.has(canonicalKey)) return;
+
+    seen.add(canonicalKey);
+    grounded.push(canonical);
+  });
+
+  return grounded.join(', ');
+}
+
+function noIngredientDetectedPayload() {
+  return {
+    success: true,
+    ingredients: '',
+    code: 'NO_INGREDIENT_LIST_DETECTED',
+    warning: 'No ingredient list detected in OCR text'
+  };
+}
+
 // Uses Dice coefficient over bigrams, matching the behavior previously used from string-similarity.
 function compareTwoStrings(a, b) {
   if (!a || !b) return 0;
@@ -247,170 +406,315 @@ function getEntrySourceSignals(dbEntry, name) {
 }
 
 const MASHBOOH_STATUS_REGEX = /mushbooh|mashbooh|doubtful|uncertain|syubhat|shubha/i;
+const HALAL_STATUS_REGEX = /halal/i;
+const HARAM_STATUS_REGEX = /haram/i;
+
+const SOURCE_SPECIFIC_TERMS = ['plant', 'vegetable', 'microbial', 'fish', 'beef', 'chicken', 'halal certified', 'porcine', 'pork'];
+const CAUTIONARY_GENERIC_TERMS = ['flavor', 'flavour', 'enzyme', 'emulsifier'];
+const HARAM_PORK_TERMS = ['pork', 'porcine', 'swine', 'lard', 'bacon', 'ham'];
+const HARAM_INTOXICANT_ALCOHOL_TERMS = ['ethanol', 'wine', 'beer', 'khamr', 'rum', 'vodka', 'whiskey', 'whisky'];
+const NON_INTOXICANT_ALCOHOL_EXCEPTIONS = ['cetyl alcohol', 'stearyl alcohol', 'cetearyl alcohol', 'benzyl alcohol', 'fatty alcohol'];
+
+let ingredientLookupCache = null;
 
 function normalizeIngredientStatus(status) {
   const normalized = String(status || '').trim().toLowerCase();
-  if (/haram/.test(normalized)) return 'haram';
-  if (MASHBOOH_STATUS_REGEX.test(normalized)) return 'mashbooh';
-  if (/halal/.test(normalized)) return 'halal';
-  return 'unknown';
+  if (HARAM_STATUS_REGEX.test(normalized)) return 'HARAM';
+  if (MASHBOOH_STATUS_REGEX.test(normalized)) return 'MUSHBOOH';
+  if (HALAL_STATUS_REGEX.test(normalized)) return 'HALAL';
+  return 'MUSHBOOH';
 }
 
-function pushIngredientByStatus(results, statusKey, entry) {
-  if (statusKey === 'haram') {
-    results.haram.push(entry);
-  } else if (statusKey === 'mashbooh') {
-    results.mashbooh.push(entry);
-  } else if (statusKey === 'halal') {
-    results.halal.push(entry);
-  } else {
-    results.unknown.push(entry);
+function normalizeLookupKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[()]/g, ' ')
+    .replace(/[^a-z0-9\s\-/]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function splitInputIngredients(ingredientsList) {
+  return String(ingredientsList || '')
+    .split(/[,;\.\n\r]/)
+    .map(value => value.trim())
+    .filter(value => value.length > 0 && !isSectionHeader(value));
+}
+
+function buildIngredientLookup() {
+  if (ingredientLookupCache) return ingredientLookupCache;
+
+  const byExactName = new Map();
+  const byAlias = new Map();
+  const byECode = new Map();
+
+  haramIngredientsArr.forEach((entry) => {
+    const exactNames = [entry.item_name, entry.name]
+      .map(name => String(name || '').trim())
+      .filter(Boolean);
+
+    exactNames.forEach((name) => {
+      const key = normalizeLookupKey(name);
+      if (!key) return;
+      if (!byExactName.has(key)) byExactName.set(key, []);
+      byExactName.get(key).push({ entry, name, key });
+
+      const eMatches = key.match(/\be\d{3,4}[a-z]?\b/gi) || [];
+      eMatches.forEach((eCode) => {
+        const normalizedECode = eCode.toLowerCase();
+        if (!byECode.has(normalizedECode)) byECode.set(normalizedECode, []);
+        byECode.get(normalizedECode).push({ entry, name, key });
+      });
+    });
+
+    (entry.aliases || []).forEach((alias) => {
+      const name = String(alias || '').trim();
+      const key = normalizeLookupKey(name);
+      if (!key) return;
+
+      if (!byAlias.has(key)) byAlias.set(key, []);
+      byAlias.get(key).push({ entry, name, key });
+
+      const eMatches = key.match(/\be\d{3,4}[a-z]?\b/gi) || [];
+      eMatches.forEach((eCode) => {
+        const normalizedECode = eCode.toLowerCase();
+        if (!byECode.has(normalizedECode)) byECode.set(normalizedECode, []);
+        byECode.get(normalizedECode).push({ entry, name, key });
+      });
+    });
+  });
+
+  ingredientLookupCache = { byExactName, byAlias, byECode };
+  return ingredientLookupCache;
+}
+
+function getRuleBasedStatus(entry, ingredientName) {
+  const ingredientKey = normalizeLookupKey(ingredientName);
+  const rules = Array.isArray(entry.rules) ? entry.rules : [];
+
+  for (const rule of rules) {
+    const condition = normalizeLookupKey(rule.condition || '');
+    if (!condition) continue;
+    if (condition === 'any source') {
+      return normalizeIngredientStatus(rule.status);
+    }
+    if (condition !== 'unknown source' && ingredientKey.includes(condition)) {
+      return normalizeIngredientStatus(rule.status);
+    }
   }
+
+  const unknownRule = rules.find(rule => normalizeLookupKey(rule.condition || '') === 'unknown source');
+  if (unknownRule) return normalizeIngredientStatus(unknownRule.status);
+
+  if (entry.default_status) return normalizeIngredientStatus(entry.default_status);
+  return normalizeIngredientStatus(entry.status);
 }
 
-function analyzeIngredients(ingredientsList) {
-  const results = {
+function resolveCandidatesDeterministically(candidates, ingredientName, matchMode) {
+  const resolved = candidates.map(({ entry, name }) => ({
+    entry,
+    name,
+    status: getRuleBasedStatus(entry, ingredientName)
+  }));
+
+  const uniqueStatuses = Array.from(new Set(resolved.map(item => item.status)));
+  if (uniqueStatuses.length > 1) {
+    return {
+      status: 'MUSHBOOH',
+      reason: `Database has multiple conditional outcomes for this ingredient (${uniqueStatuses.join('/')}); conservative ruling is MUSHBOOH.`,
+      confidence_score: 0.68,
+      matched_name: resolved.map(item => item.name).slice(0, 3).join(' / '),
+      category: resolved[0].entry.category
+    };
+  }
+
+  const primary = resolved[0];
+  const modeReason = matchMode === 'exact'
+    ? 'Exact database name match.'
+    : (matchMode === 'alias' ? 'Alias database match.' : 'E-number database match.');
+  const baseReason = primary.entry.reason || 'Classified by verified database entry.';
+  const confidence_score = matchMode === 'exact' ? 0.98 : (matchMode === 'alias' ? 0.9 : 0.86);
+
+  return {
+    status: primary.status,
+    reason: `${modeReason} ${baseReason}`,
+    confidence_score,
+    matched_name: primary.name,
+    category: primary.entry.category
+  };
+}
+
+function hasAnyTerm(text, terms) {
+  const normalized = String(text || '').toLowerCase();
+  return terms.some(term => normalized.includes(term));
+}
+
+function isIntoxicantAlcoholIngredient(text) {
+  const normalized = String(text || '').toLowerCase();
+  if (!normalized.includes('alcohol') && !hasAnyTerm(normalized, HARAM_INTOXICANT_ALCOHOL_TERMS)) {
+    return false;
+  }
+  if (hasAnyTerm(normalized, NON_INTOXICANT_ALCOHOL_EXCEPTIONS)) {
+    return false;
+  }
+  return true;
+}
+
+function classifyFromHardRules(ingredientName) {
+  if (hasAnyTerm(ingredientName, HARAM_PORK_TERMS)) {
+    return {
+      status: 'HARAM',
+      reason: 'Contains pork-derived term, which is categorically haram.',
+      confidence_score: 1
+    };
+  }
+
+  if (isIntoxicantAlcoholIngredient(ingredientName)) {
+    return {
+      status: 'HARAM',
+      reason: 'Contains intoxicant alcohol indication, which is categorically haram.',
+      confidence_score: 1
+    };
+  }
+
+  const lowered = String(ingredientName || '').toLowerCase();
+  const hasCautionaryTerm = CAUTIONARY_GENERIC_TERMS.some(term => lowered.includes(term));
+  const hasSourceSpecific = SOURCE_SPECIFIC_TERMS.some(term => lowered.includes(term));
+  if (hasCautionaryTerm && !hasSourceSpecific) {
+    return {
+      status: 'MUSHBOOH',
+      reason: 'Generic functional ingredient without explicit source; conservative ruling is mushbooh.',
+      confidence_score: 0.74
+    };
+  }
+
+  return null;
+}
+
+function classifyFromDatabase(ingredientName) {
+  const lookup = buildIngredientLookup();
+  const original = String(ingredientName || '');
+  const key = normalizeLookupKey(original);
+  const eMatch = key.match(/\be\d{3,4}[a-z]?\b/i);
+
+  const exactCandidates = lookup.byExactName.get(key) || [];
+  if (exactCandidates.length) {
+    return resolveCandidatesDeterministically(exactCandidates, ingredientName, 'exact');
+  }
+
+  const aliasCandidates = lookup.byAlias.get(key) || [];
+  if (aliasCandidates.length) {
+    return resolveCandidatesDeterministically(aliasCandidates, ingredientName, 'alias');
+  }
+
+  if (eMatch) {
+    const eCode = eMatch[0].toLowerCase();
+    const eCandidates = lookup.byECode.get(eCode) || [];
+    if (eCandidates.length) {
+      return resolveCandidatesDeterministically(eCandidates, ingredientName, 'e-number');
+    }
+
+    return {
+      status: 'MUSHBOOH',
+      reason: `E-number ${eCode.toUpperCase()} is not found in verified database; conservative ruling is MUSHBOOH.`,
+      confidence_score: 0.5
+    };
+  }
+
+  return {
+    status: 'MUSHBOOH',
+    reason: 'Ingredient not found in verified database; conservative ruling is MUSHBOOH.',
+    confidence_score: 0.45
+  };
+}
+
+function getOverallConfidenceLabel(status, ingredientsAnalysis) {
+  if (!ingredientsAnalysis.length) return 'LOW';
+  if (ingredientsAnalysis.some(item => item.confidence_score < 0.6)) return 'LOW';
+  if (status === 'MUSHBOOH') return 'MEDIUM';
+  return 'HIGH';
+}
+
+function getFinalDeterministicStatus(ingredientsAnalysis) {
+  if (ingredientsAnalysis.some(item => item.status === 'HARAM')) return 'HARAM';
+  if (ingredientsAnalysis.some(item => item.status === 'MUSHBOOH')) return 'MUSHBOOH';
+  return 'HALAL';
+}
+
+function buildSummaryReason(status, ingredientsAnalysis) {
+  if (status === 'HARAM') {
+    const haramCount = ingredientsAnalysis.filter(item => item.status === 'HARAM').length;
+    return `${haramCount} ingredient(s) are classified as HARAM; final result is HARAM.`;
+  }
+  if (status === 'MUSHBOOH') {
+    const mushboohCount = ingredientsAnalysis.filter(item => item.status === 'MUSHBOOH').length;
+    return `No HARAM ingredient found, but ${mushboohCount} ingredient(s) are MUSHBOOH; final result is MUSHBOOH.`;
+  }
+  return 'All identified ingredients are clearly HALAL in verified database; final result is HALAL.';
+}
+
+function analyzeIngredientsDeterministic(ingredientsList) {
+  const seen = new Set();
+  const ingredientsAnalysis = [];
+  const ingredients = splitInputIngredients(ingredientsList);
+
+  ingredients.forEach((ingredient) => {
+    const dedupeKey = normalizeLookupKey(ingredient);
+    if (!dedupeKey || seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+
+    const hardRule = classifyFromHardRules(ingredient);
+    const result = hardRule || classifyFromDatabase(ingredient);
+
+    ingredientsAnalysis.push({
+      name: ingredient,
+      status: result.status,
+      reason: result.reason,
+      confidence_score: result.confidence_score,
+      matched_name: result.matched_name || null,
+      category: result.category || null
+    });
+  });
+
+  const status = ingredientsAnalysis.length ? getFinalDeterministicStatus(ingredientsAnalysis) : 'MUSHBOOH';
+  const summary_reason = ingredientsAnalysis.length
+    ? buildSummaryReason(status, ingredientsAnalysis)
+    : 'No valid ingredients could be parsed; conservative ruling is MUSHBOOH.';
+  const confidence = getOverallConfidenceLabel(status, ingredientsAnalysis);
+
+  return {
+    status,
+    confidence,
+    ingredients_analysis: ingredientsAnalysis,
+    summary_reason,
+    reasoning: summary_reason
+  };
+}
+
+function toLegacyAnalysis(strictAnalysis) {
+  const analysis = {
     halal: [],
     haram: [],
     mashbooh: [],
     unknown: [],
-    overallStatus: 'halal'
+    overallStatus: String(strictAnalysis.status || 'MUSHBOOH').toLowerCase()
   };
-  const seen = new Set();
 
-  const ingredients = ingredientsList
-    .split(/[,;\.\n\r]/)
-    .map(ingredient => ingredient.trim())
-    .filter(ingredient => ingredient.length > 0 && !isSectionHeader(ingredient));
+  strictAnalysis.ingredients_analysis.forEach((item) => {
+    const payload = {
+      ingredient: item.name,
+      status: item.status,
+      matched_name: item.matched_name || undefined,
+      category: item.category || undefined,
+      explanation: `${item.reason} Confidence: ${(item.confidence_score * 100).toFixed(1)}%.`
+    };
 
-  ingredients.forEach(ingredient => {
-    const cleaned = strongNormalize(ingredient);
-    if (!cleaned || seen.has(cleaned)) return;
-    seen.add(cleaned);
-
-    const inputSourceSignals = detectSourceSignals(ingredient);
-
-    let bestScore = 0;
-    let bestMatch = null;
-    let bestDbEntry = null;
-    let secondBestScore = 0;
-    let secondBestMatch = null;
-    let secondBestDbEntry = null;
-    let partialMatch = null;
-    let partialDbEntry = null;
-
-    haramIngredientsArr.forEach(dbEntry => {
-      const dbNames = [dbEntry.item_name, ...(dbEntry.aliases || [])];
-      dbNames.forEach(name => {
-        const dbCleaned = strongNormalize(name);
-        const sourceScore = computeSourceAlignmentScore(inputSourceSignals, getEntrySourceSignals(dbEntry, name));
-        const score = compareTwoStrings(cleaned, dbCleaned) + sourceScore;
-        if (score > bestScore) {
-          secondBestScore = bestScore;
-          secondBestMatch = bestMatch;
-          secondBestDbEntry = bestDbEntry;
-          bestScore = score;
-          bestMatch = name;
-          bestDbEntry = dbEntry;
-        } else if (score > secondBestScore) {
-          secondBestScore = score;
-          secondBestMatch = name;
-          secondBestDbEntry = dbEntry;
-        }
-        if ((dbCleaned && cleaned && (dbCleaned.includes(cleaned) || cleaned.includes(dbCleaned))) && (!partialMatch || dbCleaned.length < partialMatch.length)) {
-          partialMatch = name;
-          partialDbEntry = dbEntry;
-        }
-      });
-    });
-
-    // Substring (partial) matches are usually more reliable than mid-range fuzzy matches.
-    // Only let a fuzzy match outrank a substring match when it is very confident.
-    if (partialDbEntry && bestScore < 0.7) {
-      const statusKey = normalizeIngredientStatus(partialDbEntry.status);
-      const entry = {
-        ingredient: ingredient,
-        matched_name: partialMatch,
-        status: partialDbEntry.status,
-        category: partialDbEntry.category
-      };
-      pushIngredientByStatus(results, statusKey, entry);
-      return;
-    }
-
-    if (bestScore >= 0.5 && bestDbEntry) {
-      const primaryStatus = normalizeIngredientStatus(bestDbEntry.status);
-      const secondaryStatus = secondBestDbEntry ? normalizeIngredientStatus(secondBestDbEntry.status) : 'unknown';
-
-      // If two close fuzzy candidates disagree and one is cautionary, avoid overconfident verdicts.
-      if (
-        secondBestDbEntry &&
-        secondBestScore >= 0.5 &&
-        secondaryStatus !== primaryStatus &&
-        (bestScore - secondBestScore) <= 0.06 &&
-        (primaryStatus === 'haram' || primaryStatus === 'mashbooh' || secondaryStatus === 'haram' || secondaryStatus === 'mashbooh')
-      ) {
-        results.mashbooh.push({
-          ingredient,
-          matched_name: `${bestMatch} / ${secondBestMatch}`,
-          status: 'Mashbooh',
-          category: bestDbEntry.category || secondBestDbEntry.category,
-          explanation: `Ambiguous match between ${bestMatch} (${bestDbEntry.status}) and ${secondBestMatch} (${secondBestDbEntry.status}); verify source and certification.`
-        });
-        return;
-      }
-
-      const entry = {
-        ingredient: ingredient,
-        matched_name: bestMatch,
-        status: bestDbEntry.status,
-        category: bestDbEntry.category
-      };
-      pushIngredientByStatus(results, primaryStatus, entry);
-    } else if (partialDbEntry) {
-      const statusKey = normalizeIngredientStatus(partialDbEntry.status);
-      const entry = {
-        ingredient: ingredient,
-        matched_name: partialMatch,
-        status: partialDbEntry.status,
-        category: partialDbEntry.category
-      };
-      pushIngredientByStatus(results, statusKey, entry);
-    } else if (bestScore >= 0.35 && bestDbEntry && /haram|mushbooh|mashbooh|doubtful|uncertain/i.test(bestDbEntry.status)) {
-      // Lower-confidence match to a Haram/Mashbooh ingredient — flag as Mashbooh (caution) rather than swallow it as Unknown.
-      results.mashbooh.push({
-        ingredient: ingredient,
-        matched_name: bestMatch,
-        status: 'Mashbooh',
-        category: bestDbEntry.category,
-        explanation: `Possible match for ${bestMatch} (${bestDbEntry.status}) — verify before consuming.`
-      });
-    } else {
-      let explanation = 'Not found in database';
-      if (bestScore > 0.3 && bestDbEntry) {
-        explanation += `. Did you mean: ${bestMatch}?`;
-      }
-      results.unknown.push({ ingredient: ingredient, explanation: explanation });
-    }
+    if (item.status === 'HALAL') analysis.halal.push(payload);
+    else if (item.status === 'HARAM') analysis.haram.push(payload);
+    else analysis.mashbooh.push(payload);
   });
 
-  const totalClassified = results.halal.length + results.haram.length + results.mashbooh.length + results.unknown.length;
-
-  if (totalClassified === 0) {
-    // No ingredients could be parsed at all — refuse to claim halal.
-    results.overallStatus = 'unknown';
-  } else if (results.haram.length > 0) {
-    results.overallStatus = 'haram';
-  } else if (results.mashbooh.length > 0) {
-    results.overallStatus = 'mashbooh';
-  } else if (results.unknown.length > 0 && results.halal.length === 0) {
-    results.overallStatus = 'unknown';
-  } else if (results.unknown.length > 0) {
-    // Mostly recognized but some unknowns — be cautious.
-    results.overallStatus = 'mashbooh';
-  }
-
-  return results;
+  return analysis;
 }
 
 function authenticateJWT(requireAdmin = false) {
@@ -689,8 +993,22 @@ app.post('/analyze-ingredients', (req, res) => {
       return res.status(400).json({ error: 'Ingredients list is required' });
     }
 
-    const analysis = analyzeIngredients(ingredients);
-    res.json({ success: true, analysis: analysis });
+    const strictAnalysis = analyzeIngredientsDeterministic(ingredients);
+    const analysis = toLegacyAnalysis(strictAnalysis);
+
+    res.json({
+      success: true,
+      status: strictAnalysis.status,
+      confidence: strictAnalysis.confidence,
+      ingredients_analysis: strictAnalysis.ingredients_analysis.map(item => ({
+        name: item.name,
+        status: item.status,
+        reason: item.reason
+      })),
+      summary_reason: strictAnalysis.summary_reason,
+      reasoning: strictAnalysis.reasoning,
+      analysis
+    });
   } catch (error) {
     console.error('Analysis error:', error);
     res.status(500).json({ error: 'Internal server error during analysis' });
@@ -704,7 +1022,16 @@ app.post('/extract-ingredients-ai', async (req, res) => {
       return res.status(400).json({ error: 'OCR text is required' });
     }
 
-    const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., contains milk, gluten-free, and, or, with, from, of, the, a, an, etc.). If an ingredient contains parentheses, include the content but remove the parentheses symbols from the output. Remove all symbols except dash. Text: ${ocrText}`;
+    const normalizedOcrText = ocrText.trim();
+    if (!normalizedOcrText) {
+      return res.status(400).json({ error: 'OCR text is required' });
+    }
+
+    if (!isLikelyIngredientOcrText(normalizedOcrText)) {
+      return res.json(noIngredientDetectedPayload());
+    }
+
+    const prompt = `Extract and correct the list of food ingredients from the following text. Return a comma-separated list, with each ingredient clearly separated. Ignore non-ingredient text (e.g., contains milk, gluten-free, and, or, with, from, of, the, a, an, etc.). If an ingredient contains parentheses, include the content but remove the parentheses symbols from the output. Remove all symbols except dash. Text: ${normalizedOcrText}`;
 
     const response = await cohere.chat({
       model: 'command-r-08-2024',
@@ -727,6 +1054,12 @@ app.post('/extract-ingredients-ai', async (req, res) => {
       .map(i => i.trim().replace(/^[-\s]+|[-\s]+$/g, ''))
       .filter(i => i.length > 0)
       .join(', ');
+
+    cleaned = groundAiIngredientListToOcr(cleaned, normalizedOcrText);
+
+    if (!isPlausibleIngredientListText(cleaned)) {
+      return res.json(noIngredientDetectedPayload());
+    }
 
     res.json({ success: true, ingredients: cleaned });
   } catch (error) {

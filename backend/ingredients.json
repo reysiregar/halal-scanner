@@ -1,5 +1,5 @@
 {
-  "ingredient_count": 456,
+  "ingredient_count": 458,
   "ingredients": [
     {
       "item_name": "Pork and its derivatives",
@@ -13,7 +13,23 @@
       "status": "Haram",
       "category": "Fats & Oils",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Lard",
+      "aliases": [
+        "pig fat"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "animal"
+      ],
+      "default_status": "HARAM",
+      "reason": "Pig fat",
+      "rules": [
+        {
+          "condition": "any source",
+          "status": "HARAM"
+        }
+      ]
     },
     {
       "item_name": "Alcoholic Beverages (Khamr)",
@@ -69,7 +85,28 @@
       "status": "Mushbooh",
       "category": "Dairy Products",
       "source": "animal",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Whey",
+      "aliases": [
+        "whey"
+      ],
+      "risk_level": "MEDIUM",
+      "source_types": [
+        "dairy",
+        "animal"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Depends on cheese source (rennet)",
+      "rules": [
+        {
+          "condition": "microbial or plant rennet",
+          "status": "HALAL"
+        },
+        {
+          "condition": "unknown rennet source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "Whey (with microbial or plant rennet)",
@@ -97,7 +134,33 @@
       "status": "Mushbooh",
       "category": "Humectant / Sweetener",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Glycerin / Glycerol",
+      "aliases": [
+        "glycerin",
+        "glycerol"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "plant",
+        "animal"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Can be plant or animal derived",
+      "rules": [
+        {
+          "condition": "plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "Glycerin / Glycerol (plant source)",
@@ -153,7 +216,31 @@
       "status": "Mushbooh",
       "category": "Flavoring",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Flavoring / Natural Flavor",
+      "aliases": [
+        "flavoring",
+        "natural flavor",
+        "natural flavors"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "plant",
+        "animal",
+        "synthetic"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Source not specified, may contain alcohol",
+      "rules": [
+        {
+          "condition": "explicit non-alcoholic and halal-certified source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "Artificial Flavors (unspecified solvent)",
@@ -339,10 +426,27 @@
     },
     {
       "item_name": "Shellac (E904)",
-      "status": "Halal",
+      "status": "Haram",
       "category": "Glazing Agent",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Shellac / E904",
+      "aliases": [
+        "shellac",
+        "e904"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "insect"
+      ],
+      "default_status": "HARAM",
+      "reason": "Derived from insects secretion",
+      "rules": [
+        {
+          "condition": "insect-derived shellac",
+          "status": "HARAM"
+        }
+      ]
     },
     {
       "item_name": "Castoreum",
@@ -398,7 +502,24 @@
       "status": "Halal",
       "category": "Colorant",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E100 (Curcumin)",
+      "aliases": [
+        "e100",
+        "curcumin"
+      ],
+      "risk_level": "LOW",
+      "source_types": [
+        "plant"
+      ],
+      "default_status": "HALAL",
+      "reason": "Plant-derived (turmeric)",
+      "rules": [
+        {
+          "condition": "plant-derived curcumin",
+          "status": "HALAL"
+        }
+      ]
     },
     {
       "item_name": "E101 - Riboflavin (Vitamin B2)",
@@ -433,7 +554,25 @@
       "status": "Haram",
       "category": "Colorant",
       "source": "insect",
-      "dangerous": true
+      "dangerous": true,
+      "name": "Carmine / Cochineal / E120",
+      "aliases": [
+        "carmine",
+        "cochineal",
+        "e120"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "insect"
+      ],
+      "default_status": "HARAM",
+      "reason": "Derived from insects (cochineal)",
+      "rules": [
+        {
+          "condition": "derived from cochineal",
+          "status": "HARAM"
+        }
+      ]
     },
     {
       "item_name": "E122 - Azorubine, Carmoisine",
@@ -797,7 +936,25 @@
       "status": "Halal",
       "category": "Antioxidant",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E300 (Ascorbic Acid)",
+      "aliases": [
+        "e300",
+        "ascorbic acid"
+      ],
+      "risk_level": "LOW",
+      "source_types": [
+        "plant",
+        "synthetic"
+      ],
+      "default_status": "HALAL",
+      "reason": "Vitamin C from plant/synthetic",
+      "rules": [
+        {
+          "condition": "plant or synthetic source",
+          "status": "HALAL"
+        }
+      ]
     },
     {
       "item_name": "E301 - Sodium Ascorbate",
@@ -860,7 +1017,25 @@
       "status": "Halal",
       "category": "Acidity Regulator",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E330 (Citric Acid)",
+      "aliases": [
+        "e330",
+        "citric acid"
+      ],
+      "risk_level": "LOW",
+      "source_types": [
+        "plant",
+        "fermentation"
+      ],
+      "default_status": "HALAL",
+      "reason": "Derived from citrus or fermentation",
+      "rules": [
+        {
+          "condition": "citrus or fermentation source",
+          "status": "HALAL"
+        }
+      ]
     },
     {
       "item_name": "E331 - Sodium Citrates",
@@ -930,7 +1105,24 @@
       "status": "Halal",
       "category": "Thickener",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E406 (Agar)",
+      "aliases": [
+        "e406",
+        "agar"
+      ],
+      "risk_level": "LOW",
+      "source_types": [
+        "seaweed"
+      ],
+      "default_status": "HALAL",
+      "reason": "Seaweed-based",
+      "rules": [
+        {
+          "condition": "seaweed-based agar",
+          "status": "HALAL"
+        }
+      ]
     },
     {
       "item_name": "E407 - Carrageenan",
@@ -1046,10 +1238,28 @@
     },
     {
       "item_name": "E441 - Gelatine (unspecified source)",
-      "status": "Mushbooh",
+      "status": "Haram",
       "category": "Gelling Agent",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Gelatin (pork) / E441",
+      "aliases": [
+        "gelatin pork",
+        "gelatine pork",
+        "e441"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "animal"
+      ],
+      "default_status": "HARAM",
+      "reason": "Derived from pork collagen",
+      "rules": [
+        {
+          "condition": "any source",
+          "status": "HARAM"
+        }
+      ]
     },
     {
       "item_name": "E450 - Diphosphates",
@@ -1077,7 +1287,34 @@
       "status": "Mushbooh",
       "category": "Emulsifier",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E471 (Mono- and Diglycerides)",
+      "aliases": [
+        "mono and diglycerides",
+        "emulsifier 471",
+        "e471"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "plant",
+        "animal"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Can be from plant or animal fat",
+      "rules": [
+        {
+          "condition": "plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "E471 - Mono- and diglycerides of fatty acids (plant source)",
@@ -1091,7 +1328,34 @@
       "status": "Mushbooh",
       "category": "Emulsifier",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "E472 (Fatty acid esters)",
+      "aliases": [
+        "e472",
+        "fatty acid esters",
+        "emulsifier 472"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "plant",
+        "animal"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Derived from fats (unknown source)",
+      "rules": [
+        {
+          "condition": "plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "E472b - Lactic acid esters of mono- and diglycerides (unspecified source)",
@@ -2964,10 +3228,30 @@
     },
     {
       "item_name": "Casein",
-      "status": "Doubtful",
+      "status": "Mushbooh",
       "category": "Processed Dairy",
       "source": "unknown",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Casein",
+      "aliases": [
+        "casein"
+      ],
+      "risk_level": "MEDIUM",
+      "source_types": [
+        "dairy"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Milk protein, depends on processing",
+      "rules": [
+        {
+          "condition": "halal-certified processing",
+          "status": "HALAL"
+        },
+        {
+          "condition": "unknown processing source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "Lactose",
@@ -3044,7 +3328,24 @@
       "status": "Haram",
       "category": "Enzyme",
       "source": "animal",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Pepsin (pork source)",
+      "aliases": [
+        "pepsin pork source",
+        "pepsin porcine"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "animal"
+      ],
+      "default_status": "HARAM",
+      "reason": "Digestive enzyme from pig stomach",
+      "rules": [
+        {
+          "condition": "pork source",
+          "status": "HARAM"
+        }
+      ]
     },
     {
       "item_name": "Trypsin (porcine origin)",
@@ -3058,7 +3359,32 @@
       "status": "Haram",
       "category": "Enzyme",
       "source": "animal",
-      "dangerous": false
+      "dangerous": false,
+      "name": "Rennet (non-halal animal)",
+      "aliases": [
+        "rennet non halal animal",
+        "animal rennet"
+      ],
+      "risk_level": "HIGH",
+      "source_types": [
+        "animal"
+      ],
+      "default_status": "HARAM",
+      "reason": "Used in cheese, derived from animal stomach",
+      "rules": [
+        {
+          "condition": "non-halal animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "microbial or plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     },
     {
       "item_name": "Stearic Acid (pork-derived)",
@@ -3192,6 +3518,71 @@
       "category": "Flavor Enhancer",
       "source": "unknown",
       "dangerous": false
+    },
+    {
+      "item_name": "Enzymes",
+      "name": "Enzymes",
+      "aliases": [
+        "enzyme"
+      ],
+      "status": "Mushbooh",
+      "category": "Enzyme",
+      "source": "unknown",
+      "dangerous": false,
+      "risk_level": "HIGH",
+      "source_types": [
+        "animal",
+        "microbial",
+        "plant"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "May be animal-derived",
+      "rules": [
+        {
+          "condition": "animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "microbial or plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
+    },
+    {
+      "item_name": "Emulsifier",
+      "name": "Emulsifier",
+      "aliases": [
+        "emulsifier"
+      ],
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false,
+      "risk_level": "HIGH",
+      "source_types": [
+        "plant",
+        "animal"
+      ],
+      "default_status": "MUSHBOOH",
+      "reason": "Generic term, source unknown",
+      "rules": [
+        {
+          "condition": "plant source",
+          "status": "HALAL"
+        },
+        {
+          "condition": "animal source",
+          "status": "HARAM"
+        },
+        {
+          "condition": "unknown source",
+          "status": "MUSHBOOH"
+        }
+      ]
     }
   ]
 }

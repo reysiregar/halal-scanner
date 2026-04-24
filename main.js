@@ -1173,9 +1173,135 @@ function getCleanedIngredientListFromOCR(ocrText) {
                 .map(i => i.replace(/[^a-zA-Z0-9\-\s]/g, '')) // remove most symbols except dash
                 .map(i => i.replace(/\s{2,}/g, ' '))
                 .map(i => i.trim())
+                .filter(isLikelyIngredientToken)
         )
     );
     return ingredients.join(', ');
+}
+
+function splitIngredientItems(value) {
+    return String(value || '')
+        .split(/[,;\n\r]/)
+        .map(item => item.trim())
+        .filter(Boolean);
+}
+
+function normalizeIngredientForSimilarity(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[()]/g, ' ')
+        .replace(/0/g, 'o')
+        .replace(/1/g, 'l')
+        .replace(/3/g, 'e')
+        .replace(/5/g, 's')
+        .replace(/8/g, 'b')
+        .replace(/[^a-z0-9\s-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function isLikelyIngredientToken(value) {
+    const normalized = normalizeIngredientForSimilarity(value);
+    if (!normalized) return false;
+    if (normalized.length < 3) return false;
+
+    const hasENumber = /\be\d{3,4}[a-z]?\b/i.test(normalized);
+    const alphaOnly = (normalized.match(/[a-z]/g) || []).length;
+    const digitOnly = (normalized.match(/\d/g) || []).length;
+
+    if (hasENumber) return true;
+    if (alphaOnly < 3) return false;
+    if (digitOnly > 0 && alphaOnly < 4) return false;
+
+    return true;
+}
+
+function compareTwoStrings(a, b) {
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    if (a.length < 2 || b.length < 2) return 0;
+
+    const first = new Map();
+    for (let i = 0; i < a.length - 1; i += 1) {
+        const bigram = a.slice(i, i + 2);
+        first.set(bigram, (first.get(bigram) || 0) + 1);
+    }
+
+    let intersectionSize = 0;
+    for (let i = 0; i < b.length - 1; i += 1) {
+        const bigram = b.slice(i, i + 2);
+        const count = first.get(bigram) || 0;
+        if (count > 0) {
+            first.set(bigram, count - 1);
+            intersectionSize += 1;
+        }
+    }
+
+    return (2 * intersectionSize) / (a.length + b.length - 2);
+}
+
+function computeTokenOverlapScore(a, b) {
+    const aTokens = normalizeIngredientForSimilarity(a).split(/\s+/).filter(Boolean);
+    const bTokens = normalizeIngredientForSimilarity(b).split(/\s+/).filter(Boolean);
+    if (!aTokens.length || !bTokens.length) return 0;
+
+    const bSet = new Set(bTokens);
+    const overlap = aTokens.filter(token => bSet.has(token)).length;
+    return overlap / aTokens.length;
+}
+
+function getBestOcrCandidateMatch(aiItem, ocrCandidates) {
+    const aiNorm = normalizeIngredientForSimilarity(aiItem);
+    let best = { score: 0, candidate: '' };
+
+    for (const candidate of ocrCandidates) {
+        const candidateNorm = normalizeIngredientForSimilarity(candidate);
+        if (!candidateNorm) continue;
+
+        let score = compareTwoStrings(aiNorm, candidateNorm);
+        if (candidateNorm.includes(aiNorm) || aiNorm.includes(candidateNorm)) {
+            score = Math.max(score, 0.76);
+        }
+
+        const tokenOverlap = computeTokenOverlapScore(aiNorm, candidateNorm);
+        score = Math.max(score, tokenOverlap * 0.86);
+
+        if (score > best.score) {
+            best = { score, candidate };
+        }
+    }
+
+    return best;
+}
+
+function groundAiIngredientListToOcr(aiIngredientList, ocrText, preExtractedOcrIngredients = '') {
+    const aiItems = splitIngredientItems(aiIngredientList);
+    if (!aiItems.length) return '';
+
+    const ocrCandidatesText = preExtractedOcrIngredients || getCleanedIngredientListFromOCR(ocrText);
+    const ocrCandidates = splitIngredientItems(ocrCandidatesText);
+    const normalizedOcrText = normalizeIngredientForSimilarity(ocrText);
+    const grounded = [];
+    const seen = new Set();
+
+    for (const aiItem of aiItems) {
+        const aiNorm = normalizeIngredientForSimilarity(aiItem);
+        if (!aiNorm) continue;
+
+        const directEvidence = normalizedOcrText.includes(aiNorm);
+        const bestMatch = getBestOcrCandidateMatch(aiItem, ocrCandidates);
+        const hasGrounding = directEvidence || bestMatch.score >= 0.58;
+        if (!hasGrounding) continue;
+
+        const canonical = aiItem.replace(/\s+/g, ' ').trim();
+        const canonicalKey = canonical.toLowerCase();
+        if (canonical && isLikelyIngredientToken(canonical) && !seen.has(canonicalKey)) {
+            seen.add(canonicalKey);
+            grounded.push(canonical);
+        }
+    }
+
+    return grounded.join(', ');
 }
 
 function isPlausibleIngredientList(ingredientText) {
@@ -1191,9 +1317,26 @@ function isPlausibleIngredientList(ingredientText) {
     return false;
 }
 
+function hasUsableOcrSignal(text) {
+    if (!text || typeof text !== 'string') return false;
+
+    const normalized = text.replace(/\s+/g, ' ').trim();
+    if (normalized.length < 12) return false;
+
+    const alphaTokens = normalized.toLowerCase().match(/[a-z]{2,}/g) || [];
+    if (alphaTokens.length < 3) return false;
+
+    const uniqueTokenRatio = new Set(alphaTokens).size / alphaTokens.length;
+    if (alphaTokens.length >= 6 && uniqueTokenRatio < 0.28) return false;
+
+    return true;
+}
+
 // Utility to check if OCR text is likely an ingredient list
 function isLikelyIngredientList(text) {
     if (!text || typeof text !== 'string') return false;
+
+    if (!hasUsableOcrSignal(text)) return false;
     
     // Clean the text for better matching
     const cleanText = text.replace(/[^\w\s,.-]/g, ' ').replace(/\s+/g, ' ').toLowerCase();
@@ -1207,7 +1350,7 @@ function isLikelyIngredientList(text) {
     ];
     
     // Check for indicators in the first few lines
-    const firstLines = cleanText.split('\n').slice(0, 5).join(' ');
+    const firstLines = text.toLowerCase().split(/\n|\r/).slice(0, 5).join(' ');
     const hasIndicator = indicators.some(indicator => firstLines.includes(indicator));
     
     // Common food-related keywords
@@ -1231,19 +1374,16 @@ function isLikelyIngredientList(text) {
     // Check for E-numbers (common in ingredients)
     const eNumberCount = (cleanText.match(/\be\d{3}[a-z]?\b/gi) || []).length;
     
-    // More lenient conditions
+    // Ingredient indicators are strong enough to proceed.
     if (hasIndicator) return true;  // If we see an indicator, trust it
-    if (keywordCount >= 1 && separatorCount >= 1) return true;  // More lenient threshold
-    if (eNumberCount > 0) return true;  // E-numbers are strong indicators
-    if (keywordCount >= 2) return true;  // Multiple food keywords
+    if (keywordCount >= 2 && separatorCount >= 1) return true;
+    if (keywordCount >= 3) return true;
+    if (eNumberCount >= 2) return true;
+    if (eNumberCount >= 1 && (separatorCount >= 1 || keywordCount >= 1)) return true;
     
     // Check for common patterns like percentages or quantity indicators
     const hasQuantityIndicators = /(\d+%|\d+\s*(g|mg|ml|oz|kg|l)\b)/i.test(cleanText);
-    if (hasQuantityIndicators && keywordCount >= 1) return true;
-    
-    // If we have a decent amount of text with some structure, it might be an ingredient list
-    const wordCount = cleanText.split(/\s+/).length;
-    if (wordCount >= 5 && (separatorCount >= 2 || keywordCount >= 1)) return true;
+    if (hasQuantityIndicators && keywordCount >= 2) return true;
     
     return false;
 }
@@ -1264,6 +1404,7 @@ async function analyzeUploadedImage() {
     try {
         const ocrResult = await runOCRWithEnhancements(uploadedImagePreview.src);
         const ocrText = ocrResult.text;
+        const ocrDerivedIngredientList = getCleanedIngredientListFromOCR(ocrText);
         // --- NEW: Check for empty OCR result ---
         if (!ocrText || ocrText.trim().length === 0) {
             if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
@@ -1279,8 +1420,10 @@ async function analyzeUploadedImage() {
             }
             return;
         }
+        const ocrLikelyIngredients = isLikelyIngredientList(ocrText);
+
         // --- Ingredient list detection ---
-        if (!isLikelyIngredientList(ocrText)) {
+        if (!ocrLikelyIngredients) {
             if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
             if (uploadResultsContainer) {
                 uploadResultsContainer.innerHTML = `
@@ -1294,26 +1437,9 @@ async function analyzeUploadedImage() {
             }
             return;
         }
-        // Use Cohere AI to extract/clean ingredients
-        let ingredientList = '';
-        try {
-            const aiRes = await fetch(getApiUrl(API_ENDPOINTS.EXTRACT_INGREDIENTS_AI), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ocrText })
-            });
-            if (aiRes.ok) {
-                const aiData = await aiRes.json();
-                ingredientList = aiData.ingredients;
-            }
-        } catch (err) {
-            console.warn('Cohere AI extraction failed, falling back to rules:', err);
-        }
-        // Fallback to rules if AI fails or returns nothing
-        if (!ingredientList || ingredientList.length === 0) {
-            ingredientList = getCleanedIngredientListFromOCR(ocrText);
-        }
-        if (!ingredientList || ingredientList.length === 0) {
+        // Deterministic extraction only: rely on OCR cleanup rules.
+        const ingredientList = ocrDerivedIngredientList;
+        if (!ocrLikelyIngredients || !ingredientList || !isPlausibleIngredientList(ingredientList)) {
             if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
             if (uploadResultsContainer) {
                 uploadResultsContainer.innerHTML = `
@@ -1889,37 +2015,16 @@ async function analyzeCapturedImage(imageData) {
     }
 
     const ocrLikelyIngredients = isLikelyIngredientList(ocrText);
+    const ocrDerivedIngredientList = getCleanedIngredientListFromOCR(ocrText);
     
     try {
         updateProgress(88, "Cleaning ingredients...");
 
-        // Improve live scan accuracy by normalizing OCR output with AI first,
-        // then falling back to local rules when AI is unavailable.
-        let ingredientList = '';
-        let usedAiCleanup = false;
-        try {
-            const aiRes = await fetch(getApiUrl(API_ENDPOINTS.EXTRACT_INGREDIENTS_AI), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ocrText })
-            });
+        // Deterministic extraction only: rely on OCR cleanup rules.
+        const ingredientList = ocrDerivedIngredientList;
+        const usedAiCleanup = false;
 
-            if (aiRes.ok) {
-                const aiData = await aiRes.json();
-                if (aiData && typeof aiData.ingredients === 'string') {
-                    ingredientList = aiData.ingredients.trim();
-                    usedAiCleanup = ingredientList.length > 0;
-                }
-            }
-        } catch (err) {
-            console.warn('Live scan AI extraction failed, using OCR cleanup fallback:', err);
-        }
-
-        if (!ingredientList) {
-            ingredientList = getCleanedIngredientListFromOCR(ocrText);
-        }
-
-        if (!ingredientList || !isPlausibleIngredientList(ingredientList)) {
+        if (!ocrLikelyIngredients || !ingredientList || !isPlausibleIngredientList(ingredientList)) {
             hideLoadingIndicator();
             if (resultsContainer) {
                 resultsContainer.innerHTML = `
