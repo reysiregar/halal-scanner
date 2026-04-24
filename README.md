@@ -1,136 +1,211 @@
 # Halal Scanner
 
-A modern web app to scan and analyze food ingredients for halal status, with user authentication, dashboards, reporting, and admin moderation.
+Halal Scanner is a web application for checking ingredient halal status from typed input and OCR text, then storing results and handling user reports with admin moderation.
 
----
+## Overview
 
-## 🛠️ Tech Stack
-- **Frontend:** HTML, Vanilla JS, CSS
-- **Backend:** Node.js, Express, Supabase (PostgreSQL), JWT Auth, Cohere AI, Tesseract.js
-- **Database:** Supabase PostgreSQL
-- **UI/UX:** SweetAlert2, FontAwesome
+- Frontend is plain HTML, CSS, and JavaScript.
+- Backend is Node.js + Express with JWT authentication.
+- Data is stored in PostgreSQL (Supabase-compatible schema).
+- AI extraction uses Cohere.
+- OCR is handled in the frontend via Tesseract.js CDN.
 
----
+## Current Features
 
-## ✨ Features
-- Scan and analyze food ingredients for halal status (OCR & AI extraction)
-- User registration and login (JWT-based)
-- Save scan results (per user)
-- Submit and manage inaccuracy reports
-- User dashboard: manage saved results & reports
-- Admin dashboard: review/respond to reports, moderate saved results
-- Testimonials system
-- Responsive, modern UI
+- Ingredient analysis endpoint with halal, haram, mashbooh, and unknown classification.
+- OCR text cleanup + AI ingredient extraction flow.
+- User sign up and sign in.
+- Save and delete scan results per user.
+- Submit and track inaccuracy reports.
+- Admin review workflow for report status updates.
+- Testimonials create/list endpoints.
+- User and admin dashboard pages.
 
----
+## Tech Stack
 
-## 🚀 Quick Start
+- Frontend: HTML, CSS, Vanilla JavaScript
+- Backend: Node.js, Express, JWT, pg, Cohere SDK
+- Database: PostgreSQL
+- UI libraries: Font Awesome
 
-Prerequisite: Node.js 20+
+## Project Structure
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd halal-scanner
-   ```
-2. **Install dependencies**
-   ```bash
-   cd backend
-   npm install
-   cd ..
-   npm install
-   ```
-3. **Configure Environment Variables**
-   - Create `.env` in `backend`:
-     ```env
-       DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
-     JWT_SECRET=your_jwt_secret_here
-       JWT_EXPIRES_IN=12h
-     COHERE_API_KEY=your_cohere_api_key_here
-       PG_FORCE_IPV4=true
-       # Optional fallback if DNS resolves unreachable addresses:
-       # PGHOSTADDR=1.2.3.4
-     ```
-    - Apply database schema from project root:
-       ```bash
-       npm run db:push
-       ```
-   - Replace `your_jwt_secret_here` with a secure secret for JWT
-   - `JWT_EXPIRES_IN` controls token TTL (examples: `8h`, `12h`, `1d`)
-   - Replace `your_cohere_api_key_here` with your Cohere API key
-   - Use your PostgreSQL connection string in `DATABASE_URL`
-4. **Start the backend**
-   ```bash
-   cd backend
-   npm start
-   ```
-5. **Open the app**
-   - Open `index.html` in your browser.
+```text
+halal-scanner/
+  index.html
+  user-dashboard.html
+  admin-dashboard.html
+  main.js
+  dashboard.js
+  config.js
+  styles.css
+  backend/
+    server.js
+    package.json
+    .env.example
+    ingredients.json
+    database/
+      schema.sql
+      push-schema.js
+      seed-users.js
+```
 
----
+## Prerequisites
 
-## 🔑 Test Accounts
-You can generate default credentials for Admin and User using the `backend/database/seed-users.js` script.
+- Node.js 20+
+- PostgreSQL database (Supabase or compatible)
+- Cohere API key
+
+## Local Setup
+
+1. Clone the repository.
+
+```bash
+git clone <repository-url>
+cd halal-scanner
+```
+
+2. Install dependencies.
+
+```bash
+cd backend
+npm install
+cd ..
+npm install
+```
+
+3. Create backend environment file.
+
+- Copy `backend/.env.example` to `backend/.env`, then update values.
+- Minimum required values:
+
+```env
+PORT=3000
+DATABASE_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
+JWT_SECRET=your_jwt_secret_here
+JWT_EXPIRES_IN=12h
+COHERE_API_KEY=your_cohere_api_key_here
+PG_FORCE_IPV4=true
+# Optional fallback if DNS resolves unreachable addresses:
+# PGHOSTADDR=1.2.3.4
+```
+
+4. Apply schema.
+
+```bash
+npm run db:push
+```
+
+5. (Optional) Seed default users.
+
 ```bash
 npm run db:seed
 ```
 
----
+6. Start backend.
 
-## 📚 API Endpoints (Backend)
+```bash
+cd backend
+npm start
+```
+
+7. Open the app.
+
+- Recommended: http://localhost:3000
+- Alternative: open `index.html` directly and keep backend running.
+
+## Scripts
+
+From repository root:
+
+- `npm run db:push` - apply `backend/database/schema.sql`
+- `npm run db:seed` - seed default users
+
+From `backend`:
+
+- `npm start` - start Express server
+- `npm run db:push` - apply schema
+- `npm run db:seed` - seed users
+
+## API Endpoints
+
+Base URL (local): `http://localhost:3000`
 
 ### Authentication
-- `POST   /auth/signup` — Register user
-- `POST   /auth/signin` — Authenticate user, returns JWT
+
+- `POST /auth/signup` - create user
+- `POST /auth/signin` - return JWT and user profile
 
 ### Ingredient Analysis
-- `POST   /analyze-ingredients` — Analyze ingredient list for halal status
-- `POST   /extract-ingredients-ai` — Extract ingredients from OCR text (AI)
 
-### Saved Results (Auth Required)
-- `GET    /api/saved-results` — Get user's saved results
-- `POST   /save-results` — Save scan result
-- `DELETE /saved-results/:id` — Delete saved result
+- `POST /analyze-ingredients` - analyze ingredients text
+- `POST /extract-ingredients-ai` - extract ingredients from OCR text
 
-### Reports (Auth Required)
-- `POST   /submit-report` — Submit inaccuracy report
-- `GET    /user-reports` — Get user's reports
-- `GET    /api/user/reports` — Get user's reports (alternative endpoint)
-- `DELETE /reports/:id` — Delete report
+### Saved Results (JWT required)
 
-### Admin Endpoints (Admin Only)
-- `GET    /admin/reports` — Get all reports
-- `PUT    /admin/reports/:id` — Update report status/note
+- `GET /user-saved-results` - user-scoped saved results (frontend default)
+- `GET /api/saved-results` - alias route; supports admin/global list behavior
+- `POST /save-results` - save result payload
+- `DELETE /saved-results/:id` - delete saved result (ownership enforced)
+
+### Reports (JWT required)
+
+- `POST /submit-report` - submit report
+- `GET /user-reports` - user reports
+- `GET /api/user/reports` - user reports alias
+- `DELETE /reports/:id` - delete report (role and status rules enforced)
+
+### Admin (admin JWT required)
+
+- `GET /admin/reports` - list all reports
+- `PUT /admin/reports/:id` - update report status and admin note
 
 ### Testimonials
-- `GET    /api/testimonials` — Get all testimonials
-- `POST   /api/testimonials` — Submit testimonial
 
-### Health Check
-- `GET    /health` — Check API status
-- `GET    /` — Welcome message and API status
+- `GET /testimonials` - list testimonials (frontend default)
+- `POST /testimonials` - create testimonial (frontend default)
+- `GET /api/testimonials` - alias route
+- `POST /api/testimonials` - alias route
 
----
+### Health
 
-## 🗄️ Database Models
-- **User:** { name, email, password (hashed), is_admin }
-- **SavedResult:** { user_id, result_data, created_at }
-- **Report:** { user_id, item_name, reason, status, admin_note, created_at }
-- **Testimonial:** { name, rating, testimony, created_at }
+- `GET /health` - backend health JSON
 
-All database objects are defined in `backend/database/schema.sql`.
+## Database Schema
 
----
+Defined in `backend/database/schema.sql`.
 
-## 🤝 Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+Main tables:
 
----
+- `users` (UUID PK, `is_admin` flag)
+- `saved_results` (JSONB payload per user)
+- `reports` (status: `pending`, `solved`, `rejected`)
+- `testimonials` (rating 1..5)
 
-## 🆘 Support
-- Open an issue in the repository
-- Contact the development team
+## Environment Variables
+
+- `PORT` - backend port (use `3000` locally to match frontend config)
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - JWT signing secret
+- `JWT_EXPIRES_IN` - token expiry, default `12h`
+- `COHERE_API_KEY` - required for `/extract-ingredients-ai`
+- `PG_FORCE_IPV4` - set `true` when IPv6 egress is unreliable
+- `PGHOSTADDR` - optional direct Postgres host override
+
+## Deployment Notes
+
+- `backend/Dockerfile` exposes and health-checks port `3000`.
+- `backend/Procfile` runs `node server.js`.
+- `backend/koyeb.yaml` maps service port `3000` and required secrets.
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Test your changes.
+5. Open a pull request.
+
+## Support
+
+- Open an issue in the repository.
