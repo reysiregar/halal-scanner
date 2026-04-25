@@ -1388,6 +1388,45 @@ function isLikelyIngredientList(text) {
     return false;
 }
 
+async function extractIngredientsForAnalysis(ocrText, ocrDerivedIngredientList) {
+    let ingredientList = '';
+    let usedAiCleanup = false;
+
+    try {
+        const aiRes = await fetch(getApiUrl(API_ENDPOINTS.EXTRACT_INGREDIENTS_AI), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ocrText })
+        });
+
+        if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            const aiSaysNoIngredient = aiData && aiData.code === 'NO_INGREDIENT_LIST_DETECTED';
+
+            if (!aiSaysNoIngredient && aiData && typeof aiData.ingredients === 'string') {
+                const groundedAiIngredients = groundAiIngredientListToOcr(
+                    aiData.ingredients,
+                    ocrText,
+                    ocrDerivedIngredientList
+                );
+                if (groundedAiIngredients && isPlausibleIngredientList(groundedAiIngredients)) {
+                    ingredientList = groundedAiIngredients;
+                    usedAiCleanup = true;
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('AI ingredient extraction failed, using deterministic OCR rules:', err);
+    }
+
+    if (!ingredientList || !isPlausibleIngredientList(ingredientList)) {
+        ingredientList = ocrDerivedIngredientList;
+        usedAiCleanup = false;
+    }
+
+    return { ingredientList, usedAiCleanup };
+}
+
 // Override analyzeUploadedImage to use OCR and filter for likely ingredients
 async function analyzeUploadedImage() {
     const uploadLoadingIndicator = document.getElementById('uploadLoadingIndicator');
@@ -1437,8 +1476,10 @@ async function analyzeUploadedImage() {
             }
             return;
         }
-        // Deterministic extraction only: rely on OCR cleanup rules.
-        const ingredientList = ocrDerivedIngredientList;
+        // AI is used only to isolate ingredient text from OCR. Final halal decision remains deterministic.
+        const extractionResult = await extractIngredientsForAnalysis(ocrText, ocrDerivedIngredientList);
+        const ingredientList = extractionResult.ingredientList;
+        const usedAiCleanup = extractionResult.usedAiCleanup;
         if (!ocrLikelyIngredients || !ingredientList || !isPlausibleIngredientList(ingredientList)) {
             if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
             if (uploadResultsContainer) {
@@ -1475,11 +1516,17 @@ async function analyzeUploadedImage() {
             ? 'text-gray-500'
             : (confidenceScore >= 75 ? 'text-green-600' : (confidenceScore >= 60 ? 'text-yellow-600' : 'text-red-600'));
         const extractionHint = `OCR variant: ${ocrResult.variant}, mode: ${ocrResult.config}`;
+        const cleanupMethod = usedAiCleanup ? 'AI-assisted ingredient extraction' : 'Rule-based ingredient extraction';
         // Generate results HTML based on analysis (reuse previous logic)
         let resultsHTML = `
             <div>
                 <h3 class="text-xl font-bold mb-4">Analysis Results</h3>
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="text-sm text-gray-700 mb-2">
+                        <p class="font-semibold mb-1">Analyzed Ingredients:</p>
+                        <div class="scanned-ingredients-box">${escapeHtml(ingredientList)}</div>
+                    </div>
+                    <p class="text-xs text-gray-500"><strong>Extraction:</strong> ${cleanupMethod}</p>
                     <p class="text-xs ${confidenceClass}"><strong>OCR Confidence:</strong> ${confidenceLabel}</p>
                     <p class="text-xs text-gray-500 mt-1">${extractionHint}</p>
                 </div>
@@ -1589,12 +1636,13 @@ async function analyzeUploadedImage() {
     } catch (error) {
         console.error('Analysis error:', error);
         if (uploadLoadingIndicator) uploadLoadingIndicator.classList.add('hidden');
+        const isSmallImageError = String(error?.message || '').toLowerCase().includes('too small');
         if (uploadResultsContainer) {
             uploadResultsContainer.innerHTML = `
                 <div class="text-center py-8">
                     <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i>
-                    <h3 class="text-xl font-medium text-gray-700">Analysis Failed</h3>
-                    <p class="text-gray-500 mt-2">Unable to analyze ingredients. Please try again.</p>
+                    <h3 class="text-xl font-medium text-gray-700">${isSmallImageError ? 'Image Too Small' : 'Analysis Failed'}</h3>
+                    <p class="text-gray-500 mt-2">${isSmallImageError ? 'The uploaded image is too small for text recognition. Please upload a larger, sharper image of the ingredients section.' : 'Unable to analyze ingredients. Please try again.'}</p>
                 </div>
             `;
             uploadResultsContainer.classList.remove('hidden');
@@ -1617,6 +1665,10 @@ function updateProgress(percent, status) {
 }
 
 const OCR_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.:;()/%&-\\n\\r ';
+const OCR_MIN_SOURCE_WIDTH = 48;
+const OCR_MIN_SOURCE_HEIGHT = 24;
+const OCR_TARGET_MIN_WIDTH = 640;
+const OCR_TARGET_MIN_HEIGHT = 220;
 const OCR_CONFIGS = [
     {
         name: 'block-text',
@@ -1659,6 +1711,19 @@ function scoreOcrCandidate(text, confidence) {
     return score;
 }
 
+function getImageDimensions(imageData) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = function() {
+            resolve({ width: img.width, height: img.height });
+        };
+        img.onerror = function() {
+            reject(new Error('Failed to load image for OCR dimension check'));
+        };
+        img.src = imageData;
+    });
+}
+
 // Enhanced preprocess image before OCR
 async function preprocessImageForOCR(imageData, mode = 'threshold') {
     return new Promise((resolve, reject) => {
@@ -1671,7 +1736,18 @@ async function preprocessImageForOCR(imageData, mode = 'threshold') {
         img.onload = function() {
             clearTimeout(timeout);
 
-            const scale = getSafeImageScale(img.width, img.height);
+            if (img.width < OCR_MIN_SOURCE_WIDTH || img.height < OCR_MIN_SOURCE_HEIGHT) {
+                reject(new Error('Image too small for OCR. Please use a clearer and closer photo of the ingredient text.'));
+                return;
+            }
+
+            const safeScale = getSafeImageScale(img.width, img.height);
+            const minimumScale = Math.max(
+                1,
+                OCR_TARGET_MIN_WIDTH / img.width,
+                OCR_TARGET_MIN_HEIGHT / img.height
+            );
+            const scale = Math.max(safeScale, minimumScale);
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
             canvas.width = Math.max(1, Math.round(img.width * scale));
@@ -1747,6 +1823,11 @@ async function runOCRWithEnhancements(imageData, options = {}) {
         timeoutMs = 25000,
         onProgress
     } = options;
+
+    const dimensions = await getImageDimensions(imageData);
+    if (dimensions.width < OCR_MIN_SOURCE_WIDTH || dimensions.height < OCR_MIN_SOURCE_HEIGHT) {
+        throw new Error('Image too small for OCR. Please crop tighter to the ingredients text and try again.');
+    }
 
     const variants = await buildOcrImageVariants(imageData);
     const totalAttempts = variants.length * OCR_CONFIGS.length;
@@ -2020,9 +2101,10 @@ async function analyzeCapturedImage(imageData) {
     try {
         updateProgress(88, "Cleaning ingredients...");
 
-        // Deterministic extraction only: rely on OCR cleanup rules.
-        const ingredientList = ocrDerivedIngredientList;
-        const usedAiCleanup = false;
+        // AI is used only to isolate ingredient text from OCR. Final halal decision remains deterministic.
+        const extractionResult = await extractIngredientsForAnalysis(ocrText, ocrDerivedIngredientList);
+        const ingredientList = extractionResult.ingredientList;
+        const usedAiCleanup = extractionResult.usedAiCleanup;
 
         if (!ocrLikelyIngredients || !ingredientList || !isPlausibleIngredientList(ingredientList)) {
             hideLoadingIndicator();
