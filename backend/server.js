@@ -409,6 +409,11 @@ const MASHBOOH_STATUS_REGEX = /mushbooh|mashbooh|doubtful|uncertain|syubhat|shub
 const HALAL_STATUS_REGEX = /halal/i;
 const HARAM_STATUS_REGEX = /haram/i;
 
+const RULE_CONDITION_STOPWORDS = new Set([
+  'and', 'or', 'with', 'without', 'from', 'of', 'source', 'sources', 'explicit',
+  'unspecified', 'unknown', 'default', 'use', 'using', 'contains', 'contain'
+]);
+
 const SOURCE_SPECIFIC_TERMS = ['plant', 'vegetable', 'microbial', 'fish', 'beef', 'chicken', 'halal certified', 'porcine', 'pork'];
 const CAUTIONARY_GENERIC_TERMS = ['flavor', 'flavour', 'enzyme', 'emulsifier'];
 const HARAM_PORK_TERMS = ['pork', 'porcine', 'swine', 'lard', 'bacon', 'ham'];
@@ -432,6 +437,40 @@ function normalizeLookupKey(value) {
     .replace(/[^a-z0-9\s\-/]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function tokenizeConditionTerms(value) {
+  return normalizeLookupKey(value)
+    .split(/\s+/)
+    .map(token => token.trim())
+    .filter(token => token && token.length >= 3 && !RULE_CONDITION_STOPWORDS.has(token));
+}
+
+function splitConditionVariants(condition) {
+  return String(condition || '')
+    .split(/\bor\b|\//i)
+    .map(part => part.trim())
+    .filter(Boolean);
+}
+
+function conditionVariantMatches(variant, ingredientKey) {
+  const terms = tokenizeConditionTerms(variant);
+  if (!terms.length) {
+    const normalizedVariant = normalizeLookupKey(variant);
+    return normalizedVariant ? ingredientKey.includes(normalizedVariant) : false;
+  }
+
+  return terms.every(term => ingredientKey.includes(term));
+}
+
+function ruleConditionMatchesIngredient(condition, ingredientKey) {
+  const normalizedCondition = normalizeLookupKey(condition);
+  if (!normalizedCondition) return false;
+
+  const variants = splitConditionVariants(normalizedCondition);
+  if (!variants.length) return conditionVariantMatches(normalizedCondition, ingredientKey);
+
+  return variants.some(variant => conditionVariantMatches(variant, ingredientKey));
 }
 
 function splitInputIngredients(ingredientsList) {
@@ -498,7 +537,7 @@ function getRuleBasedStatus(entry, ingredientName) {
     if (condition === 'any source') {
       return normalizeIngredientStatus(rule.status);
     }
-    if (condition !== 'unknown source' && ingredientKey.includes(condition)) {
+    if (condition !== 'unknown source' && ruleConditionMatchesIngredient(condition, ingredientKey)) {
       return normalizeIngredientStatus(rule.status);
     }
   }
@@ -531,9 +570,13 @@ function resolveCandidatesDeterministically(candidates, ingredientName, matchMod
   const primary = resolved[0];
   const modeReason = matchMode === 'exact'
     ? 'Exact database name match.'
-    : (matchMode === 'alias' ? 'Alias database match.' : 'E-number database match.');
+    : (matchMode === 'alias'
+      ? 'Alias database match.'
+      : (matchMode === 'fuzzy' ? 'Fuzzy database match with strong lexical/source alignment.' : 'E-number database match.'));
   const baseReason = primary.entry.reason || 'Classified by verified database entry.';
-  const confidence_score = matchMode === 'exact' ? 0.98 : (matchMode === 'alias' ? 0.9 : 0.86);
+  const confidence_score = matchMode === 'exact'
+    ? 0.98
+    : (matchMode === 'alias' ? 0.9 : (matchMode === 'fuzzy' ? 0.82 : 0.86));
 
   return {
     status: primary.status,
@@ -591,6 +634,76 @@ function classifyFromHardRules(ingredientName) {
   return null;
 }
 
+function flattenLookupCandidates(lookup) {
+  const seen = new Set();
+  const candidates = [];
+
+  const addCandidate = (candidate) => {
+    if (!candidate || !candidate.entry) return;
+    const entryName = String(candidate.entry.item_name || candidate.entry.name || '').toLowerCase();
+    const candidateName = String(candidate.name || '').toLowerCase();
+    const dedupeKey = `${entryName}::${candidateName}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push(candidate);
+  };
+
+  lookup.byExactName.forEach(group => group.forEach(addCandidate));
+  lookup.byAlias.forEach(group => group.forEach(addCandidate));
+  return candidates;
+}
+
+function scoreFuzzyCandidate(ingredientName, candidate) {
+  const ingredientNorm = normalizeIngredientForSimilarity(ingredientName);
+  const candidateNorm = normalizeIngredientForSimilarity(candidate.name);
+  if (!ingredientNorm || !candidateNorm) return 0;
+
+  let lexicalScore = compareTwoStrings(ingredientNorm, candidateNorm);
+  if (ingredientNorm.includes(candidateNorm) || candidateNorm.includes(ingredientNorm)) {
+    lexicalScore = Math.max(lexicalScore, 0.76);
+  }
+
+  const tokenOverlap = computeTokenOverlapScore(ingredientName, candidate.name);
+  lexicalScore = Math.max(lexicalScore, tokenOverlap * 0.9);
+
+  const ingredientSignals = detectSourceSignals(ingredientName);
+  const candidateSignals = getEntrySourceSignals(candidate.entry, candidate.name);
+  const sourceAlignment = computeSourceAlignmentScore(ingredientSignals, candidateSignals);
+
+  return lexicalScore + sourceAlignment;
+}
+
+function findBestFuzzyDatabaseMatch(ingredientName, lookup) {
+  const candidates = flattenLookupCandidates(lookup);
+  if (!candidates.length) return null;
+
+  const scored = candidates
+    .map(candidate => ({
+      candidate,
+      score: scoreFuzzyCandidate(ingredientName, candidate),
+      status: getRuleBasedStatus(candidate.entry, ingredientName)
+    }))
+    .filter(item => item.score >= 0.72)
+    .sort((a, b) => b.score - a.score);
+
+  if (!scored.length) return null;
+
+  const best = scored[0];
+  const second = scored[1];
+  if (second && Math.abs(best.score - second.score) <= 0.04 && best.status !== second.status) {
+    return {
+      ambiguous: true,
+      best,
+      second
+    };
+  }
+
+  return {
+    ambiguous: false,
+    best
+  };
+}
+
 function classifyFromDatabase(ingredientName) {
   const lookup = buildIngredientLookup();
   const original = String(ingredientName || '');
@@ -614,10 +727,40 @@ function classifyFromDatabase(ingredientName) {
       return resolveCandidatesDeterministically(eCandidates, ingredientName, 'e-number');
     }
 
+    const fuzzyECodeFallback = findBestFuzzyDatabaseMatch(ingredientName, lookup);
+    if (fuzzyECodeFallback && !fuzzyECodeFallback.ambiguous) {
+      return resolveCandidatesDeterministically([fuzzyECodeFallback.best.candidate], ingredientName, 'fuzzy');
+    }
+
+    if (fuzzyECodeFallback && fuzzyECodeFallback.ambiguous) {
+      return {
+        status: 'MUSHBOOH',
+        reason: `Ingredient is ambiguous between ${fuzzyECodeFallback.best.candidate.name} and ${fuzzyECodeFallback.second.candidate.name}; conservative ruling is MUSHBOOH.`,
+        confidence_score: 0.64,
+        matched_name: `${fuzzyECodeFallback.best.candidate.name} / ${fuzzyECodeFallback.second.candidate.name}`,
+        category: fuzzyECodeFallback.best.candidate.entry.category
+      };
+    }
+
     return {
       status: 'MUSHBOOH',
       reason: `E-number ${eCode.toUpperCase()} is not found in verified database; conservative ruling is MUSHBOOH.`,
       confidence_score: 0.5
+    };
+  }
+
+  const fuzzyFallback = findBestFuzzyDatabaseMatch(ingredientName, lookup);
+  if (fuzzyFallback && !fuzzyFallback.ambiguous) {
+    return resolveCandidatesDeterministically([fuzzyFallback.best.candidate], ingredientName, 'fuzzy');
+  }
+
+  if (fuzzyFallback && fuzzyFallback.ambiguous) {
+    return {
+      status: 'MUSHBOOH',
+      reason: `Ingredient is ambiguous between ${fuzzyFallback.best.candidate.name} and ${fuzzyFallback.second.candidate.name}; conservative ruling is MUSHBOOH.`,
+      confidence_score: 0.64,
+      matched_name: `${fuzzyFallback.best.candidate.name} / ${fuzzyFallback.second.candidate.name}`,
+      category: fuzzyFallback.best.candidate.entry.category
     };
   }
 
