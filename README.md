@@ -1,19 +1,19 @@
 # Halal Scanner
 
-Halal Scanner is a web application for checking ingredient halal status from typed input and OCR text, then storing results and handling user reports with admin moderation.
+Halal Scanner is a web application for checking ingredient halal status from typed input and OCR text, then storing results and handling user reports with admin moderation. The halal verdict is deterministic and database-driven; AI is used only to extract text from product images so spelling mistakes do not change the result.
 
 ## Overview
 
 - Frontend is plain HTML, CSS, and JavaScript.
 - Backend is Node.js + Express with JWT authentication.
 - Data is stored in PostgreSQL (Supabase-compatible schema).
-- AI extraction uses Cohere.
+- AI is used only for OCR text extraction and cleanup with Cohere.
 - OCR is handled in the frontend via Tesseract.js CDN.
 
 ## Current Features
 
-- Ingredient analysis endpoint with halal, haram, mashbooh, and unknown classification.
-- OCR text cleanup + AI ingredient extraction flow.
+- Ingredient analysis endpoint backed by a deterministic halal ingredient database and rule set.
+- OCR text cleanup + label text extraction flow.
 - User sign up and sign in.
 - Save and delete scan results per user.
 - Submit and track inaccuracy reports.
@@ -24,7 +24,7 @@ Halal Scanner is a web application for checking ingredient halal status from typ
 ## Tech Stack
 
 - Frontend: HTML, CSS, Vanilla JavaScript
-- Backend: Node.js, Express, JWT, pg, Cohere SDK
+- Backend: Node.js, Express, JWT, pg, Cohere SDK for OCR text extraction
 - Database: PostgreSQL
 - UI libraries: Font Awesome
 
@@ -139,7 +139,7 @@ Base URL (local): `http://localhost:3000`
 ### Ingredient Analysis
 
 - `POST /analyze-ingredients` - analyze ingredients text
-- `POST /extract-ingredients-ai` - extract ingredients from OCR text
+- `POST /extract-ingredients-ai` - extract and clean ingredient text from OCR output
 
 ### Saved Results (JWT required)
 
@@ -188,7 +188,7 @@ Main tables:
 - `DATABASE_URL` - PostgreSQL connection string
 - `JWT_SECRET` - JWT signing secret
 - `JWT_EXPIRES_IN` - token expiry, default `12h`
-- `COHERE_API_KEY` - required for `/extract-ingredients-ai`
+- `COHERE_API_KEY` - required for `/extract-ingredients-ai` OCR text extraction
 - `PG_FORCE_IPV4` - set `true` when IPv6 egress is unreliable
 - `PGHOSTADDR` - optional direct Postgres host override
 
