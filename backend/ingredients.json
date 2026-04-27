@@ -1,5 +1,5 @@
 {
-  "ingredient_count": 458,
+  "ingredient_count": 638,
   "ingredients": [
     {
       "item_name": "Pork and its derivatives",
@@ -3583,6 +3583,1266 @@
           "status": "MUSHBOOH"
         }
       ]
+    },
+    {
+      "item_name": "Mirin (Japanese Cooking Wine)",
+      "status": "Haram",
+      "category": "Condiment",
+      "source": "fermentation",
+      "dangerous": true
+    },
+    {
+      "item_name": "Sake",
+      "status": "Haram",
+      "category": "Beverages",
+      "source": "fermentation",
+      "dangerous": true
+    },
+    {
+      "item_name": "Rum Extract (Alcoholic)",
+      "status": "Haram",
+      "category": "Flavoring",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "Rum Extract (Non-Alcoholic / Synthetic)",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Balsamic Vinegar",
+      "status": "Halal",
+      "category": "Condiment",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "White Wine Vinegar",
+      "status": "Halal",
+      "category": "Condiment",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Red Wine Vinegar",
+      "status": "Halal",
+      "category": "Condiment",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Isinglass (Fish bladder extract)",
+      "status": "Mushbooh",
+      "category": "Clarifying Agent",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Koji",
+      "status": "Mushbooh",
+      "category": "Fermentation Starter",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Bone Phosphate (E542)",
+      "status": "Mushbooh",
+      "category": "Anti-caking Agent",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Gelatin (Halal Certified Bovine)",
+      "status": "Halal",
+      "category": "Gelling Agent",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Shortening (Vegetable)",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Shortening (Animal / Unspecified)",
+      "status": "Mushbooh",
+      "category": "Fats & Oils",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Suet (Raw Beef/Mutton Fat, Unspecified Slaughter)",
+      "status": "Mushbooh",
+      "category": "Fats & Oils",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Ghee (Bovine, Halal Certified)",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Butter Oil",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "dairy",
+      "dangerous": false
+    },
+    {
+      "item_name": "Olein (Vegetable)",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Stearin (Vegetable)",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Stearin (Animal / Unspecified)",
+      "status": "Mushbooh",
+      "category": "Fats & Oils",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Civet Oil",
+      "status": "Haram",
+      "category": "Flavoring / Fragrance",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Ambergris",
+      "status": "Mushbooh",
+      "category": "Flavoring / Fragrance",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Musk (Animal Derived)",
+      "status": "Haram",
+      "category": "Flavoring / Fragrance",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Maltodextrin",
+      "status": "Halal",
+      "category": "Carbohydrate / Filler",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "High Fructose Corn Syrup (HFCS)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": true
+    },
+    {
+      "item_name": "Inulin",
+      "status": "Halal",
+      "category": "Fiber / Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Baking Soda (Sodium Bicarbonate)",
+      "status": "Halal",
+      "category": "Leavening Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Baking Powder",
+      "status": "Halal",
+      "category": "Leavening Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E121 - Citrus Red 2",
+      "status": "Halal",
+      "category": "Colorant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E128 - Red 2G",
+      "status": "Halal",
+      "category": "Colorant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E143 - Fast Green FCF",
+      "status": "Halal",
+      "category": "Colorant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E160f - Beta-apo-8'-carotenoic acid ethyl ester",
+      "status": "Mushbooh",
+      "category": "Colorant",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E214 - Ethylparaben",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E218 - Methylparaben",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E235 - Natamycin",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "E239 - Hexamethylene tetramine",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E242 - Dimethyl dicarbonate",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E249 - Potassium nitrite",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E284 - Boric acid",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E285 - Sodium tetraborate (Borax)",
+      "status": "Halal",
+      "category": "Preservative",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E310 - Propyl gallate",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E315 - Erythorbic acid",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E316 - Sodium erythorbate",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E319 - Tertiary-butyl hydroquinone (TBHQ)",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E320 - Butylated hydroxyanisole (BHA)",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E321 - Butylated hydroxytoluene (BHT)",
+      "status": "Halal",
+      "category": "Antioxidant",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "E385 - Calcium disodium EDTA",
+      "status": "Halal",
+      "category": "Preservative / Chelating Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E405 - Propylene glycol alginate",
+      "status": "Halal",
+      "category": "Thickener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E416 - Karaya gum",
+      "status": "Halal",
+      "category": "Thickener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E418 - Gellan gum",
+      "status": "Halal",
+      "category": "Thickener",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "E425 - Konjac",
+      "status": "Halal",
+      "category": "Thickener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E431 - Polyoxyethylene (40) stearate",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E442 - Ammonium phosphatides",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E445 - Glycerol esters of wood rosins",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E483 - Stearyl tartrate",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E493 - Sorbitan monolaurate",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E508 - Potassium chloride",
+      "status": "Halal",
+      "category": "Firming Agent / Flavor Enhancer",
+      "source": "mineral",
+      "dangerous": false
+    },
+    {
+      "item_name": "E509 - Calcium chloride",
+      "status": "Halal",
+      "category": "Firming Agent",
+      "source": "mineral",
+      "dangerous": false
+    },
+    {
+      "item_name": "E535 - Sodium ferrocyanide",
+      "status": "Halal",
+      "category": "Anti-caking Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E553b - Talc",
+      "status": "Halal",
+      "category": "Anti-caking Agent",
+      "source": "mineral",
+      "dangerous": true
+    },
+    {
+      "item_name": "E622 - Monopotassium glutamate",
+      "status": "Halal",
+      "category": "Flavor Enhancer",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "E953 - Isomalt",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E960 - Steviol glycosides (Stevia)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E968 - Erythritol",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E1200 - Polydextrose",
+      "status": "Halal",
+      "category": "Bulking Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "L-Carnitine (Unspecified Source)",
+      "status": "Mushbooh",
+      "category": "Dietary Supplement",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kombucha",
+      "status": "Mushbooh",
+      "category": "Beverages",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kefir",
+      "status": "Mushbooh",
+      "category": "Beverages / Dairy",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Gochujang (Traditional Fermented)",
+      "status": "Mushbooh",
+      "category": "Condiment",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Miso Paste",
+      "status": "Mushbooh",
+      "category": "Condiment",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Doenjang",
+      "status": "Mushbooh",
+      "category": "Condiment",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Worcestershire Sauce",
+      "status": "Mushbooh",
+      "category": "Condiment",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Taurine (Unspecified Source)",
+      "status": "Mushbooh",
+      "category": "Amino Acid / Energy Additive",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Taurine (Synthetic)",
+      "status": "Halal",
+      "category": "Amino Acid / Energy Additive",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Vitamin D3 (Cholecalciferol, Unspecified)",
+      "status": "Mushbooh",
+      "category": "Vitamin / Supplement",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Vitamin A Palmitate (Unspecified Carrier)",
+      "status": "Mushbooh",
+      "category": "Vitamin / Supplement",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Lanolin (Sheep Wool Grease)",
+      "status": "Halal",
+      "category": "Emollient / Vitamin D Source",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Activated Carbon / Charcoal (Unspecified)",
+      "status": "Mushbooh",
+      "category": "Purifying Agent / Colorant",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Activated Carbon / Charcoal (Plant-based)",
+      "status": "Halal",
+      "category": "Purifying Agent / Colorant",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E174 - Silver",
+      "status": "Halal",
+      "category": "Colorant / Decor",
+      "source": "mineral",
+      "dangerous": false
+    },
+    {
+      "item_name": "L-Glutamine",
+      "status": "Mushbooh",
+      "category": "Amino Acid",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Papain",
+      "status": "Halal",
+      "category": "Enzyme / Meat Tenderizer",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Bromelain",
+      "status": "Halal",
+      "category": "Enzyme",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Lactase (Unspecified Source)",
+      "status": "Mushbooh",
+      "category": "Enzyme",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Hemp Seed Oil",
+      "status": "Halal",
+      "category": "Oil / Supplement",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Monk Fruit Extract",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Allulose",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Agave Nectar",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Land Snail (Escargot)",
+      "status": "Haram",
+      "category": "Meat & Animal Products",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Frog / Frog Legs",
+      "status": "Haram",
+      "category": "Meat & Animal Products",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Crocodile / Alligator Meat",
+      "status": "Haram",
+      "category": "Meat & Animal Products",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kopi Luwak (Civet Coffee - Properly Washed)",
+      "status": "Halal",
+      "category": "Beverages",
+      "source": "animal / plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Edible Bird's Nest",
+      "status": "Halal",
+      "category": "Food Ingredient",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Maca Root",
+      "status": "Halal",
+      "category": "Herbal / Supplement",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Guarana",
+      "status": "Halal",
+      "category": "Herbal / Supplement",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E921 - L-Cystine",
+      "status": "Mushbooh",
+      "category": "Dough Conditioner",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E474 - Sucroglycerides",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E479b - Thermally Oxidized Soya Bean Oil",
+      "status": "Mushbooh",
+      "category": "Emulsifier",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E640 - Glycine and its sodium salt",
+      "status": "Mushbooh",
+      "category": "Flavor Enhancer",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "E914 - Oxidized polyethylene wax",
+      "status": "Halal",
+      "category": "Glazing Agent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Baker's Yeast (Saccharomyces cerevisiae)",
+      "status": "Halal",
+      "category": "Leavening Agent",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Brewer's Yeast (Liquid / Active from brewing)",
+      "status": "Mushbooh",
+      "category": "Fermentation Starter",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Torula Yeast",
+      "status": "Halal",
+      "category": "Flavor Enhancer",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Nutritional Yeast",
+      "status": "Halal",
+      "category": "Supplement / Flavor Enhancer",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Rose Water",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Orange Blossom Water",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Truffle (Fungi)",
+      "status": "Halal",
+      "category": "Fungi",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Spirulina",
+      "status": "Halal",
+      "category": "Algae / Supplement",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Chlorella",
+      "status": "Halal",
+      "category": "Algae / Supplement",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Irish Moss (Sea Moss)",
+      "status": "Halal",
+      "category": "Algae",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kelp",
+      "status": "Halal",
+      "category": "Algae",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Wakame",
+      "status": "Halal",
+      "category": "Algae",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kombu",
+      "status": "Halal",
+      "category": "Algae",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Bonito Flakes (Katsuobushi)",
+      "status": "Halal",
+      "category": "Seafood",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Oyster Sauce (Vegetarian / Mushroom based)",
+      "status": "Halal",
+      "category": "Condiment",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Heparin",
+      "status": "Haram",
+      "category": "Medical / Additive",
+      "source": "animal",
+      "dangerous": true
+    },
+    {
+      "item_name": "Margarine (Unspecified Fats)",
+      "status": "Mushbooh",
+      "category": "Fats & Oils",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Margarine (Plant-based, Halal Certified)",
+      "status": "Halal",
+      "category": "Fats & Oils",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "E542 - Bone Edible Phosphate",
+      "status": "Mushbooh",
+      "category": "Anti-caking Agent",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Vanilla Bean Paste (Unspecified)",
+      "status": "Mushbooh",
+      "category": "Flavoring",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Vanilla Bean Pods (Raw)",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Vanillin (Synthetic)",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Diacetyl (Butter Flavoring)",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "L-Tyrosine",
+      "status": "Mushbooh",
+      "category": "Amino Acid",
+      "source": "unknown",
+      "dangerous": false
+    },
+    {
+      "item_name": "Sea Urchin (Uni)",
+      "status": "Halal",
+      "category": "Seafood",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Fish Maw",
+      "status": "Halal",
+      "category": "Seafood",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Bovine Colostrum",
+      "status": "Halal",
+      "category": "Dairy / Supplement",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kefir Grains",
+      "status": "Halal",
+      "category": "Fermentation Starter",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Squid Ink (Tinta Cumi)",
+      "status": "Halal",
+      "category": "Food Ingredient / Colorant",
+      "source": "animal",
+      "dangerous": false
+    },
+    {
+      "item_name": "E1521 - Polyethylene glycol",
+      "status": "Halal",
+      "category": "Coating / Solvent",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Poppy Seeds (Food Grade)",
+      "status": "Halal",
+      "category": "Spice / Seed",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Tapioca Pearls (Boba)",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Popping Boba (Agar/Alginate Based)",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "seaweed",
+      "dangerous": false
+    },
+    {
+      "item_name": "Nata de Coco",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Grass Jelly (Cincau)",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Aloe Vera Cubes",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Basil Seeds (Biji Selasih)",
+      "status": "Halal",
+      "category": "Topping",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Matcha Powder",
+      "status": "Halal",
+      "category": "Beverage Base",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Taro Powder",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Non-Dairy Creamer (Fully Plant-based)",
+      "status": "Halal",
+      "category": "Creamer",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Non-Dairy Creamer (contains Sodium Caseinate)",
+      "status": "Mushbooh",
+      "category": "Creamer",
+      "source": "dairy",
+      "dangerous": false
+    },
+    {
+      "item_name": "Whey Protein Isolate (Beverage Additive)",
+      "status": "Mushbooh",
+      "category": "Supplement",
+      "source": "dairy",
+      "dangerous": false
+    },
+    {
+      "item_name": "Soy Milk Extract",
+      "status": "Halal",
+      "category": "Beverage Base",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Grenadine Syrup (Non-alcoholic)",
+      "status": "Halal",
+      "category": "Syrup",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Blue Curacao Syrup (Non-alcoholic / Synthetic)",
+      "status": "Halal",
+      "category": "Syrup",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Blue Curacao Liqueur",
+      "status": "Haram",
+      "category": "Alcoholic Beverage",
+      "source": "synthetic",
+      "dangerous": true
+    },
+    {
+      "item_name": "Caramel Syrup (Unspecified Solvent)",
+      "status": "Mushbooh",
+      "category": "Syrup",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Caramel Syrup (Halal Certified Solvent)",
+      "status": "Halal",
+      "category": "Syrup",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Orgeat Syrup (Almond)",
+      "status": "Halal",
+      "category": "Syrup",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Agave Nectar / Syrup",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Pure Maple Syrup",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Carboxymethyl Cellulose (CMC / E466)",
+      "status": "Halal",
+      "category": "Stabilizer",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Gellan Gum (Beverage Suspension Agent)",
+      "status": "Halal",
+      "category": "Stabilizer",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Propylene Glycol Alginate (PGA / E405)",
+      "status": "Halal",
+      "category": "Stabilizer",
+      "source": "seaweed",
+      "dangerous": false
+    },
+    {
+      "item_name": "Sodium Hexametaphosphate (SHMP)",
+      "status": "Halal",
+      "category": "Sequestrant",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Butterfly Pea Flower (Bunga Telang)",
+      "status": "Halal",
+      "category": "Herbal / Colorant",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Rosella (Hibiscus Sabdariffa)",
+      "status": "Halal",
+      "category": "Herbal",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Cascara (Coffee Cherry Husk)",
+      "status": "Halal",
+      "category": "Herbal",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Yerba Mate",
+      "status": "Halal",
+      "category": "Herbal",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kava Root Extract",
+      "status": "Mushbooh",
+      "category": "Herbal / Psychoactive",
+      "source": "plant",
+      "dangerous": true
+    },
+    {
+      "item_name": "Chicory Root Extract",
+      "status": "Halal",
+      "category": "Coffee Substitute",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "L-Theanine (Green Tea Derived / Synthetic)",
+      "status": "Halal",
+      "category": "Amino Acid",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Kvass (Traditional Fermented Rye)",
+      "status": "Mushbooh",
+      "category": "Fermented Beverage",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Tepache (Fermented Pineapple)",
+      "status": "Mushbooh",
+      "category": "Fermented Beverage",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Boza (Fermented Grain)",
+      "status": "Mushbooh",
+      "category": "Fermented Beverage",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Ginger Bug (Natural Fermentation Starter)",
+      "status": "Mushbooh",
+      "category": "Fermentation Starter",
+      "source": "microbial",
+      "dangerous": false
+    },
+    {
+      "item_name": "Root Beer Extract (Traditional Fermented)",
+      "status": "Mushbooh",
+      "category": "Flavoring",
+      "source": "fermentation",
+      "dangerous": false
+    },
+    {
+      "item_name": "Root Beer Flavoring (Synthetic, Non-Alcoholic)",
+      "status": "Halal",
+      "category": "Flavoring",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Phosphoric Acid (Cola Acidifier)",
+      "status": "Halal",
+      "category": "Acidity Regulator",
+      "source": "mineral",
+      "dangerous": false
+    },
+    {
+      "item_name": "Malic Acid",
+      "status": "Halal",
+      "category": "Acidity Regulator",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Tartaric Acid (Derived from Winemaking byproducts)",
+      "status": "Mushbooh",
+      "category": "Acidity Regulator",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Tartaric Acid (Synthetic / Non-wine origin)",
+      "status": "Halal",
+      "category": "Acidity Regulator",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Stevia Extract (Rebaudioside A)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Sucralose (Splenda)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Aspartame",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Acesulfame Potassium (Ace-K)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Sulphite Ammonia Caramel (E150d)",
+      "status": "Halal",
+      "category": "Colorant",
+      "source": "synthetic",
+      "dangerous": false
+    },
+    {
+      "item_name": "Safflower Extract",
+      "status": "Halal",
+      "category": "Colorant",
+      "source": "plant",
+      "dangerous": false
+    },
+    {
+      "item_name": "Macchiato Foam Powder (Cheese/Milk based)",
+      "status": "Mushbooh",
+      "category": "Topping",
+      "source": "dairy",
+      "dangerous": false
+    },
+    {
+      "item_name": "Fructose Corn Syrup (FCS)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": true
+    },
+    {
+      "item_name": "Simple Syrup (Sugar Water)",
+      "status": "Halal",
+      "category": "Sweetener",
+      "source": "plant",
+      "dangerous": false
     }
   ]
 }
