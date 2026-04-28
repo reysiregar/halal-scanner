@@ -18,6 +18,7 @@
     "cohere-ai": "^8.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "double-metaphone": "^2.0.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
