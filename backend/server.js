@@ -16,6 +16,7 @@ const path = require('path');
 const { CohereClient } = require('cohere-ai');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const { doubleMetaphone } = require('double-metaphone');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
@@ -555,6 +556,7 @@ function resolveCandidatesDeterministically(candidates, ingredientName, matchMod
     name,
     status: getRuleBasedStatus(entry, ingredientName)
   }));
+  const canonicalNames = resolved.map(item => String(item.entry.item_name || item.entry.name || item.name || '').trim());
 
   const uniqueStatuses = Array.from(new Set(resolved.map(item => item.status)));
   if (uniqueStatuses.length > 1) {
@@ -562,7 +564,7 @@ function resolveCandidatesDeterministically(candidates, ingredientName, matchMod
       status: 'MUSHBOOH',
       reason: `Database has multiple conditional outcomes for this ingredient (${uniqueStatuses.join('/')}); conservative ruling is MUSHBOOH.`,
       confidence_score: 0.68,
-      matched_name: resolved.map(item => item.name).slice(0, 3).join(' / '),
+      matched_name: canonicalNames.slice(0, 3).join(' / '),
       category: resolved[0].entry.category
     };
   }
@@ -572,17 +574,19 @@ function resolveCandidatesDeterministically(candidates, ingredientName, matchMod
     ? 'Exact database name match.'
     : (matchMode === 'alias'
       ? 'Alias database match.'
-      : (matchMode === 'fuzzy' ? 'Fuzzy database match with strong lexical/source alignment.' : 'E-number database match.'));
+      : (matchMode === 'ocr'
+        ? 'OCR-corrected database match.'
+        : (matchMode === 'fuzzy' ? 'Fuzzy database match with strong lexical/source alignment.' : 'E-number database match.')));
   const baseReason = primary.entry.reason || 'Classified by verified database entry.';
   const confidence_score = matchMode === 'exact'
     ? 0.98
-    : (matchMode === 'alias' ? 0.9 : (matchMode === 'fuzzy' ? 0.82 : 0.86));
+    : (matchMode === 'alias' ? 0.9 : (matchMode === 'ocr' ? 0.92 : (matchMode === 'fuzzy' ? 0.82 : 0.86)));
 
   return {
     status: primary.status,
     reason: `${modeReason} ${baseReason}`,
     confidence_score,
-    matched_name: primary.name,
+    matched_name: String(primary.entry.item_name || primary.entry.name || primary.name || '').trim(),
     category: primary.entry.category
   };
 }
@@ -590,6 +594,57 @@ function resolveCandidatesDeterministically(candidates, ingredientName, matchMod
 function hasAnyTerm(text, terms) {
   const normalized = String(text || '').toLowerCase();
   return terms.some(term => normalized.includes(term));
+}
+
+// Generate likely OCR-corrected variants for a token to improve fuzzy matching
+function generateOcrVariants(text) {
+  if (!text || typeof text !== 'string') return [];
+  const normalized = text.toLowerCase().trim();
+  const variants = new Set([normalized]);
+
+  // Common OCR digit/letter confusions
+  variants.add(normalized.replace(/0/g, 'o'));
+  variants.add(normalized.replace(/1/g, 'l'));
+  variants.add(normalized.replace(/5/g, 's'));
+  variants.add(normalized.replace(/4/g, 'a'));
+
+  // Letter confusions
+  variants.add(normalized.replace(/i/g, 'l'));
+  variants.add(normalized.replace(/l/g, 'i'));
+
+  // Small multi-letter OCR misreads
+  variants.add(normalized.replace(/rn/g, 'm'));
+  variants.add(normalized.replace(/vv/g, 'w'));
+  variants.add(normalized.replace(/cl/g, 'd'));
+
+  // Combinatorial small passes to catch common multi-error cases
+  Array.from(variants).forEach(v => {
+    variants.add(v.replace(/1/g, 'l'));
+    variants.add(v.replace(/i/g, 'l'));
+    variants.add(v.replace(/0/g, 'o'));
+  });
+
+  return Array.from(variants);
+}
+
+// Simple Soundex phonetic hashing to improve phonetic matching (lightweight)
+function soundex(word) {
+  if (!word || typeof word !== 'string') return '';
+  const s = word.toUpperCase().replace(/[^A-Z]/g, '');
+  if (!s) return '';
+  const first = s[0];
+  const map = { B:1, F:1, P:1, V:1, C:2, G:2, J:2, K:2, Q:2, S:2, X:2, Z:2, D:3, T:3, L:4, M:5, N:5, R:6 };
+  let prev = map[first] || 0;
+  let out = first;
+  for (let i = 1; i < s.length && out.length < 4; i++) {
+    const ch = s[i];
+    const code = map[ch] || 0;
+    if (code === prev) continue;
+    if (code !== 0) out += String(code);
+    prev = code;
+  }
+  while (out.length < 4) out += '0';
+  return out.slice(0,4);
 }
 
 function isIntoxicantAlcoholIngredient(text) {
@@ -670,7 +725,27 @@ function scoreFuzzyCandidate(ingredientName, candidate) {
   const candidateSignals = getEntrySourceSignals(candidate.entry, candidate.name);
   const sourceAlignment = computeSourceAlignmentScore(ingredientSignals, candidateSignals);
 
-  return lexicalScore + sourceAlignment;
+  // Phonetic boost: if simple Soundex codes match, increase score modestly
+  const phoneticA = soundex(ingredientNorm.replace(/[^a-z]/g, ''));
+  const phoneticB = soundex(candidateNorm.replace(/[^a-z]/g, ''));
+  const phoneticScore = (phoneticA && phoneticB && phoneticA === phoneticB) ? 0.12 : 0;
+
+  // Double Metaphone boost (stronger signal)
+  let dmScore = 0;
+  try {
+    const dmA = doubleMetaphone(ingredientNorm.replace(/[^a-z]/g, '')) || [];
+    const dmB = doubleMetaphone(candidateNorm.replace(/[^a-z]/g, '')) || [];
+    const aPrim = (dmA[0] || '').toString();
+    const aSec = (dmA[1] || '').toString();
+    const bPrim = (dmB[0] || '').toString();
+    const bSec = (dmB[1] || '').toString();
+    if (aPrim && bPrim && aPrim === bPrim) dmScore = 0.18;
+    else if (aPrim && (aPrim === bSec || aSec === bPrim || aSec === bSec)) dmScore = 0.12;
+  } catch (e) {
+    // ignore phonetic failures
+  }
+
+  return Math.min(1, lexicalScore + sourceAlignment + phoneticScore + dmScore);
 }
 
 function findBestFuzzyDatabaseMatch(ingredientName, lookup) {
@@ -718,6 +793,17 @@ function classifyFromDatabase(ingredientName) {
   const aliasCandidates = lookup.byAlias.get(key) || [];
   if (aliasCandidates.length) {
     return resolveCandidatesDeterministically(aliasCandidates, ingredientName, 'alias');
+  }
+
+  // Try OCR-corrected variants before falling back to fuzzy matching
+  const ocrVariants = generateOcrVariants(original);
+  for (const variant of ocrVariants) {
+    const vKey = normalizeLookupKey(variant);
+    if (!vKey) continue;
+    const exactV = lookup.byExactName.get(vKey) || [];
+    if (exactV.length) return resolveCandidatesDeterministically(exactV, ingredientName, 'ocr');
+    const aliasV = lookup.byAlias.get(vKey) || [];
+    if (aliasV.length) return resolveCandidatesDeterministically(aliasV, ingredientName, 'ocr');
   }
 
   if (eMatch) {
@@ -844,8 +930,9 @@ function toLegacyAnalysis(strictAnalysis) {
   };
 
   strictAnalysis.ingredients_analysis.forEach((item) => {
+    const displayIngredient = item.matched_name || item.name;
     const payload = {
-      ingredient: item.name,
+      ingredient: displayIngredient,
       status: item.status,
       matched_name: item.matched_name || undefined,
       category: item.category || undefined,

@@ -6,6 +6,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cohere-ai": "^7.17.1",
+    "double-metaphone": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
     "string-similarity": "^4.0.4"
   }
