@@ -2811,10 +2811,7 @@
       "status": "Halal",
       "category": "Base Ingredient",
       "source": "unknown",
-      "dangerous": false,
-      "aliases": [
-        "sait"
-      ]
+      "dangerous": false
     },
     {
       "item_name": "Sugar",
