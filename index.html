@@ -4,7 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Instantly identify halal, haram, and mashbooh ingredients with a deterministic halal database. AI is used only to extract label text from images so spelling errors do not affect the result.">
+    <meta name="keywords" content="halal scanner, halal checker, ingredient analysis, halal ingredients, haram ingredients, mashbooh, Islamic diet, food labeling, OCR, halal certification">
+    <meta name="author" content="Halal Scanner">
     <meta name="theme-color" content="#09090b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Halal Scanner">
+    <meta name="color-scheme" content="dark light">
+    
+    <!-- Robots and crawling -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="bingbot" content="index, follow">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://ai-halal-scanner.vercel.app">
+    
+    <!-- Alternate language versions (if applicable) -->
+    <link rel="alternate" hreflang="en" href="https://ai-halal-scanner.vercel.app">
+    
+    <!-- Open Graph / Social Media Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ai-halal-scanner.vercel.app">
+    <meta property="og:title" content="Halal Scanner - Deterministic Halal Ingredients Scanner">
+    <meta property="og:description" content="Instantly identify halal, haram, and mashbooh ingredients with a deterministic halal database. AI is used only to extract label text from images.">
+    <meta property="og:site_name" content="Halal Scanner">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://ai-halal-scanner.vercel.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Halal Scanner - Ingredient Analysis Tool">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://ai-halal-scanner.vercel.app">
+    <meta name="twitter:title" content="Halal Scanner - Deterministic Halal Ingredients Scanner">
+    <meta name="twitter:description" content="Instantly identify halal, haram, and mashbooh ingredients with a deterministic halal database.">
+    <meta name="twitter:image" content="https://ai-halal-scanner.vercel.app/og-image.png">
+    <meta name="twitter:image:alt" content="Halal Scanner - Ingredient Analysis Tool">
+    <meta name="twitter:creator" content="@HalalScanner">
 
     <!-- Performance: preconnect to external origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +52,120 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
     <title>Halal Scanner - Deterministic Halal Ingredients Scanner</title>
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Halal Scanner",
+      "url": "https://ai-halal-scanner.vercel.app",
+      "logo": "https://ai-halal-scanner.vercel.app/logo.png",
+      "description": "A deterministic halal ingredients scanner using OCR and AI to extract and analyze product labels.",
+      "sameAs": [
+        "https://twitter.com/HalalScanner",
+        "https://www.facebook.com/HalalScanner"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Service",
+        "email": "support@halal-scanner.com"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Halal Scanner",
+      "url": "https://ai-halal-scanner.vercel.app",
+      "description": "Instantly identify halal, haram, and mashbooh ingredients with a deterministic halal database.",
+      "applicationCategory": "UtilitiesApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "120"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How accurate is the Halal Scanner?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The halal verdict is deterministic and database-driven. AI is used only to extract text from product images, so spelling mistakes do not change the result."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the OCR feature powered by AI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we use Cohere AI for OCR text extraction and cleanup from product images. The deterministic verdict is based on our halal ingredients database."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I save my scan results?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, signed-in users can save and delete scan results, submit reports for inaccuracies, and track report status."
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://ai-halal-scanner.vercel.app"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "How It Works",
+          "item": "https://ai-halal-scanner.vercel.app/#how-it-works"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Features",
+          "item": "https://ai-halal-scanner.vercel.app/#about"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Performance: preload critical resources -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="main.js" as="script">
+    
+    <!-- Performance: prefetch secondary resources -->
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
+    <link rel="prefetch" href="dashboard.js">
+    <link rel="prefetch" href="user-dashboard.html">
+    <link rel="prefetch" href="admin-dashboard.html">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">

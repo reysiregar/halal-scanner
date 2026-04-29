@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  <!-- Main homepage -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- How It Works section -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app#how-it-works</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- Features section -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app#about</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- Testimonials section -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app#testimonials</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- FAQ section -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app#faq</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- User Dashboard (protected, but indexable for logged-in users) -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app/user-dashboard</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+  </url>
+  
+  <!-- Admin Dashboard (protected area) -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app/admin-dashboard</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.3</priority>
+    <mobile:mobile/>
+  </url>
+</urlset>

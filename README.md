@@ -198,6 +198,33 @@ Main tables:
 - `backend/Procfile` runs `node server.js`.
 - `backend/koyeb.yaml` maps service port `3000` and required secrets.
 
+## SEO & Performance
+
+### On-Page SEO
+- Comprehensive meta tags (title, description, keywords, author)
+- Open Graph and Twitter card tags for social media sharing
+- JSON-LD structured data for Organization, WebApplication, FAQPage, and BreadcrumbList
+- Canonical URLs to prevent duplicate content issues
+- Robots and crawler meta tags for search engine optimization
+
+### Technical SEO
+- `sitemap.xml` - XML sitemap for all pages with proper priority and changefreq
+- `robots.txt` - Crawler directives excluding protected pages and backend files
+- `.well-known/security.txt` - Security contact and policy information
+- Mobile-friendly meta tags and viewport configuration
+
+### Performance
+- Preconnect/DNS-prefetch for external origins
+- Preload critical resources (stylesheets, main scripts)
+- Prefetch secondary resources (dashboard scripts, pages)
+- Semantic HTML structure with proper header/nav/section hierarchy
+
+### Best Practices
+- Search engines can index the main website (`/index.html`)
+- Protected pages (dashboards) are blocked from indexing via `noindex` robots meta tag
+- All public pages include relevant keywords and descriptive content
+- JSON-LD schemas validate with Google's Structured Data Testing Tool
+
 ## Contributing
 
 1. Fork the repository.

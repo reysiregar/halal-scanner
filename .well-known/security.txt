@@ -1,0 +1,7 @@
+Contact: security@halal-scanner.com
+Contact: https://ai-halal-scanner.vercel.app/security
+Expires: 2027-04-29T03:43:00Z
+Preferred-Languages: en
+Canonical: https://ai-halal-scanner.vercel.app/.well-known/security.txt
+Policy: https://ai-halal-scanner.vercel.app/security-policy
+Acknowledgments: https://ai-halal-scanner.vercel.app/security-acknowledgments

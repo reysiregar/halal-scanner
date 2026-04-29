@@ -1,0 +1,51 @@
+# Robots.txt for Halal Scanner
+# Allow search engines to crawl and index the website
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /styles.css
+Allow: /main.js
+Allow: /config.js
+Allow: /dashboard.js
+Allow: /favicon.ico
+Allow: /sitemap.xml
+
+# Disallow access to dashboard pages from search engines
+Disallow: /user-dashboard.html
+Disallow: /admin-dashboard.html
+Disallow: /backend/
+Disallow: /scripts/
+
+# Disallow indexing of common development/test files
+Disallow: /.git/
+Disallow: /.env
+Disallow: /.env.example
+Disallow: /node_modules/
+Disallow: /package.json
+Disallow: /package-lock.json
+
+# Allow specific search engines for better crawling
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Slow down aggressive crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://ai-halal-scanner.vercel.app/sitemap.xml
+
+# Crawl delay for all bots
+Crawl-delay: 0
+
+# Request rate (requests per minute)
+Request-rate: 60/1m
