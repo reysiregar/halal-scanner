@@ -47,14 +47,14 @@ async function seed() {
   const userPassword = randomString(12);
 
   const admin = await upsertUser({
-    name: 'Default Admin',
+    name: 'Admin',
     email: 'admin@halalscanner.com',
     password: adminPassword,
     is_admin: true
   });
 
   const user = await upsertUser({
-    name: 'Default User',
+    name: 'User',
     email: 'user@halalscanner.com',
     password: userPassword,
     is_admin: false
