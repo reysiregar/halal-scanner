@@ -62,4 +62,13 @@
     <priority>0.3</priority>
     <mobile:mobile/>
   </url>
+
+  <!-- Privacy Policy page -->
+  <url>
+    <loc>https://ai-halal-scanner.vercel.app/privacy-policy</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <mobile:mobile/>
+  </url>
 </urlset>

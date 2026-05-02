@@ -25,9 +25,6 @@
     --hs-secondary:    #111113;
 }
 
-/* ============================================================
-   BASE
-   ============================================================ */
 html { scroll-behavior: smooth; }
 
 html, body {
@@ -45,9 +42,6 @@ body {
 
 body.mobile-menu-open { overflow: hidden; }
 
-/* ============================================================
-   ACCESSIBILITY — SKIP LINK
-   ============================================================ */
 .skip-link {
     position: absolute;
     top: -100%;
@@ -64,9 +58,6 @@ body.mobile-menu-open { overflow: hidden; }
 }
 .skip-link:focus { top: 0; }
 
-/* ============================================================
-   ACCESSIBILITY — SCREEN READER ONLY
-   ============================================================ */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -79,10 +70,6 @@ body.mobile-menu-open { overflow: hidden; }
     border: 0;
 }
 
-/* ============================================================
-   ACCESSIBILITY — FOCUS VISIBLE
-   Only show focus ring on keyboard navigation, not mouse click.
-   ============================================================ */
 *:focus { outline: none; }
 
 *:focus-visible {
@@ -110,9 +97,6 @@ a:focus-visible {
     border-radius: 3px;
 }
 
-/* ============================================================
-   MOTION — RESPECT USER PREFERENCE
-   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
 
@@ -131,9 +115,6 @@ a:focus-visible {
     .focus-ring { animation: none !important; }
 }
 
-/* ============================================================
-   HIGH CONTRAST MODE SUPPORT
-   ============================================================ */
 @media (forced-colors: active) {
     .nav-link.active,
     .nav-action-primary,
@@ -149,9 +130,6 @@ a:focus-visible {
     .mashbooh-badge { background: orange; color: #000; forced-color-adjust: none; }
 }
 
-/* ============================================================
-   TAILWIND OVERRIDES — remap old colour utilities
-   ============================================================ */
 .bg-white         { background-color: var(--bg-subtle) !important; }
 .bg-gray-50       { background-color: var(--bg-muted)  !important; }
 .bg-gray-100      { background-color: var(--bg-muted)  !important; }
@@ -188,16 +166,12 @@ a:focus-visible {
 .shadow-sm, .shadow-md { box-shadow: 0 0 0 1px var(--border) !important; }
 .shadow-2xl        { box-shadow: 0 0 0 1px var(--border), 0 32px 64px rgba(0,0,0,0.5) !important; }
 
-/* Feature icon bg overrides */
 .bg-green-100  { background-color: rgba(34,197,94,0.1)  !important; }
 .bg-blue-100   { background-color: rgba(96,165,250,0.1) !important; }
 .bg-purple-100 { background-color: rgba(167,139,250,0.1)!important; }
 .bg-yellow-100 { background-color: rgba(251,191,36,0.1) !important; }
 .bg-red-100    { background-color: rgba(248,113,113,0.1)!important; }
 
-/* ============================================================
-   NAVIGATION
-   ============================================================ */
 .render-nav {
     position: fixed;
     top: 0;
@@ -304,9 +278,6 @@ body { padding-top: 4.9rem; }
     .nav-actions { gap: 0.4rem; }
 }
 
-/* ============================================================
-   MOBILE HAMBURGER
-   ============================================================ */
 #mobileMenuBtn {
     display: none;
     align-items: center;
@@ -429,9 +400,6 @@ body { padding-top: 4.9rem; }
 
 @media (max-width: 480px) { #mobileMenu { left: 0.5rem; right: 0.5rem; } }
 
-/* ============================================================
-   HERO / GRADIENT BG
-   ============================================================ */
 .gradient-bg {
     background-color: var(--bg);
     position: relative;
@@ -446,7 +414,6 @@ body { padding-top: 4.9rem; }
 }
 .gradient-bg.text-white { color: var(--text-1); }
 
-/* Dot grid subtle texture */
 .gradient-bg::after {
     content: '';
     position: absolute;
@@ -456,17 +423,11 @@ body { padding-top: 4.9rem; }
     pointer-events: none;
 }
 
-/* ============================================================
-   INGREDIENT BADGES
-   ============================================================ */
 .halal-badge    { background-color: #16a34a; color: #fff; }
 .haram-badge    { background-color: #dc2626; color: #fff; }
 .mashbooh-badge { background-color: #d97706; color: #fff; }
 .unknown-badge  { background-color: #52525b; color: #fff; }
 
-/* ============================================================
-   INGREDIENT CARDS (features)
-   ============================================================ */
 .ingredient-card {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg) !important;
@@ -479,10 +440,6 @@ body { padding-top: 4.9rem; }
     box-shadow: none !important;
 }
 
-/* ============================================================
-   ANALYSIS RESULT THEMING (dark mode)
-   Keep JS-generated utility classes readable inside result areas.
-   ============================================================ */
 #resultsContainer .bg-green-50,
 #uploadResultsContainer .bg-green-50 {
     background-color: rgba(22,163,74,0.16) !important;
@@ -540,9 +497,6 @@ body { padding-top: 4.9rem; }
     color: #bfdbfe !important;
 }
 
-/* ============================================================
-   CAMERA / SCANNER
-   ============================================================ */
 .camera-preview {
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -582,18 +536,12 @@ body { padding-top: 4.9rem; }
     animation: scan-move 1.2s linear infinite;
 }
 
-/* ============================================================
-   LOADING SPINNER
-   ============================================================ */
 .loading-spinner { animation: spin 1s linear infinite; }
 @keyframes spin {
     0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-/* ============================================================
-   FLASHLIGHT
-   ============================================================ */
 .flashlight-on {
     background-color: #d97706 !important;
     box-shadow: 0 0 12px rgba(217,119,6,0.4);
@@ -605,9 +553,6 @@ body { padding-top: 4.9rem; }
     line-height: 1;
 }
 
-/* ============================================================
-   FOCUS RING (TAP TO FOCUS)
-   ============================================================ */
 .focus-ring {
     position: absolute;
     border: 2px solid var(--accent);
@@ -623,9 +568,6 @@ body { padding-top: 4.9rem; }
     100% { transform: scale(1);   opacity: 0; }
 }
 
-/* ============================================================
-   SCROLL REVEAL
-   ============================================================ */
 .section-hidden {
     opacity: 1;
     transform: none;
@@ -635,9 +577,6 @@ body { padding-top: 4.9rem; }
 
 section[id] { scroll-margin-top: 5rem; }
 
-/* ============================================================
-   BACK TO TOP
-   ============================================================ */
 .back-to-top-btn {
     position: fixed;
     right: 1rem;
@@ -663,9 +602,6 @@ section[id] { scroll-margin-top: 5rem; }
 .back-to-top-btn.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 @media (min-width: 768px) { .back-to-top-btn { display: none !important; } }
 
-/* ============================================================
-   TESTIMONIAL CAROUSEL
-   ============================================================ */
 .testimonials-carousel {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -673,7 +609,6 @@ section[id] { scroll-margin-top: 5rem; }
 }
 .testimonials-carousel::-webkit-scrollbar { display: none; }
 
-/* --- Testimonial Card ----------------------------------------- */
 .testimonial-card {
     display: flex;
     flex-direction: column;
@@ -693,14 +628,12 @@ section[id] { scroll-margin-top: 5rem; }
     box-shadow: 0 8px 32px rgba(0,0,0,0.38);
 }
 
-/* Header row: avatar + meta */
 .tc-header {
     display: flex;
     align-items: center;
     gap: 0.85rem;
 }
 
-/* Avatar circle */
 .tc-avatar {
     flex-shrink: 0;
     width: 2.6rem;
@@ -717,7 +650,6 @@ section[id] { scroll-margin-top: 5rem; }
     letter-spacing: 0.03em;
 }
 
-/* Name + role + stars column */
 .tc-meta {
     display: flex;
     flex-direction: column;
@@ -744,7 +676,6 @@ section[id] { scroll-margin-top: 5rem; }
     color: #fbbf24;
 }
 
-/* Quote text */
 .tc-quote {
     margin: 0;
     padding: 0.75rem 0.9rem;
@@ -757,7 +688,6 @@ section[id] { scroll-margin-top: 5rem; }
     font-style: italic;
 }
 
-/* Carousel nav buttons */
 #testimonialPrev,
 #testimonialNext {
     transition: all 0.2s;
@@ -778,7 +708,6 @@ section[id] { scroll-margin-top: 5rem; }
     transform: scale(1.08);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .testimonial-card {
         width: 260px;
@@ -804,9 +733,6 @@ section[id] { scroll-margin-top: 5rem; }
     }
 }
 
-/* ============================================================
-   FAQ
-   ============================================================ */
 .faq-question {
     color: var(--text-1);
     width: 100%;
@@ -836,6 +762,10 @@ section[id] { scroll-margin-top: 5rem; }
     color: var(--text-2);
     font-size: 0.88rem;
     line-height: 1.7;
+    text-align: justify !important;
+    text-justify: inter-word;
+    text-align-last: left;
+    hyphens: auto;
     overflow: hidden;
     max-height: 0;
     padding: 0 1.25rem;
@@ -849,11 +779,14 @@ section[id] { scroll-margin-top: 5rem; }
     padding-bottom: 1.15rem;
 }
 
-/* ============================================================
-   MOBILE-FIRST — GLOBAL SECTION SPACING
-   ============================================================ */
+.faq-answer-text {
+    margin: 0;
+    text-align: justify !important;
+    text-justify: inter-word;
+    text-align-last: left;
+    hyphens: auto;
+}
 
-/* Reduce heavyweight section padding on mobile */
 @media (max-width: 639px) {
 
     /* Hero */
@@ -967,18 +900,12 @@ section[id] { scroll-margin-top: 5rem; }
     }
 }
 
-/* ============================================================
-   STAR RATING
-   ============================================================ */
 .star-outline {
     -webkit-text-stroke: 1px #fbbf24;
     text-shadow: 0 0 1px #fbbf24;
     color: transparent;
 }
 
-/* ============================================================
-   MODALS — general
-   ============================================================ */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -989,7 +916,6 @@ section[id] { scroll-margin-top: 5rem; }
     z-index: 50;
 }
 
-/* Override white modal backgrounds */
 #disclaimerModal .bg-white,
 #signInModal .bg-white,
 #signUpModal .bg-white {
@@ -1009,9 +935,6 @@ section[id] { scroll-margin-top: 5rem; }
 #signInModal input::placeholder,
 #signUpModal input::placeholder { color: var(--text-3) !important; }
 
-/* ============================================================
-   WELCOME MODAL (namespaced)
-   ============================================================ */
 .hs-modal {
     position: fixed;
     inset: 0;
@@ -1127,16 +1050,10 @@ section[id] { scroll-margin-top: 5rem; }
 }
 .hs-button.is-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
 
-/* ============================================================
-   STATUS BADGES
-   ============================================================ */
 .status-pending  { background-color: rgba(251,191,36,0.15); color: #fbbf24; }
 .status-solved   { background-color: rgba(34,197,94,0.15);  color: var(--accent); }
 .status-rejected { background-color: rgba(248,113,113,0.15);color: #f87171; }
 
-/* ============================================================
-   BUTTON UTILITIES
-   ============================================================ */
 .btn-primary {
     background-color: var(--accent);
     color: var(--text-inv);
@@ -1178,9 +1095,6 @@ section[id] { scroll-margin-top: 5rem; }
 }
 .btn-success:hover { background-color: var(--accent-dark); }
 
-/* ============================================================
-   FORMS
-   ============================================================ */
 .form-input, .form-textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
@@ -1202,7 +1116,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     outline-offset: 2px;
 }
 
-/* Prevent iOS/Safari tap highlight flash on icon-style controls. */
 .faq-question,
 #closeScanner,
 #closeUploadAnalysis,
@@ -1214,16 +1127,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* ============================================================
-   INPUT STATES
-   ============================================================ */
 .loading { pointer-events: none; opacity: 0.6; }
 .input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important; }
 .error-message { color: #f87171; font-size: 0.875rem; margin-top: 0.25rem; }
 
-/* ============================================================
-   CUSTOM ALERTS + TOASTS
-   ============================================================ */
 .hs-alert-overlay {
     position: fixed;
     inset: 0;
@@ -1617,6 +1524,87 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .dashboard-results-list > * { overflow-wrap: anywhere; }
 .tab-label-compact { display: none; }
 
+.admin-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.admin-overview-card {
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+.admin-overview-label {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.admin-overview-value {
+    margin: 0.4rem 0 0;
+    color: var(--text-1);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.admin-overview-note {
+    margin: 0.45rem 0 0;
+    color: var(--text-2);
+    font-size: 0.82rem;
+}
+
+.dashboard-danger-zone {
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+.dashboard-danger-title {
+    margin: 0;
+    color: #fecaca;
+    font-weight: 700;
+    font-size: 1.08rem;
+}
+
+.dashboard-danger-copy {
+    margin: 0.65rem 0 0;
+    color: #fecdd3;
+    font-size: 0.9rem;
+}
+
+.dashboard-danger-btn {
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(220, 38, 38, 0.2);
+    color: #fee2e2;
+    border: 1px solid rgba(248, 113, 113, 0.6);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.9rem;
+    font-weight: 700;
+    font-size: 0.84rem;
+    transition: all 0.2s;
+}
+
+.dashboard-danger-btn:hover {
+    background: rgba(220, 38, 38, 0.35);
+    border-color: rgba(248, 113, 113, 0.85);
+}
+
+.dashboard-danger-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 .admin-report-card {
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -1868,7 +1856,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     .dashboard-panel { padding: 1rem; border-radius: var(--radius-lg); }
     .dashboard-tabs {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 0.45rem;
         border-bottom: none;
     }
@@ -1887,6 +1875,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     .dashboard-results-list { margin-top: 0.95rem; }
     #savedResultsList > div, #userReportsList > div, #adminReportsList > div { padding: 0.85rem; border-radius: var(--radius); }
     #adminReportsList .flex.flex-wrap.gap-2 button { flex: 1 1 100%; min-height: 40px; }
+    .admin-overview-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
@@ -1912,9 +1901,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     }
 }
 
-/* ============================================================
-   SCANNING TIPS FADE
-   ============================================================ */
 .scanning-tips-fade { animation: tipsFade 4s ease-in-out; }
 @keyframes tipsFade {
     0%, 70% { opacity: 1; }

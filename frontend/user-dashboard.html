@@ -76,6 +76,17 @@
                     <span class="tab-label-full">My Reports</span>
                     <span class="tab-label-compact">Reports</span>
                 </button>
+                <button class="tab-button dashboard-tab-trigger px-4 py-2 text-sm font-medium"
+                    role="tab"
+                    id="tab-privacy"
+                    aria-selected="false"
+                    aria-controls="privacy-tab"
+                    data-tab="privacy"
+                    style="color:#71717a;">
+                    <i class="fas fa-user-shield mr-2" aria-hidden="true"></i>
+                    <span class="tab-label-full">Privacy & Data</span>
+                    <span class="tab-label-compact">Privacy</span>
+                </button>
             </div>
 
             <div id="saved-results-tab" class="tab-content" role="tabpanel" aria-labelledby="tab-saved-results" tabindex="0">
@@ -84,6 +95,18 @@
 
             <div id="reports-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-reports" tabindex="0">
                 <div id="userReportsList" class="space-y-4 dashboard-results-list" aria-live="polite" aria-label="Your inaccuracy reports"></div>
+            </div>
+
+            <div id="privacy-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-privacy" tabindex="0">
+                <div class="dashboard-danger-zone" aria-label="Account privacy and deletion options">
+                    <h2 class="dashboard-danger-title">Delete Account and Data</h2>
+                    <p class="dashboard-danger-copy">If you choose to leave, you can permanently delete your account and all associated data from Halal Scanner.</p>
+                    <p class="dashboard-danger-copy">This action is irreversible and will remove your saved scans and submitted reports.</p>
+                    <button id="deleteAccountBtn" class="dashboard-danger-btn" type="button">
+                        <i class="fas fa-trash-can" aria-hidden="true"></i>
+                        <span>Delete My Account</span>
+                    </button>
+                </div>
             </div>
         </section>
     </main>

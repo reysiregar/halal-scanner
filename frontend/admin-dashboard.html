@@ -62,11 +62,22 @@
             <div class="flex dashboard-tabs mb-6" role="tablist" aria-label="Admin dashboard sections" style="gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:0.75rem;">
                 <button class="admin-tab-button dashboard-tab-trigger active px-4 py-2 text-sm font-medium"
                     role="tab"
-                    id="admin-tab-saved"
+                    id="admin-tab-overview"
                     aria-selected="true"
+                    aria-controls="admin-overview-tab"
+                    data-tab="admin-overview"
+                    style="color:#09090b;">
+                    <i class="fas fa-chart-simple mr-2" aria-hidden="true"></i>
+                    <span class="tab-label-full">Overview</span>
+                    <span class="tab-label-compact">Overview</span>
+                </button>
+                <button class="admin-tab-button dashboard-tab-trigger px-4 py-2 text-sm font-medium"
+                    role="tab"
+                    id="admin-tab-saved"
+                    aria-selected="false"
                     aria-controls="admin-saved-results-tab"
                     data-tab="admin-saved-results"
-                    style="color:#09090b;">
+                    style="color:#71717a;">
                     <i class="fas fa-save mr-2" aria-hidden="true"></i>
                     <span class="tab-label-full">All Saved Results</span>
                     <span class="tab-label-compact">Saved</span>
@@ -84,7 +95,11 @@
                 </button>
             </div>
 
-            <div id="admin-saved-results-tab" class="admin-tab-content" role="tabpanel" aria-labelledby="admin-tab-saved" tabindex="0">
+            <div id="admin-overview-tab" class="admin-tab-content" role="tabpanel" aria-labelledby="admin-tab-overview" tabindex="0">
+                <div id="adminOverviewStats" class="admin-overview-grid" aria-live="polite" aria-label="Admin metrics summary"></div>
+            </div>
+
+            <div id="admin-saved-results-tab" class="admin-tab-content hidden" role="tabpanel" aria-labelledby="admin-tab-saved" tabindex="0">
                 <div id="adminSavedResultsList" class="space-y-4 dashboard-results-list" aria-live="polite" aria-label="All user saved scan results"></div>
             </div>
 

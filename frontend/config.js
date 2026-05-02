@@ -68,6 +68,8 @@ export const API_ENDPOINTS = {
   GET_USER_REPORTS: '/user-reports',
   GET_ADMIN_REPORTS: '/admin/reports',
   UPDATE_REPORT_STATUS: (id) => `/admin/reports/${id}`,
+  GET_ADMIN_DASHBOARD_METRICS: '/admin/dashboard-metrics',
+  DELETE_MY_ACCOUNT: '/user/account',
   GET_TESTIMONIALS: '/testimonials'
 };
 

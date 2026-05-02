@@ -20,6 +20,17 @@ Halal Scanner is a web application for checking ingredient halal status from typ
 - Admin review workflow for report status updates.
 - Testimonials create/list endpoints.
 - User and admin dashboard pages.
+- Admin overview metrics (total users excluding seeded defaults, total testimonials).
+- User privacy controls: account and associated data deletion from dashboard.
+- Dedicated Privacy Policy page linked from footer Quick Access.
+
+## Recent Updates (May 2026)
+
+- Added Admin Dashboard Overview tab with metrics cards.
+- Added backend metrics route: `GET /admin/dashboard-metrics` (alias: `GET /api/admin/dashboard-metrics`).
+- Added User Dashboard Privacy & Data tab with permanent account deletion flow.
+- Added backend account deletion route: `DELETE /user/account` (alias: `DELETE /api/user/account`).
+- Added `frontend/privacy-policy.html` and footer Quick Access link.
 
 ## Tech Stack
 
@@ -32,13 +43,17 @@ Halal Scanner is a web application for checking ingredient halal status from typ
 
 ```text
 halal-scanner/
-  index.html
-  user-dashboard.html
-  admin-dashboard.html
-  main.js
-  dashboard.js
-  config.js
-  styles.css
+  frontend/
+    index.html
+    user-dashboard.html
+    admin-dashboard.html
+    privacy-policy.html
+    main.js
+    dashboard.js
+    config.js
+    styles.css
+    robots.txt
+    sitemap.xml
   backend/
     server.js
     package.json
@@ -159,6 +174,13 @@ Base URL (local): `http://localhost:3000`
 
 - `GET /admin/reports` - list all reports
 - `PUT /admin/reports/:id` - update report status and admin note
+- `GET /admin/dashboard-metrics` - admin overview totals (excludes seeded default admin/user from total users)
+- `GET /api/admin/dashboard-metrics` - alias route
+
+### User Privacy (JWT required)
+
+- `DELETE /user/account` - delete current user account and associated data
+- `DELETE /api/user/account` - alias route
 
 ### Testimonials
 
@@ -211,6 +233,7 @@ Main tables:
 - `sitemap.xml` - XML sitemap for all pages with proper priority and changefreq
 - `robots.txt` - Crawler directives excluding protected pages and backend files
 - `.well-known/security.txt` - Security contact and policy information
+- `privacy-policy.html` - Public privacy and data handling page
 - Mobile-friendly meta tags and viewport configuration
 
 ### Performance

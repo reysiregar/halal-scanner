@@ -22,6 +22,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.DATABASE_URL;
+const DEFAULT_EXCLUDED_USER_EMAILS = ['admin@halalscanner.com', 'user@halalscanner.com'];
 
 if (!JWT_SECRET) {
   console.warn('Warning: JWT_SECRET is not set. JWT operations may fail.');
@@ -1399,6 +1400,59 @@ app.put('/admin/reports/:id', authenticateJWT(true), async (req, res) => {
   } catch (err) {
     console.error('Update report error:', err);
     res.status(400).json({ error: err.message });
+  }
+});
+
+app.get(['/admin/dashboard-metrics', '/api/admin/dashboard-metrics'], authenticateJWT(true), async (req, res) => {
+  try {
+    const excludedEmails = DEFAULT_EXCLUDED_USER_EMAILS.map(email => email.toLowerCase());
+    const usersResult = await db.query(
+      `SELECT COUNT(*)::int AS total_users
+       FROM users
+       WHERE lower(email) <> ALL($1::text[])`,
+      [excludedEmails]
+    );
+
+    let totalTestimonials = 0;
+    try {
+      const testimonialsResult = await db.query('SELECT COUNT(*)::int AS total_testimonials FROM testimonials');
+      totalTestimonials = testimonialsResult.rows[0]?.total_testimonials || 0;
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+    }
+
+    res.json({
+      metrics: {
+        total_users: usersResult.rows[0]?.total_users || 0,
+        total_testimonials: totalTestimonials
+      }
+    });
+  } catch (err) {
+    console.error('Admin dashboard metrics error:', err);
+    const mapped = dbErrorResponse('Fetching admin dashboard metrics', err);
+    res.status(mapped.status).json(mapped.body);
+  }
+});
+
+app.delete(['/user/account', '/api/user/account'], authenticateJWT(), async (req, res) => {
+  const user = req.user;
+
+  if (user.is_admin) {
+    return res.status(403).json({ error: 'Admin accounts cannot be deleted from dashboard.' });
+  }
+
+  try {
+    const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING id', [user.id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    res.json({ success: true, message: 'Your account and associated data have been permanently deleted.' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    const mapped = dbErrorResponse('Deleting account', err);
+    res.status(mapped.status).json(mapped.body);
   }
 });
 

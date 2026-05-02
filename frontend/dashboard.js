@@ -621,6 +621,27 @@ function renderAdminReports(reports) {
   };
 }
 
+function renderAdminMetrics(metrics = {}) {
+  const container = document.getElementById('adminOverviewStats');
+  if (!container) return;
+
+  const totalUsers = Number(metrics.total_users || 0);
+  const totalTestimonials = Number(metrics.total_testimonials || 0);
+
+  container.innerHTML = `
+    <article class="admin-overview-card" aria-label="Total users">
+      <p class="admin-overview-label">Total Users</p>
+      <p class="admin-overview-value">${totalUsers}</p>
+      <p class="admin-overview-note">Excludes default seeded admin and default user.</p>
+    </article>
+    <article class="admin-overview-card" aria-label="Total testimonials">
+      <p class="admin-overview-label">Total Testimonials</p>
+      <p class="admin-overview-value">${totalTestimonials}</p>
+      <p class="admin-overview-note">All testimonial entries submitted by users.</p>
+    </article>
+  `;
+}
+
 async function loadUserSavedResults() {
   renderDashboardSkeleton('savedResultsList', 'cards');
   const data = await fetchJson(API_ENDPOINTS.GET_SAVED_RESULTS);
@@ -639,10 +660,65 @@ async function loadAdminSavedResults() {
   renderAdminSavedResults(data.saved_results || []);
 }
 
+async function loadAdminMetrics() {
+  const container = document.getElementById('adminOverviewStats');
+  if (container) {
+    container.innerHTML = '<div class="dashboard-skeleton-list" aria-hidden="true">' + buildSkeletonCards(2) + '</div>';
+  }
+
+  const data = await fetchJson(API_ENDPOINTS.GET_ADMIN_DASHBOARD_METRICS);
+  renderAdminMetrics(data.metrics || {});
+}
+
 async function loadAdminReports() {
   renderDashboardSkeleton('adminReportsList', 'cards');
   const data = await fetchJson(API_ENDPOINTS.GET_ADMIN_REPORTS);
   renderAdminReports(data.reports || []);
+}
+
+function wireAccountDeletion() {
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  if (!deleteAccountBtn) return;
+
+  deleteAccountBtn.addEventListener('click', async () => {
+    const firstConfirm = await showDashboardConfirm(
+      'Are you sure? Deleting your account will permanently remove your data.',
+      'Delete Account',
+      'Continue'
+    );
+    if (!firstConfirm) return;
+
+    const confirmationText = await showDashboardInputDialog({
+      title: 'Final Confirmation',
+      message: 'Type DELETE to permanently remove your account and data.',
+      confirmButtonText: 'Delete Permanently',
+      placeholder: 'Type DELETE'
+    });
+
+    if (!confirmationText) return;
+
+    if (confirmationText.trim().toUpperCase() !== 'DELETE') {
+      await showDashboardAlert('Confirmation text did not match. Account deletion was cancelled.', 'Deletion Cancelled');
+      return;
+    }
+
+    try {
+      deleteAccountBtn.disabled = true;
+      await fetchJson(API_ENDPOINTS.DELETE_MY_ACCOUNT, { method: 'DELETE' });
+
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('jwtToken');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('jwtToken');
+
+      await showDashboardAlert('Your account and data have been deleted permanently.', 'Account Deleted');
+      redirectToHome();
+    } catch (error) {
+      await showDashboardAlert(error.message || 'Failed to delete account', 'Deletion Failed');
+    } finally {
+      deleteAccountBtn.disabled = false;
+    }
+  });
 }
 
 function wireUserTabs() {
@@ -667,7 +743,7 @@ function wireUserTabs() {
 
       if (target === 'saved-results') {
         await loadUserSavedResults();
-      } else {
+      } else if (target === 'reports') {
         await loadUserReports();
       }
     });
@@ -694,9 +770,11 @@ function wireAdminTabs() {
       const targetContent = document.getElementById(`${target}-tab`);
       if (targetContent) targetContent.classList.remove('hidden');
 
-      if (target === 'admin-saved-results') {
+      if (target === 'admin-overview') {
+        await loadAdminMetrics();
+      } else if (target === 'admin-saved-results') {
         await loadAdminSavedResults();
-      } else {
+      } else if (target === 'admin-reports') {
         await loadAdminReports();
       }
     });
@@ -709,12 +787,11 @@ async function init() {
 
   if (isAdminPage) {
     wireAdminTabs();
-    await loadAdminSavedResults();
-    await loadAdminReports();
+    await loadAdminMetrics();
   } else {
     wireUserTabs();
+    wireAccountDeletion();
     await loadUserSavedResults();
-    await loadUserReports();
   }
 }
 
